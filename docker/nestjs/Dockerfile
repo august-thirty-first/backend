@@ -2,4 +2,6 @@ FROM node:20-alpine3.18
 
 WORKDIR /home
 
-CMD ["sh", "./script.sh"]
+COPY ./script.sh /tmp
+
+CMD ["sh", "/tmp/script.sh"]
