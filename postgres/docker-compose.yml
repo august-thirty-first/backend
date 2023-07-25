@@ -1,0 +1,20 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+
+  postgres:
+    container_name: postgres
+    image: postgresql:alpine
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 1234
+      PONG_DATABASE: pingpong
+      PONG_USER: hanbin
+      PONG_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+
