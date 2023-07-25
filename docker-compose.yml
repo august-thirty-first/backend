@@ -16,6 +16,8 @@ services:
       - ./:/home
     networks:
       - gaepo
+    depends_on:
+      - postgres
 
   postgres:
     container_name: postgres
