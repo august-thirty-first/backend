@@ -2,20 +2,38 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./
-      dockerfile: ./Dockerfile
     container_name: nestJs
+    image: nestjs:alpine
+    build:
+      context: ./docker/nestjs
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     restart: "always"
     env_file:
       - ./env/.env
     volumes:
-      - ../backend-auguest-thirty-first:/home
+      - ./nestjs:/home
+    networks:
+      - gaepo
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    image: postgresql:alpine
+    build:
+      context: ./docker/postgres
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    restart: always
+    env_file:
+      - ./env/.env
     networks:
       - gaepo
 
 networks:
     gaepo:
         driver: bridge
+
