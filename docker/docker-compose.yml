@@ -28,6 +28,8 @@ services:
     restart: always
     env_file:
       - ../env/.env
+    networks:
+      - gaepo
 
 networks:
     gaepo:
