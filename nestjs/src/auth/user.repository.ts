@@ -3,6 +3,7 @@ import { User } from './entities/User.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
+import { Request } from 'express';
 import {
   ConflictException,
   InternalServerErrorException,
@@ -21,11 +22,17 @@ export class UserRepository extends Repository<User> {
     );
   }
 
-  async createUser(userDto: UserDto): Promise<User> {
-    const user = this.create(userDto);
+  async createUser(nickname: string, intra_name: string): Promise<User> {
+    const user = this.create({
+      nickname,
+      intra_name,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
 
     try {
       await this.save(user);
+      console.log('save 성공');
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('');
