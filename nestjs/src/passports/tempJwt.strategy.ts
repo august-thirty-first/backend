@@ -13,7 +13,7 @@ export class TempJwtStrategy extends PassportStrategy(Strategy, 'temp-jwt') {
     super({
       jwtFromRequest: TempJwtStrategy.extractJWTFromCookie,
       ignoreExpiration: false,
-      secretOrKey: 'test',
+      secretOrKey: process.env.TEMP_JWT_SECRET,
     });
   }
 

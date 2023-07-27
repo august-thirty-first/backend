@@ -32,6 +32,15 @@ export class AuthController {
 
   @Post('nickname')
   checkDuplicatedNickname(@Body('nickname') nickname: string) {
-    console.log(nickname);
+    return this.authService.checkDuplicatedNickname(nickname);
+  }
+
+  @Post('create')
+  @UseGuards(AuthGuard('temp-jwt'))
+  //임시토큰 지워주는 작업 필요
+  //정상토큰 발급해줘야함
+  createUser(@Body('nickname') nickname: string, @Req() req: Request) {
+    const user: any = req.user;
+    return this.authService.createUser(nickname, user.username);
   }
 }
