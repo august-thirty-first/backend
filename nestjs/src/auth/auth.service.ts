@@ -5,6 +5,12 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtPayload } from 'src/passports/jwt.strategy';
 import { JwtService } from '@nestjs/jwt';
+import { TempJwtPayload } from 'src/passports/tempJwt.strategy';
+
+export interface signInToken {
+  token: string;
+  redirectUrl: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -16,11 +22,23 @@ export class AuthService {
     private userRepository: UserRepository,
   ) {}
 
-  async sign(intra_name: string): Promise<string> {
-    const user: User = await this.userRepository.findOneBy({ intra_name });
-    if (!user) throw new UnauthorizedException();
-    const payload: JwtPayload = { id: user.id, nickname: user.nickname };
-    const accessToken: string = await this.jwtService.sign(payload);
-    return accessToken;
+  async sign(intraName: string): Promise<signInToken> {
+    const result: signInToken = {
+      token: '',
+      redirectUrl: '',
+    };
+    const user: User = await this.userRepository.findOneBy({
+      intra_name: intraName,
+    });
+    if (!user) {
+      const payload: TempJwtPayload = { username: intraName };
+      result.token = this.tempJwtService.sign(payload);
+      result.redirectUrl = `http://10.19.233.2:4000/signup?nickname=${intraName}`;
+    } else {
+      const payload: JwtPayload = { id: user.id, nickname: user.nickname };
+      result.token = this.jwtService.sign(payload);
+      result.redirectUrl = `http://10.19.233.2:4000/`;
+    }
+    return result;
   }
 }
