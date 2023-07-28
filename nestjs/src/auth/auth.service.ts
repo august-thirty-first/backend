@@ -2,15 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/User.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { JwtPayload } from 'src/passports/jwt.strategy';
+import JwtPayload from 'src/passports/interface/jwtPayload.interface';
 import { JwtService } from '@nestjs/jwt';
-import { TempJwtPayload } from 'src/passports/tempJwt.strategy';
+import TempJwtPayload from 'src/passports/interface/tempJwtPayload.interface';
 import { CreateUserDto } from './dto/userCreate.dto';
-
-export interface signInToken {
-  token: string;
-  redirectUrl: string;
-}
+import signInToken from './interfaces/signInToken.interface';
 
 @Injectable()
 export class AuthService {

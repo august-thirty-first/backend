@@ -2,10 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { Strategy } from 'passport-jwt';
 import { Request } from 'express';
-
-export interface TempJwtPayload {
-  username: string;
-}
+import TempJwtPayload from './interface/tempJwtPayload.interface';
 
 @Injectable()
 export class TempJwtStrategy extends PassportStrategy(Strategy, 'temp-jwt') {
@@ -26,11 +23,6 @@ export class TempJwtStrategy extends PassportStrategy(Strategy, 'temp-jwt') {
   }
 
   async validate(payload: TempJwtPayload): Promise<TempJwtPayload> {
-    const { username } = payload;
-    // const user: Auth = await this.authRepository.findOneBy({id});
-    // if (!user) {
-    //   throw new UnauthorizedException('승인되지 않은...');
-    // }
     return payload;
   }
 }

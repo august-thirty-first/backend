@@ -11,10 +11,10 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { signInToken } from './auth.service';
 import { CreateUserDto } from './dto/userCreate.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedFile } from '@nestjs/common';
+import signInToken from './interfaces/signInToken.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -51,7 +51,7 @@ export class AuthController {
     if (avata_path?.path) createUserDto.avata_path = avata_path.path;
     res.clearCookie('access_token');
     const token: string = await this.authService.createUser(createUserDto);
-    res.cookie('access_token', token);
+    res.cookie('access_token', token).redirect('http://10.19.233.2:4000/');
   }
 
   @Get('logout')
