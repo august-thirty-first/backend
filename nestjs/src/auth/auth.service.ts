@@ -7,6 +7,7 @@ import { JwtPayload } from 'src/passports/jwt.strategy';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtPayload } from 'src/passports/tempJwt.strategy';
 import { UserDto } from './dto/user.dto';
+import { Request, Response } from 'express';
 
 export interface signInToken {
   token: string;
@@ -51,5 +52,12 @@ export class AuthService {
 
   async createUser(nickname: string, intra_name: string) {
     this.userRepository.createUser(nickname, intra_name);
+  }
+
+  logoutUser(res: Response): void {
+    res
+      .clearCookie('access_token')
+      .status(302)
+      .redirect('http://10.19.233.2:4000/login');
   }
 }

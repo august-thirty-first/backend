@@ -43,4 +43,10 @@ export class AuthController {
     const user: any = req.user;
     return this.authService.createUser(nickname, user.username);
   }
+
+  @Get('logout')
+  @UseGuards(AuthGuard('jwt'))
+  logoutUser(@Res() res: Response) {
+    return this.authService.logoutUser(res);
+  }
 }
