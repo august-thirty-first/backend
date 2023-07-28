@@ -6,14 +6,15 @@ import {
   Req,
   Res,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { JwtService } from '@nestjs/jwt';
-import { Inject } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtPayload } from 'src/passports/jwt.strategy';
 import { signInToken } from './auth.service';
+import { CreateUserDto } from './dto/userCreate.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedFile } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
@@ -36,12 +37,21 @@ export class AuthController {
   }
 
   @Post('create')
+  @UseInterceptors(FileInterceptor('avata_path'))
   @UseGuards(AuthGuard('temp-jwt'))
-  //임시토큰 지워주는 작업 필요
-  //정상토큰 발급해줘야함
-  createUser(@Body('nickname') nickname: string, @Req() req: Request) {
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFile()
+    avata_path: Express.Multer.File,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const user: any = req.user;
-    return this.authService.createUser(nickname, user.username);
+    createUserDto.intra_name = user.username;
+    if (avata_path?.path) createUserDto.avata_path = avata_path.path;
+    res.clearCookie('access_token');
+    const token: string = await this.authService.createUser(createUserDto);
+    res.cookie('access_token', token);
   }
 
   @Get('logout')

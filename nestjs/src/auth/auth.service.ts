@@ -1,13 +1,11 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/User.entity';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtPayload } from 'src/passports/jwt.strategy';
 import { JwtService } from '@nestjs/jwt';
 import { TempJwtPayload } from 'src/passports/tempJwt.strategy';
-import { UserDto } from './dto/user.dto';
-import { Request, Response } from 'express';
+import { CreateUserDto } from './dto/userCreate.dto';
 
 export interface signInToken {
   token: string;
@@ -50,7 +48,12 @@ export class AuthService {
     return { status: true };
   }
 
-  async createUser(nickname: string, intra_name: string) {
-    this.userRepository.createUser(nickname, intra_name);
+  async createUser(createUserDto: CreateUserDto): Promise<string> {
+    const date = new Date();
+    createUserDto.created_at = date;
+    createUserDto.updated_at = date;
+    const user: User = await this.userRepository.createUser(createUserDto);
+    const payload: JwtPayload = { id: user.id, nickname: user.nickname };
+    return this.jwtService.sign(payload);
   }
 }

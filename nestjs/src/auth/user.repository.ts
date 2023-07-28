@@ -2,12 +2,11 @@ import { Repository } from 'typeorm';
 import { User } from './entities/User.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { UserDto } from './dto/user.dto';
-import { Request } from 'express';
 import {
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { CreateUserDto } from './dto/userCreate.dto';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -22,14 +21,8 @@ export class UserRepository extends Repository<User> {
     );
   }
 
-  async createUser(nickname: string, intra_name: string): Promise<User> {
-    const user = this.create({
-      nickname,
-      intra_name,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
-
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const user = this.create(createUserDto);
     try {
       await this.save(user);
       console.log('save 성공');

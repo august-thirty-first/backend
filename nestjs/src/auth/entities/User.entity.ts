@@ -24,9 +24,9 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   nickname: string;
 
-  @Column({ nullable: true })
+  @Column()
   created_at: Date;
 
-  @Column({ nullable: true })
+  @Column()
   updated_at: Date;
 }

@@ -6,9 +6,15 @@ import { TempJwtModule } from 'src/temp-jwt/temp-jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/User.entity';
 import { UserRepository } from './user.repository';
+import { MulterModules } from 'src/multer/multer.module';
 
 @Module({
-  imports: [PassportsModule, TempJwtModule, TypeOrmModule.forFeature([User])],
+  imports: [
+    PassportsModule,
+    TempJwtModule,
+    TypeOrmModule.forFeature([User]),
+    MulterModules,
+  ],
   controllers: [AuthController],
   providers: [AuthService, UserRepository],
 })
