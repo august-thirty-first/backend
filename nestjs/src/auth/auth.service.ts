@@ -53,11 +53,4 @@ export class AuthService {
   async createUser(nickname: string, intra_name: string) {
     this.userRepository.createUser(nickname, intra_name);
   }
-
-  logoutUser(res: Response): void {
-    res
-      .clearCookie('access_token')
-      .status(302)
-      .redirect('http://10.19.233.2:4000/login');
-  }
 }

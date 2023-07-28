@@ -47,6 +47,9 @@ export class AuthController {
   @Get('logout')
   @UseGuards(AuthGuard('jwt'))
   logoutUser(@Res() res: Response) {
-    return this.authService.logoutUser(res);
+    res
+      .clearCookie('access_token')
+      .status(302)
+      .redirect('http://10.19.233.2:4000/login');
   }
 }
