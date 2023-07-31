@@ -1,10 +1,20 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
-import { JwtService } from '@nestjs/jwt';
-import { Inject } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { JwtPayload } from 'src/passports/jwt.strategy';
+import { CreateUserDto } from './dto/userCreate.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadedFile } from '@nestjs/common';
+import signInToken from './interfaces/signInToken.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -12,19 +22,44 @@ export class AuthController {
 
   @Get('oauth')
   @UseGuards(AuthGuard('42'))
-  async oauth(@Req() req: Request) {
+  async oauth(@Req() req: Request, @Res() res: Response) {
     const user: any = req.user;
-    let accessToken;
-    // try{
-    //   accessToken = await this.authService.sign(user.nickname)
-    // } catch {
-    //   //회원가입 url로 리다이렉션 임시토큰을 쿠키로 넘겨
-    // } else {
-    //메인페이지로 리다이렉션 정상토큰을 쿠키로 넘겨
-    // }
-    // console.log(req.user);
-    // console.log(this.tempJwtService.sign({ id: 'test' }));
-    //   req.cookies("access_token", )
-    //   req.redirect("http://localhost:4000/")
+    const result: signInToken = await this.authService.sign(user.nickname);
+    res
+      .cookie('access_token', result.token)
+      .status(302)
+      .redirect(result.redirectUrl);
+  }
+
+  @Post('nickname')
+  checkDuplicatedNickname(@Body('nickname') nickname: string) {
+    return this.authService.checkDuplicatedNickname(nickname);
+  }
+
+  @Post('create')
+  @UseInterceptors(FileInterceptor('avata_path'))
+  @UseGuards(AuthGuard('temp-jwt'))
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+    @UploadedFile()
+    avata_path: Express.Multer.File,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const user: any = req.user;
+    createUserDto.intra_name = user.intraName;
+    if (avata_path?.path) createUserDto.avata_path = avata_path.path;
+    res.clearCookie('access_token');
+    const token: string = await this.authService.createUser(createUserDto);
+    res.cookie('access_token', token).redirect('http://localhost:4000/');
+  }
+
+  @Get('logout')
+  @UseGuards(AuthGuard('jwt'))
+  logoutUser(@Res() res: Response) {
+    res
+      .clearCookie('access_token')
+      .status(302)
+      .redirect('http://localhost:4000/login');
   }
 }

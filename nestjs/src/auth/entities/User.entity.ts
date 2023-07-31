@@ -12,21 +12,21 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true })
   intra_name: string;
 
   @Column({ nullable: true })
   avata_path: string;
 
-  @Column()
+  @Column({ nullable: true })
   otp_key: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true })
   nickname: string;
 
   @Column()
   created_at: Date;
 
-  @Column({ nullable: true })
+  @Column()
   updated_at: Date;
 }
