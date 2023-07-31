@@ -4,7 +4,7 @@ import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: ['http://10.19.233.2:3000', 'http://10.19.233.2:4000'],
+      origin: ['http://localhost:3000', 'http://localhost:4000'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     },

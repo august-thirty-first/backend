@@ -1,3 +1,3 @@
 export default interface TempJwtPayload {
-  username: string;
+  intraName: string;
 }

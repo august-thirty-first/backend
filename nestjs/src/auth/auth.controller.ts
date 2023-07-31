@@ -47,11 +47,11 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const user: any = req.user;
-    createUserDto.intra_name = user.username;
+    createUserDto.intra_name = user.intraName;
     if (avata_path?.path) createUserDto.avata_path = avata_path.path;
     res.clearCookie('access_token');
     const token: string = await this.authService.createUser(createUserDto);
-    res.cookie('access_token', token).redirect('http://10.19.233.2:4000/');
+    res.cookie('access_token', token).redirect('http://localhost:4000/');
   }
 
   @Get('logout')
@@ -60,6 +60,6 @@ export class AuthController {
     res
       .clearCookie('access_token')
       .status(302)
-      .redirect('http://10.19.233.2:4000/login');
+      .redirect('http://localhost:4000/login');
   }
 }

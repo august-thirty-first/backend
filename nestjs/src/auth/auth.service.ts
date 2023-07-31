@@ -27,13 +27,13 @@ export class AuthService {
       intra_name: intraName,
     });
     if (!user) {
-      const payload: TempJwtPayload = { username: intraName };
+      const payload: TempJwtPayload = { intraName: intraName };
       result.token = this.tempJwtService.sign(payload);
-      result.redirectUrl = `http://10.19.233.2:4000/signup?nickname=${intraName}`;
+      result.redirectUrl = `http://localhost:4000/signup?intraName=${intraName}`;
     } else {
       const payload: JwtPayload = { id: user.id, nickname: user.nickname };
       result.token = this.jwtService.sign(payload);
-      result.redirectUrl = `http://10.19.233.2:4000/`;
+      result.redirectUrl = `http://localhost:4000/`;
     }
     return result;
   }
