@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpStatus,
   Get,
   Post,
   Req,
@@ -27,7 +28,7 @@ export class AuthController {
     }&redirect_uri=${encodeURIComponent(
       process.env.FORTYTWO_REDIRECT_URI,
     )}&response_type=code&`;
-    res.status(302).redirect(oauthUrl);
+    res.status(HttpStatus.FOUND).redirect(oauthUrl);
   }
 
   @Get('oauth')
