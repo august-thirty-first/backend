@@ -10,8 +10,10 @@ jobs:
           token: ${{ secrets.TOKEN }}
           submodule: true
       - name: run ls
-        run: ls -al
-      # - name: Install modules
-      #   run: npm ci
-      # - name: Run tests
-      #   run: npm run test
+        run: ls -al env
+      - name: change src dir
+        run: cd nestjs
+      - name: Install modules
+        run: npm ci
+      - name: Run tests
+        run: npm run test
