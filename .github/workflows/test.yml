@@ -14,6 +14,8 @@ jobs:
       - name: change src dir
         run: cd nestjs
       - name: Install modules
+        run: npm install
+      - name: Install modules ci
         run: npm ci
       - name: Run tests
         run: npm run test
