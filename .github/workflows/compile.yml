@@ -12,4 +12,4 @@ jobs:
       - name: check compile
         working-directory: ./nestjs
         run: 
-          npx tsc && npm run lint
+          npm install && npx tsc && npm run lint
