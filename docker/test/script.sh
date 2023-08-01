@@ -5,5 +5,5 @@ set -x
 
 mkdir -p images
 
-npm install
-exec npm run test:watch
+npm ci
+exec npm run test
