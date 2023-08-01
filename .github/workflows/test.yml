@@ -3,18 +3,11 @@ on: [pull_request, push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./nestjs
     steps:
       - name: check out
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.TOKEN }}
           submodules: true
-      - name: Install modules
-        run: npm install
-      - name: Install modules ci
-        run: npm ci
-      - name: Run tests
-        run: npm run test
+      - name: run test
+        run: make test
