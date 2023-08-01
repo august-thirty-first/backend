@@ -16,7 +16,7 @@ clean :
 fclean :
 	make clean
 	docker compose -f docker/docker-compose.yml down -v
-	docker image rm -f nestjs:alpine postgresql:alpine
+	docker image rm -f nestjs:alpine postgres:alpine
 
 # Test 
 test :
@@ -28,5 +28,6 @@ tclean :
 tfclean :
 	make tclean
 	docker compose -f docker/docker-compose-test.yml down -v
+	docker image rm -f nestjs-test:alpine
 
 .PHONY : all build clean fclean test tclean tfclean

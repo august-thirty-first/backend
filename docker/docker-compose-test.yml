@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  test:
+    container_name: nestJs-test
+    image: nestjs-test:alpine
+    build:
+      context: ./test
+      dockerfile: Dockerfile
+    env_file:
+      - ../env/.env
+    volumes:
+      - ../nestjs:/home
+    networks:
+      - gaepo
+
+networks:
+  gaepo:
+    driver: bridge
