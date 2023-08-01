@@ -1,0 +1,17 @@
+name: Tests
+on: [pull_request, push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.TOKEN }}
+          submodule: true
+      - name: run ls
+        run: ls -al
+      # - name: Install modules
+      #   run: npm ci
+      # - name: Run tests
+      #   run: npm run test
