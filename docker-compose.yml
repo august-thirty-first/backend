@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
@@ -30,10 +30,11 @@ services:
     restart: always
     env_file:
       - ./env/.env
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
     networks:
       - gaepo
 
 networks:
-    gaepo:
-        driver: bridge
-
+  gaepo:
+    driver: bridge
