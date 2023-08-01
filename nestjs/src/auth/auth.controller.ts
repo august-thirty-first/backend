@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpStatus,
   Get,
   Post,
   Req,
@@ -19,6 +20,16 @@ import signInToken from './interfaces/signInToken.interface';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('login')
+  login(@Res() res: Response) {
+    const oauthUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${
+      process.env.FORTYTWO_APP_ID
+    }&redirect_uri=${encodeURIComponent(
+      process.env.FORTYTWO_REDIRECT_URI,
+    )}&response_type=code&`;
+    res.status(HttpStatus.FOUND).redirect(oauthUrl);
+  }
 
   @Get('oauth')
   @UseGuards(AuthGuard('42'))
