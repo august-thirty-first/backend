@@ -3,6 +3,7 @@ import {
   Controller,
   HttpStatus,
   Get,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -38,11 +39,12 @@ export class AuthController {
     const result: signInToken = await this.authService.sign(user.nickname);
     res
       .cookie('access_token', result.token)
-      .status(302)
+      .status(HttpStatus.FOUND)
       .redirect(result.redirectUrl);
   }
 
   @Post('nickname')
+  @UseGuards(AuthGuard('temp-jwt'))
   checkDuplicatedNickname(@Body('nickname') nickname: string) {
     return this.authService.checkDuplicatedNickname(nickname);
   }
@@ -60,17 +62,13 @@ export class AuthController {
     const user: any = req.user;
     createUserDto.intra_name = user.intraName;
     if (avata_path?.path) createUserDto.avata_path = avata_path.path;
-    res.clearCookie('access_token');
     const token: string = await this.authService.createUser(createUserDto);
-    res.cookie('access_token', token).redirect('http://localhost:4000/');
+    res.status(HttpStatus.OK).cookie('access_token', token).send();
   }
 
   @Get('logout')
   @UseGuards(AuthGuard('jwt'))
   logoutUser(@Res() res: Response) {
-    res
-      .clearCookie('access_token')
-      .status(302)
-      .redirect('http://localhost:4000/login');
+    res.clearCookie('access_token').status(HttpStatus.FOUND).send();
   }
 }
