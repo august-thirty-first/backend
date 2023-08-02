@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import TempJwtPayload from 'src/passports/interface/tempJwtPayload.interface';
 import { CreateUserDto } from './dto/userCreate.dto';
 import signInToken from './interfaces/signInToken.interface';
-import { NormalJwt, TempJwt } from './interfaces/jwt.type';
+import { NormalJwt, TempJwt } from 'src/jwt/interface/jwt.type';
 
 @Injectable()
 export class AuthService {

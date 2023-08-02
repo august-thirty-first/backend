@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from '@nestjs/jwt';
-import { TempJwt } from 'src/auth/interfaces/jwt.type';
+import { TempJwt } from './interface/jwt.type';
 
 @Module({
   imports: [
