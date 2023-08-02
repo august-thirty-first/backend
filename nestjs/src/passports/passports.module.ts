@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { FortyTwoStrategy } from './fortytwo.strategy';
 import { TempJwtStrategy } from './tempJwt.strategy';
+import { NormalJwt } from 'src/auth/interfaces/jwt.type';
 
 @Module({
   imports: [
@@ -13,7 +14,15 @@ import { TempJwtStrategy } from './tempJwt.strategy';
     }),
     PassportModule.register({}),
   ],
-  providers: [JwtStrategy, FortyTwoStrategy, TempJwtStrategy],
-  exports: [PassportModule, JwtModule],
+  providers: [
+    JwtStrategy,
+    FortyTwoStrategy,
+    TempJwtStrategy,
+    {
+      provide: NormalJwt,
+      useExisting: JwtService,
+    },
+  ],
+  exports: [PassportModule, NormalJwt],
 })
 export class PassportsModule {}
