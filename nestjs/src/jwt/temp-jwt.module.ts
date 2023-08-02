@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from '@nestjs/jwt';
+import { TempJwt } from './interface/jwt.type';
 
 @Module({
   imports: [
@@ -11,10 +12,10 @@ import { JwtService } from '@nestjs/jwt';
   ],
   providers: [
     {
-      provide: 'TempJwt',
+      provide: TempJwt,
       useExisting: JwtService,
     },
   ],
-  exports: ['TempJwt'],
+  exports: [TempJwt],
 })
 export class TempJwtModule {}
