@@ -20,7 +20,6 @@ import signInToken from './interfaces/signInToken.interface';
 import { UnauthorizedExceptionFilter } from 'src/filter/unauthorized-exception.filter';
 import { OauthExceptionFilter } from 'src/filter/oauth-exception.filter';
 import unauthorizedException from 'src/filter/interface/unauthorized.interface';
-import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 
 @Controller('auth')
 export class AuthController {
