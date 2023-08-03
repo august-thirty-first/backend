@@ -1,8 +1,11 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   Post,
   Req,
   Res,
@@ -20,6 +23,7 @@ import signInToken from './interfaces/signInToken.interface';
 import { UnauthorizedExceptionFilter } from 'src/filter/unauthorized-exception.filter';
 import { OauthExceptionFilter } from 'src/filter/oauth-exception.filter';
 import unauthorizedException from 'src/filter/interface/unauthorized.interface';
+import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -48,9 +52,14 @@ export class AuthController {
   }
 
   @Post('nickname')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('temp-jwt'))
-  checkDuplicatedNickname(@Body('nickname') nickname: string) {
-    return this.authService.checkDuplicatedNickname(nickname);
+  @UseFilters(new UnauthorizedExceptionFilter())
+  async checkDuplicatedNickname(
+    @Body('nickname') nickname: string,
+  ): Promise<checkDuplicatedNicknameResponse | unauthorizedException> {
+    const data = this.authService.checkDuplicatedNickname(nickname);
+    return data;
   }
 
   @Post('create')
@@ -63,7 +72,12 @@ export class AuthController {
     avata_path: Express.Multer.File,
     @Req() req: Request,
     @Res() res: Response,
-  ) {
+  ): Promise<
+    | void
+    | unauthorizedException
+    | ConflictException
+    | InternalServerErrorException
+  > {
     const user: any = req.user;
     createUserDto.intra_name = user.intraName;
     if (avata_path?.path) createUserDto.avata_path = avata_path.path;
