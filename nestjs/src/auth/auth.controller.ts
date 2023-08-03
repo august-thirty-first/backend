@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,13 +17,17 @@ import { CreateUserDto } from './dto/userCreate.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadedFile } from '@nestjs/common';
 import signInToken from './interfaces/signInToken.interface';
+import { UnauthorizedExceptionFilter } from 'src/filter/unauthorized-exception.filter';
+import { OauthExceptionFilter } from 'src/filter/oauth-exception.filter';
+import unauthorizedException from 'src/filter/interface/unauthorized.interface';
+import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('login')
-  login(@Res() res: Response) {
+  login(@Res() res: Response): void {
     const oauthUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${
       process.env.FORTYTWO_APP_ID
     }&redirect_uri=${encodeURIComponent(
@@ -33,7 +38,8 @@ export class AuthController {
 
   @Get('oauth')
   @UseGuards(AuthGuard('42'))
-  async oauth(@Req() req: Request, @Res() res: Response) {
+  @UseFilters(new OauthExceptionFilter())
+  async oauth(@Req() req: Request, @Res() res: Response): Promise<void> {
     const user: any = req.user;
     const result: signInToken = await this.authService.sign(user.nickname);
     res
@@ -51,6 +57,7 @@ export class AuthController {
   @Post('create')
   @UseInterceptors(FileInterceptor('avata_path'))
   @UseGuards(AuthGuard('temp-jwt'))
+  @UseFilters(new UnauthorizedExceptionFilter())
   async createUser(
     @Body() createUserDto: CreateUserDto,
     @UploadedFile()
@@ -67,7 +74,8 @@ export class AuthController {
 
   @Get('logout')
   @UseGuards(AuthGuard('jwt'))
-  logoutUser(@Res() res: Response) {
-    res.clearCookie('access_token').status(HttpStatus.FOUND).send();
+  @UseFilters(new UnauthorizedExceptionFilter())
+  logoutUser(@Res() res: Response): void | unauthorizedException {
+    res.clearCookie('access_token').status(HttpStatus.OK).send();
   }
 }
