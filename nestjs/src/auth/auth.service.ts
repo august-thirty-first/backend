@@ -8,6 +8,7 @@ import TempJwtPayload from 'src/passports/interface/tempJwtPayload.interface';
 import { CreateUserDto } from './dto/userCreate.dto';
 import signInToken from './interfaces/signInToken.interface';
 import { NormalJwt, TempJwt } from 'src/jwt/interface/jwt.type';
+import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 
 @Injectable()
 export class AuthService {
@@ -40,10 +41,14 @@ export class AuthService {
     return result;
   }
 
-  async checkDuplicatedNickname(nickname: string): Promise<any> {
+  async checkDuplicatedNickname(
+    nickname: string,
+  ): Promise<checkDuplicatedNicknameResponse> {
+    const result: checkDuplicatedNicknameResponse = { status: false };
     const user = await this.userRepository.findOneBy({ nickname });
-    if (!user) return { status: false };
-    return { status: true };
+    if (!user) result.status = false;
+    else result.status = true;
+    return result;
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<string> {
