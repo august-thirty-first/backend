@@ -24,6 +24,7 @@ import { UnauthorizedExceptionFilter } from 'src/filter/unauthorized-exception.f
 import { OauthExceptionFilter } from 'src/filter/oauth-exception.filter';
 import unauthorizedException from 'src/filter/interface/unauthorized.interface';
 import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
+import { CheckNicknameDto } from './dto/checkNickname.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -56,9 +57,11 @@ export class AuthController {
   @UseGuards(AuthGuard('temp-jwt'))
   @UseFilters(new UnauthorizedExceptionFilter())
   async checkDuplicatedNickname(
-    @Body('nickname') nickname: string,
+    @Body() checkNicknameDto: CheckNicknameDto,
   ): Promise<checkDuplicatedNicknameResponse | unauthorizedException> {
-    const data = this.authService.checkDuplicatedNickname(nickname);
+    const data = this.authService.checkDuplicatedNickname(
+      checkNicknameDto.nickname,
+    );
     return data;
   }
 
