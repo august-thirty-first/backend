@@ -25,6 +25,7 @@ export class HomeGateway
     @Inject(NormalJwt)
     private jwtService: JwtService,
   ) {}
+
   @WebSocketServer() server: Server;
 
   afterInit(client: Socket) {
@@ -36,7 +37,8 @@ export class HomeGateway
     const jwt = this.jwtService.decode(
       parse(client.handshake.headers.cookie).access_token,
     );
-    client['nickname'] = jwt.nickname;
+
+    client['nickname'] = jwt['nickname'];
     console.log(`home socket: ${client.id} connected`);
   }
 
@@ -46,7 +48,10 @@ export class HomeGateway
 
   @SubscribeMessage('message')
   handleMessage(client: any, payload: any): string {
-    client.broadcast.emit('message', `${client.nickname}: ${payload}`);
+    console.log(payload);
+    client
+      .to(payload.room)
+      .emit('message', `${client.nickname}: ${payload.value}`);
     // this.server.emit('message', payload);
     return payload;
   }
@@ -55,14 +60,6 @@ export class HomeGateway
   handleEnterRoom(client: any, roomName: string) {
     client.join(roomName);
 
-    const publicRooms = [];
-    const { sids, rooms } = this.server.sockets.adapter;
-    rooms.forEach((_, key) => {
-      if (sids.get(key) == undefined) {
-        publicRooms.push(key);
-      }
-    });
-
-    this.server.emit('roomChange', publicRooms);
+    client.emit('roomChange', roomName);
   }
 }
