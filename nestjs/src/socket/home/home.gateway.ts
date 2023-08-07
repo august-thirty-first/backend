@@ -24,6 +24,7 @@ export class HomeGateway
   }
 
   handleConnection(client: Socket) {
+    client.emit('connection', '서버에 접속하였습니다');
     console.log(`home socket: ${client.id} connected`);
   }
 
@@ -33,6 +34,8 @@ export class HomeGateway
 
   @SubscribeMessage('message')
   handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+    // client.emit('message', 'emit 보냄');
+    this.server.emit('message', payload);
+    return payload;
   }
 }
