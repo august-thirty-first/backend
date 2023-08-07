@@ -8,8 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import * as cookieParser from 'cookie-parser';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
 
@@ -50,5 +49,20 @@ export class HomeGateway
     client.broadcast.emit('message', `${client.nickname}: ${payload}`);
     // this.server.emit('message', payload);
     return payload;
+  }
+
+  @SubscribeMessage('enterRoom')
+  handleEnterRoom(client: any, roomName: string) {
+    client.join(roomName);
+
+    const publicRooms = [];
+    const { sids, rooms } = this.server.sockets.adapter;
+    rooms.forEach((_, key) => {
+      if (sids.get(key) == undefined) {
+        publicRooms.push(key);
+      }
+    });
+
+    this.server.emit('roomChange', publicRooms);
   }
 }
