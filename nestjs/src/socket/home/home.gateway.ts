@@ -50,16 +50,23 @@ export class HomeGateway
   handleMessage(client: any, payload: any): string {
     console.log(payload);
     client
-      .to(payload.room)
-      .emit('message', `${client.nickname}: ${payload.value}`);
-    // this.server.emit('message', payload);
+      .to(payload.roomName)
+      .emit('message', `${client.nickname}: ${payload.inputMessage}`);
     return payload;
   }
 
   @SubscribeMessage('enterRoom')
   handleEnterRoom(client: any, roomName: string) {
-    client.join(roomName);
+    const currentRooms = client.rooms;
 
+    for (const room of currentRooms) {
+      if (room !== client.id) {
+        client.leave(room);
+        console.log(`leave Room: ${room}`);
+      }
+    }
+    client.join(roomName);
+    console.log(`join Room: ${roomName}`);
     client.emit('roomChange', roomName);
   }
 }
