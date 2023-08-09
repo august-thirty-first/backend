@@ -23,6 +23,8 @@ export class GameGateway
   constructor(@Inject(NormalJwt) private readonly jwtService: JwtService) {}
   @WebSocketServer() server: Server;
 
+  private ladderQueue: Socket[] = [];
+
   afterInit(server: Server) {
     console.log(`game socket: ${server} init`);
   }
@@ -33,10 +35,15 @@ export class GameGateway
 
   handleDisconnect(client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
+    this.ladderQueue.pop();
   }
 
   @SubscribeMessage('joinQueue')
-  handleMessage(client: any, payload: any): void {
+  handleMessage(client: Socket): void {
     console.log('join queue');
+    this.ladderQueue.push(client);
+    this.ladderQueue.forEach(socket => {
+      console.log(socket.id);
+    });
   }
 }
