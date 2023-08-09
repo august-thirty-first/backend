@@ -1,3 +1,5 @@
+import { Inject } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -7,6 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { NormalJwt } from 'src/jwt/interface/jwt.type';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -17,10 +20,11 @@ import { Server, Socket } from 'socket.io';
 export class GameGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor(@Inject(NormalJwt) private readonly jwtService: JwtService) {}
   @WebSocketServer() server: Server;
 
-  afterInit(client: Socket) {
-    console.log('game gateway init');
+  afterInit(server: Server) {
+    console.log(`game socket: ${server} init`);
   }
 
   handleConnection(client: Socket) {
@@ -31,8 +35,8 @@ export class GameGateway
     console.log(`game socket: ${client.id} disconnected`);
   }
 
-  @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+  @SubscribeMessage('joinQueue')
+  handleMessage(client: any, payload: any): void {
+    console.log('join queue');
   }
 }
