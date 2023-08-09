@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/User.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/userCreate.dto';
 import signInToken from './interfaces/signInToken.interface';
 import { NormalJwt, TempJwt } from 'src/jwt/interface/jwt.type';
 import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
+import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,10 @@ export class AuthService {
       const payload: TempJwtPayload = { intraName: intraName };
       result.token = this.tempJwtService.sign(payload);
       result.redirectUrl = `http://localhost:4000/signup?intraName=${intraName}`;
+    } else if (user.otp_key) {
+      const payload: TempJwtPayload = { intraName: intraName };
+      result.token = this.tempJwtService.sign(payload);
+      result.redirectUrl = `http://localhost:4000/otp`;
     } else {
       const payload: JwtPayload = { id: user.id, nickname: user.nickname };
       result.token = this.jwtService.sign(payload);
@@ -58,5 +63,20 @@ export class AuthService {
     const user: User = await this.userRepository.createUser(createUserDto);
     const payload: JwtPayload = { id: user.id, nickname: user.nickname };
     return this.jwtService.sign(payload);
+  }
+
+  async verifyOTP(intraName: string, token: string): Promise<string> {
+    const user: User = await this.userRepository.findOneBy({
+      intra_name: intraName,
+    });
+    const verify: boolean = speakeasy.totp.verify({
+      secret: user.otp_key,
+      encoding: 'base32',
+      token: token,
+    });
+    if (!verify) throw new UnauthorizedException('Token 값을 확인해주세요.');
+    const payload: JwtPayload = { id: user.id, nickname: user.nickname };
+    const new_token = this.jwtService.sign(payload);
+    return new_token;
   }
 }

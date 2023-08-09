@@ -25,6 +25,7 @@ import { OauthExceptionFilter } from 'src/filter/oauth-exception.filter';
 import unauthorizedException from 'src/filter/interface/unauthorized.interface';
 import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 import { CheckNicknameDto } from './dto/checkNickname.dto';
+import { OtpLoginDto } from './dto/otpLogin.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -50,6 +51,22 @@ export class AuthController {
       .cookie('access_token', result.token)
       .status(HttpStatus.FOUND)
       .redirect(result.redirectUrl);
+  }
+
+  @Post('otp')
+  @UseGuards(AuthGuard('temp-jwt'))
+  async otpLogin(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() otpLoginDto: OtpLoginDto,
+  ): Promise<void> {
+    const user: any = req.user;
+
+    const new_token: string = await this.authService.verifyOTP(
+      user.intraName,
+      otpLoginDto.token,
+    );
+    res.cookie('access_token', new_token).status(HttpStatus.OK).send();
   }
 
   @Post('nickname')
