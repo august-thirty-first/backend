@@ -1,9 +1,11 @@
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -24,9 +26,9 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   nickname: string;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
-  @Column()
+  @UpdateDateColumn()
   updated_at: Date;
 }
