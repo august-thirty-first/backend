@@ -15,6 +15,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateChatDto } from './dto/chatCreate.dto';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
+import { ChatParticipant } from './entities/chatParticipant.entity';
+import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
+import { koreanDate } from 'src/time/korean.data';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -26,7 +29,7 @@ export class ChatController {
   }
 
   @Post()
-  createChat(@Body() createChatDto: CreateChatDto): Promise<void> {
+  createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
     return this.chatService.createChat(createChatDto);
   }
 
@@ -43,11 +46,51 @@ export class ChatController {
     return this.chatService.updateChat(id, createChatDto);
   }
 
+  @Get('participant/:user_id')
+  getMyChatRoom(
+    @Param('user_id', ParseIntPipe) user_id,
+  ): Promise<ChatParticipant[]> {
+    return this.chatService.getMyChatRoom(user_id);
+  }
+
   @Post('participant')
   joinChat(
     @Body() chatParticipantCreateDto: ChatParticipantCreateDto,
     @Req() req,
   ) {
     return this.chatService.joinChat(chatParticipantCreateDto, req.user.id);
+  }
+
+  @Patch('participant/status/:user_id/:chat_room_id')
+  switchStatus(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Body() status: ChatParticipantStatus,
+  ) {
+    return this.chatService.updateStatus(user_id, chat_room_id, status);
+  }
+
+  @Patch('participant/ban/:user_id/:chat_room_id')
+  switchBan(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+  ) {
+    return this.chatService.updateBan(user_id, chat_room_id);
+  }
+
+  @Patch('participant/notban/:user_id/:chat_room_id')
+  switchNotBan(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+  ) {
+    return this.chatService.updateNotBan(user_id, chat_room_id);
+  }
+
+  @Delete('/:user_id/:chat_room_id')
+  deleteCharParticipant(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+  ): Promise<void> {
+    return this.chatService.deleteChatParticipant(user_id, chat_room_id);
   }
 }

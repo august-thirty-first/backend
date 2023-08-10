@@ -17,7 +17,7 @@ export class ChatRepository extends Repository<Chat> {
     );
   }
 
-  async createChat(createChatDto: CreateChatDto): Promise<void> {
+  async createChat(createChatDto: CreateChatDto): Promise<Chat> {
     const { room_name, status, password } = createChatDto;
     let chat;
     if (status === ChatStatus.PROTECTED) {
@@ -27,9 +27,8 @@ export class ChatRepository extends Repository<Chat> {
     } else {
       chat = this.create({ room_name, password: null, status });
     }
-
     try {
-      await this.save(chat);
+      return this.save(chat);
     } catch (error) {
       console.log(error);
     }

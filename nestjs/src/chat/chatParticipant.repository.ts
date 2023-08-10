@@ -32,4 +32,8 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     }
     return participant;
   }
+
+  async joinAlreadInChat(participant: ChatParticipant) {
+    return this.save(participant);
+  }
 }
