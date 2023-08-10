@@ -8,6 +8,7 @@ import { ChatController } from './chat.controller';
 import { ChatRepository } from './chat.respository';
 import { ChatParticipantRepository } from './chatParticipant.repository';
 import { PassportsModule } from 'src/passports/passports.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
