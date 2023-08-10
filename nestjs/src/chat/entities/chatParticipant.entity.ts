@@ -1,6 +1,7 @@
 import { User } from 'src/auth/entities/User.entity';
 import {
   BaseEntity,
+  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -31,4 +32,17 @@ export class ChatParticipant extends BaseEntity {
 
   @Column({ nullable: false })
   status_time: Date;
+
+  private originalStatus: ChatParticipantStatus;
+  @BeforeUpdate()
+  rememberOriginalStatus() {
+    this.originalStatus = this.status;
+  }
+
+  @BeforeUpdate()
+  updateStatusTime() {
+    if (this.status !== this.originalStatus) {
+      this.status_time = new Date();
+    }
+  }
 }
