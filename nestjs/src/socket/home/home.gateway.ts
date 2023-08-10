@@ -56,7 +56,7 @@ export class HomeGateway
   }
 
   @SubscribeMessage('enterRoom')
-  handleEnterRoom(client: any, roomName: string) {
+  handleEnterRoom(client: any, roomId: number) {
     const currentRooms = client.rooms;
 
     for (const room of currentRooms) {
@@ -65,8 +65,8 @@ export class HomeGateway
         console.log(`leave Room: ${room}`);
       }
     }
-    client.join(roomName);
-    console.log(`join Room: ${roomName}`);
-    client.emit('roomChange', roomName);
+    client.join(roomId);
+    console.log(`join Room: ${roomId}`);
+    client.emit('roomChange', roomId);
   }
 }
