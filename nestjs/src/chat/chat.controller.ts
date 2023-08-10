@@ -17,7 +17,6 @@ import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
-import { koreanDate } from 'src/time/korean.data';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
