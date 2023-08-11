@@ -4,27 +4,23 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { ChatStatus } from '../enum/chat.status.enum';
 
 @Entity()
-@Unique(['id'])
-export class User extends BaseEntity {
+export class Chat extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  intra_name: string;
+  @Column({ nullable: false })
+  room_name: string;
+
+  @Column({ type: 'enum', enum: ChatStatus, nullable: false })
+  status: ChatStatus;
 
   @Column({ nullable: true })
-  avata_path: string;
-
-  @Column({ nullable: true })
-  otp_key: string;
-
-  @Column({ unique: true })
-  nickname: string;
+  password: string;
 
   @CreateDateColumn()
   created_at: Date;

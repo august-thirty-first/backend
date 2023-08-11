@@ -1,12 +1,18 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import JwtPayload from './interface/jwtPayload.interface';
+import { UserRepository } from 'src/auth/user.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entities/User.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
+  ) {
     super({
       jwtFromRequest: JwtStrategy.extractJWTFromCookie,
       ignoreExpiration: false,
@@ -24,10 +30,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<JwtPayload> {
     const { id, nickname } = payload;
-    // const user: Auth = await this.authRepository.findOneBy({id});
-    // if (!user) {
-    //   throw new UnauthorizedException('승인되지 않은...');
-    // }
+    const user: User = await this.userRepository.findOneBy({ id });
+    if (!user) throw new UnauthorizedException();
     return payload;
   }
 }

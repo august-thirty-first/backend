@@ -7,6 +7,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { HomeModule } from './socket/home/home.module';
 import { GameModule } from './socket/game/game.module';
+import { ProfileModule } from './profile/profile.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -15,6 +19,15 @@ import { GameModule } from './socket/game/game.module';
     TypeOrmModule.forRoot(typeORMConfig),
     HomeModule,
     GameModule,
+    ProfileModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'images'),
+      serveRoot: '/images/',
+      serveStaticOptions: {
+        index: false,
+      },
+    }),
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
