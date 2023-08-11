@@ -46,7 +46,7 @@ export class GameGateway
     console.log('join queue');
     this.ladderQueue.push(client);
     console.log(`matching queue pushed : ${this.ladderQueue.length}`);
-    if (this.ladderQueue.length === 2) {
+    if (this.ladderQueue.length >= 2) {
       const frontSocket = this.ladderQueue[0];
       const backSocket = this.ladderQueue[1];
       if (frontSocket.id === backSocket.id) {
