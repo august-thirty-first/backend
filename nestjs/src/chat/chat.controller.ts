@@ -13,10 +13,10 @@ import {
 import { ChatService } from './chat.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateChatDto } from './dto/chatCreate.dto';
-import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
+import { ChatJoinDto } from './dto/chatJoin.dto';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -56,11 +56,8 @@ export class ChatController {
   }
 
   @Post('participant')
-  joinChat(
-    @Body() chatParticipantCreateDto: ChatParticipantCreateDto,
-    @Req() req,
-  ) {
-    return this.chatService.joinChat(chatParticipantCreateDto, req.user.id);
+  joinChat(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
+    return this.chatService.joinChat(chatJoinDto, req.user.id);
   }
 
   @Patch('participant/authority/:user_id/:chat_room_id')
