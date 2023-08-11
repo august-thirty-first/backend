@@ -28,8 +28,11 @@ export class ChatController {
   }
 
   @Post()
-  createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
-    return this.chatService.createChat(createChatDto);
+  createChat(
+    @Body() createChatDto: CreateChatDto,
+    @Req() req,
+  ): Promise<(Chat | ChatParticipant)[]> {
+    return this.chatService.createChat(createChatDto, req.user.id);
   }
 
   @Delete('/:id')

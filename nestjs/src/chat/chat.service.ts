@@ -19,8 +19,22 @@ export class ChatService {
     private chatParticipantRepository: ChatParticipantRepository,
   ) {}
 
-  createChat(createChatDto: CreateChatDto): Promise<Chat> {
-    return this.chatRepository.createChat(createChatDto);
+  async createChat(
+    createChatDto: CreateChatDto,
+    user_id: number,
+  ): Promise<(Chat | ChatParticipant)[]> {
+    const chat = await this.chatRepository.createChat(createChatDto);
+    const chat_room_id = chat.id;
+    const chatParticipantCreateDto = {
+      chat_room_id,
+      authority: ChatParticipantAuthority.BOSS,
+    };
+    const chatParticipant = await this.chatParticipantRepository.joinChat(
+      chatParticipantCreateDto,
+      user_id,
+    );
+    const result = [chat, chatParticipant];
+    return result;
   }
 
   async getAllChat(): Promise<Chat[]> {
@@ -63,6 +77,16 @@ export class ChatService {
       .innerJoin('cp.chat', 'c')
       .where('cp.user_id = :id', { id: user_id })
       .getMany();
+  }
+
+  async joinChatAsBoss(
+    chatParticipantCreateDto: ChatParticipantCreateDto,
+    user_id: number,
+  ) {
+    return this.chatParticipantRepository.joinChat(
+      chatParticipantCreateDto,
+      user_id,
+    );
   }
 
   async joinChat(
