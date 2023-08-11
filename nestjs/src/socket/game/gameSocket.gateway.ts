@@ -17,7 +17,7 @@ import { NormalJwt } from 'src/jwt/interface/jwt.type';
     origin: ['http://localhost:4000'],
   },
 })
-export class GameGateway
+export class GameSocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(@Inject(NormalJwt) private readonly jwtService: JwtService) {}
