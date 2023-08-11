@@ -50,7 +50,7 @@ export class HomeGateway
   handleMessage(client: any, payload: any): string {
     console.log(payload);
     client
-      .to(payload.roomName)
+      .to(payload.roomId)
       .emit('message', `${client.nickname}: ${payload.inputMessage}`);
     return payload;
   }

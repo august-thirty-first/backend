@@ -1,10 +1,10 @@
-import { ChatParticipantStatus } from '../enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from '../enum/chatParticipant.authority.enum';
 
 export class ChatParticipantDto {
   id: number;
   chat_room_id: number;
   user_id: number;
-  status: ChatParticipantStatus;
+  authority: ChatParticipantAuthority;
   ban: Date;
-  status_time: Date;
+  authority_time: Date;
 }

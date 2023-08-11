@@ -16,7 +16,7 @@ import { CreateChatDto } from './dto/chatCreate.dto';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
-import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -28,8 +28,11 @@ export class ChatController {
   }
 
   @Post()
-  createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
-    return this.chatService.createChat(createChatDto);
+  createChat(
+    @Body() createChatDto: CreateChatDto,
+    @Req() req,
+  ): Promise<(Chat | ChatParticipant)[]> {
+    return this.chatService.createChat(createChatDto, req.user.id);
   }
 
   @Delete('/:id')
@@ -60,29 +63,37 @@ export class ChatController {
     return this.chatService.joinChat(chatParticipantCreateDto, req.user.id);
   }
 
-  @Patch('participant/status/:user_id/:chat_room_id')
-  switchStatus(
+  @Patch('participant/authority/:user_id/:chat_room_id')
+  switchAuthority(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
-    @Body() status: ChatParticipantStatus,
+    @Body() authority: ChatParticipantAuthority,
+    @Req() req,
   ) {
-    return this.chatService.updateStatus(user_id, chat_room_id, status);
+    return this.chatService.updateAuthority(
+      user_id,
+      chat_room_id,
+      authority,
+      req.user.id,
+    );
   }
 
   @Patch('participant/ban/:user_id/:chat_room_id')
   switchBan(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateBan(user_id, chat_room_id);
+    return this.chatService.updateBan(user_id, chat_room_id, req.user.id);
   }
 
   @Patch('participant/notban/:user_id/:chat_room_id')
   switchNotBan(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateNotBan(user_id, chat_room_id);
+    return this.chatService.updateNotBan(user_id, chat_room_id, req.user.id);
   }
 
   @Delete('/:user_id/:chat_room_id')
