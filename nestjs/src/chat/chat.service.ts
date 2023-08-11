@@ -13,6 +13,7 @@ import { ChatStatus } from './enum/chat.status.enum';
 import * as bcrypt from 'bcryptjs';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
+import { ChatJoinDto } from './dto/chatJoin.dto';
 
 @Injectable()
 export class ChatService {
@@ -83,35 +84,72 @@ export class ChatService {
       .getMany();
   }
 
+  async joinAlreadyExistChat(
+    participant: ChatParticipant,
+    user_id: number,
+  ): Promise<ChatParticipant> {
+    if (participant.ban) {
+      //ban이 되어있으면 exception을 날림
+      throw new NotFoundException(
+        `user_id ${user_id} was banned ${participant.ban}`,
+      );
+    } else {
+      //ban이 설정되었다가 풀렸을때는 생성하지 않고 update만 해줌
+      participant.authority = ChatParticipantAuthority.NORMAL;
+      return this.chatParticipantRepository.joinAlreadInChat(participant);
+    }
+  }
+
+  async joinNotExistChat(
+    chatJoinDto: ChatJoinDto,
+    user_id: number,
+  ): Promise<ChatParticipant> {
+    const chatRoom = await this.chatRepository.findOneBy({
+      id: chatJoinDto.chat_room_id,
+    });
+    if (chatRoom.status === ChatStatus.PUBLIC) {
+      const chatParticipantCreateDto = {
+        chat_room_id: chatJoinDto.chat_room_id,
+        authority: ChatParticipantAuthority.NORMAL,
+      };
+      return this.chatParticipantRepository.joinChat(
+        chatParticipantCreateDto,
+        user_id,
+      );
+    } else if (chatRoom.status === ChatStatus.PROTECTED) {
+      if (!(await bcrypt.compare(chatJoinDto.password, chatRoom.password))) {
+        throw new UnauthorizedException('password does not match');
+      } else {
+        const chatParticipantCreateDto = {
+          chat_room_id: chatJoinDto.chat_room_id,
+          authority: ChatParticipantAuthority.NORMAL,
+        };
+        return this.chatParticipantRepository.joinChat(
+          chatParticipantCreateDto,
+          user_id,
+        );
+      }
+    } else {
+      //추후에 private room에 대한 로직 들어갈 예정
+    }
+  }
+
   async joinChat(
-    chatParticipantCreateDto: ChatParticipantCreateDto,
+    chatJoinDto: ChatJoinDto,
     user_id: number,
   ): Promise<ChatParticipant> {
     const participant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
       .where('cp.chat_room_id = :id', {
-        id: chatParticipantCreateDto.chat_room_id,
+        id: chatJoinDto.chat_room_id,
       })
       .andWhere('cp.user_id = :id', { id: user_id })
       .getOne();
     if (participant) {
-      if (participant.ban) {
-        //ban이 되어있으면 exception을 날림
-        throw new NotFoundException(
-          `user_id ${user_id} was banned ${participant.ban}`,
-        );
-      } else {
-        //ban이 설정되었다가 풀렸을때는 생성하지 않고 update만 해줌
-        participant.authority = ChatParticipantAuthority.NORMAL;
-        return this.chatParticipantRepository.joinAlreadInChat(participant);
-      }
+      return this.joinAlreadyExistChat(participant, user_id);
     }
     //최초로 join을 하는 경우
-    chatParticipantCreateDto.authority = ChatParticipantAuthority.NORMAL;
-    return this.chatParticipantRepository.joinChat(
-      chatParticipantCreateDto,
-      user_id,
-    );
+    return this.joinNotExistChat(chatJoinDto, user_id);
   }
 
   async checkAdminOrBoss(user_id: number, chat_room_id: number): Promise<void> {
