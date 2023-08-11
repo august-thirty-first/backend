@@ -108,11 +108,12 @@ export class ChatService {
         );
       } else {
         //ban이 설정되었다가 풀렸을때는 생성하지 않고 update만 해줌
-        participant.authority = chatParticipantCreateDto.authority;
+        participant.authority = ChatParticipantAuthority.NORMAL;
         return this.chatParticipantRepository.joinAlreadInChat(participant);
       }
     }
     //최초로 join을 하는 경우
+    chatParticipantCreateDto.authority = ChatParticipantAuthority.NORMAL;
     return this.chatParticipantRepository.joinChat(
       chatParticipantCreateDto,
       user_id,

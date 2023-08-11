@@ -1,6 +1,7 @@
 import { User } from 'src/auth/entities/User.entity';
 import {
   BaseEntity,
+  BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
@@ -33,6 +34,10 @@ export class ChatParticipant extends BaseEntity {
   @Column({ nullable: false })
   authority_time: Date;
 
+  @BeforeInsert()
+  setInitialAuthorityTime() {
+    this.authority_time = new Date();
+  }
   private originalAuthority: ChatParticipantAuthority;
   @BeforeUpdate()
   rememberOriginalStatus() {
