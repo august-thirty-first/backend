@@ -8,7 +8,7 @@ import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { ChatStatus } from './enum/chat.status.enum';
 import * as bcrypt from 'bcryptjs';
 import { ChatParticipant } from './entities/chatParticipant.entity';
-import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
 
 @Injectable()
 export class ChatService {
@@ -84,7 +84,7 @@ export class ChatService {
         );
       } else {
         //ban이 설정되었다가 풀렸을때는 생성하지 않고 update만 해줌
-        participant.status = chatParticipantCreateDto.status;
+        participant.authority = chatParticipantCreateDto.authority;
         return this.chatParticipantRepository.joinAlreadInChat(participant);
       }
     }
@@ -95,10 +95,10 @@ export class ChatService {
     );
   }
 
-  async updateStatus(
+  async updateAuthority(
     user_id: number,
     chat_room_id: number,
-    status: ChatParticipantStatus,
+    authority: ChatParticipantAuthority,
   ) {
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
@@ -110,7 +110,7 @@ export class ChatService {
         `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
       );
     }
-    chatParticipant.status = status;
+    chatParticipant.authority = authority;
     return this.chatParticipantRepository.save(chatParticipant);
   }
 

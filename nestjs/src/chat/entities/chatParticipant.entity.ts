@@ -8,7 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ChatParticipantStatus } from '../enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from '../enum/chatParticipant.authority.enum';
 import { Chat } from './chat.entity';
 
 @Entity()
@@ -24,25 +24,25 @@ export class ChatParticipant extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'enum', enum: ChatParticipantStatus, nullable: false })
-  status: ChatParticipantStatus;
+  @Column({ type: 'enum', enum: ChatParticipantAuthority, nullable: false })
+  authority: ChatParticipantAuthority;
 
   @Column({ nullable: true })
   ban: Date;
 
   @Column({ nullable: false })
-  status_time: Date;
+  authority_time: Date;
 
-  private originalStatus: ChatParticipantStatus;
+  private originalAuthority: ChatParticipantAuthority;
   @BeforeUpdate()
   rememberOriginalStatus() {
-    this.originalStatus = this.status;
+    this.originalAuthority = this.authority;
   }
 
   @BeforeUpdate()
   updateStatusTime() {
-    if (this.status !== this.originalStatus) {
-      this.status_time = new Date();
+    if (this.authority !== this.originalAuthority) {
+      this.authority_time = new Date();
     }
   }
 }

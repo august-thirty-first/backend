@@ -16,7 +16,7 @@ import { CreateChatDto } from './dto/chatCreate.dto';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
-import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -60,13 +60,13 @@ export class ChatController {
     return this.chatService.joinChat(chatParticipantCreateDto, req.user.id);
   }
 
-  @Patch('participant/status/:user_id/:chat_room_id')
-  switchStatus(
+  @Patch('participant/authority/:user_id/:chat_room_id')
+  switchAuthority(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
-    @Body() status: ChatParticipantStatus,
+    @Body() authority: ChatParticipantAuthority,
   ) {
-    return this.chatService.updateStatus(user_id, chat_room_id, status);
+    return this.chatService.updateAuthority(user_id, chat_room_id, authority);
   }
 
   @Patch('participant/ban/:user_id/:chat_room_id')

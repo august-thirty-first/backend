@@ -1,15 +1,15 @@
 import { PickType } from '@nestjs/swagger';
 import { ChatParticipantDto } from './chatParticipant.dto';
 import { IsNotEmpty } from 'class-validator';
-import { ChatParticipantStatus } from '../enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from '../enum/chatParticipant.authority.enum';
 
 export class ChatParticipantCreateDto extends PickType(ChatParticipantDto, [
   'chat_room_id',
-  'status',
+  'authority',
 ]) {
   @IsNotEmpty()
   chat_room_id: number;
 
   @IsNotEmpty()
-  status: ChatParticipantStatus;
+  authority: ChatParticipantAuthority;
 }

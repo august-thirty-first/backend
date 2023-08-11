@@ -19,11 +19,11 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     chatParticipantCreateDto: ChatParticipantCreateDto,
     user_id: number,
   ) {
-    const { chat_room_id, status } = chatParticipantCreateDto;
+    const { chat_room_id, authority } = chatParticipantCreateDto;
     const participant = this.create({
       chat: { id: chat_room_id },
       user: { id: user_id },
-      status,
+      authority,
     });
     try {
       await this.save(participant);
