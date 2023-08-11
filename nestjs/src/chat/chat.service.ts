@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRepository } from './chat.respository';
 import { ChatParticipantRepository } from './chatParticipant.repository';
@@ -110,11 +114,26 @@ export class ChatService {
     );
   }
 
+  async checkAdminOrBoss(user_id: number, chat_room_id: number): Promise<void> {
+    const requestParticipant = await this.chatParticipantRepository
+      .createQueryBuilder('cp')
+      .where('user_id = :user_id', { user_id })
+      .andWhere('chat_room_id = :chat_room_id', { chat_room_id })
+      .getOne();
+    if (requestParticipant.authority === ChatParticipantAuthority.NORMAL) {
+      throw new UnauthorizedException(
+        `user_id ${user_id} is not boss or admin`,
+      );
+    }
+  }
+
   async updateAuthority(
     user_id: number,
     chat_room_id: number,
     authority: ChatParticipantAuthority,
+    request_user_id: number,
   ) {
+    this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
       .where('user_id = :user_id', { user_id })
@@ -129,7 +148,12 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateBan(user_id: number, chat_room_id: number) {
+  async updateBan(
+    user_id: number,
+    chat_room_id: number,
+    request_user_id: number,
+  ) {
+    this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
       .where('user_id = :user_id', { user_id })
@@ -147,7 +171,12 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateNotBan(user_id: number, chat_room_id: number) {
+  async updateNotBan(
+    user_id: number,
+    chat_room_id: number,
+    request_user_id: number,
+  ) {
+    this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
       .where('user_id = :user_id', { user_id })

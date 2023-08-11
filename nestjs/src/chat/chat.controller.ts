@@ -68,24 +68,32 @@ export class ChatController {
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
     @Body() authority: ChatParticipantAuthority,
+    @Req() req,
   ) {
-    return this.chatService.updateAuthority(user_id, chat_room_id, authority);
+    return this.chatService.updateAuthority(
+      user_id,
+      chat_room_id,
+      authority,
+      req.user.id,
+    );
   }
 
   @Patch('participant/ban/:user_id/:chat_room_id')
   switchBan(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateBan(user_id, chat_room_id);
+    return this.chatService.updateBan(user_id, chat_room_id, req.user.id);
   }
 
   @Patch('participant/notban/:user_id/:chat_room_id')
   switchNotBan(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateNotBan(user_id, chat_room_id);
+    return this.chatService.updateNotBan(user_id, chat_room_id, req.user.id);
   }
 
   @Delete('/:user_id/:chat_room_id')
