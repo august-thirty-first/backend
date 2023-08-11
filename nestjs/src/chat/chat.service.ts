@@ -79,16 +79,6 @@ export class ChatService {
       .getMany();
   }
 
-  async joinChatAsBoss(
-    chatParticipantCreateDto: ChatParticipantCreateDto,
-    user_id: number,
-  ) {
-    return this.chatParticipantRepository.joinChat(
-      chatParticipantCreateDto,
-      user_id,
-    );
-  }
-
   async joinChat(
     chatParticipantCreateDto: ChatParticipantCreateDto,
     user_id: number,
