@@ -1,5 +1,5 @@
 export default class Position {
-  constructor(public x: number, public y: number) {}
+  constructor(private x: number, private y: number) {}
 
   initialize = (x: number, y: number) => {
     this.x = x;
