@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,7 +9,6 @@ import { ChatRepository } from './chat.respository';
 import { ChatParticipantRepository } from './chatParticipant.repository';
 import { CreateChatDto } from './dto/chatCreate.dto';
 import { Chat } from './entities/chat.entity';
-import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { ChatStatus } from './enum/chat.status.enum';
 import * as bcrypt from 'bcryptjs';
 import { ChatParticipant } from './entities/chatParticipant.entity';
@@ -134,10 +134,21 @@ export class ChatService {
     }
   }
 
+  async checkChatExist(id: number) {
+    if (
+      !(await this.chatParticipantRepository.findOneBy({
+        id,
+      }))
+    ) {
+      throw new BadRequestException(`Chat room id ${id} does not exist`);
+    }
+  }
+
   async joinChat(
     chatJoinDto: ChatJoinDto,
     user_id: number,
   ): Promise<ChatParticipant> {
+    this.checkChatExist(chatJoinDto.chat_room_id);
     const participant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
       .where('cp.chat_room_id = :id', {
@@ -171,6 +182,7 @@ export class ChatService {
     authority: ChatParticipantAuthority,
     request_user_id: number,
   ) {
+    this.checkChatExist(chat_room_id);
     this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
@@ -191,6 +203,7 @@ export class ChatService {
     chat_room_id: number,
     request_user_id: number,
   ) {
+    this.checkChatExist(chat_room_id);
     this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
@@ -214,6 +227,7 @@ export class ChatService {
     chat_room_id: number,
     request_user_id: number,
   ) {
+    this.checkChatExist(chat_room_id);
     this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant = await this.chatParticipantRepository
       .createQueryBuilder('cp')
