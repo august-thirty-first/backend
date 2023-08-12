@@ -1,3 +1,7 @@
+export const BALL_COLOR = 'white';
+
+export const BAR_COLOR = 'white';
+
 export enum BarInitPosition {
   LEFT_X = 0,
   LEFT_Y = 0,

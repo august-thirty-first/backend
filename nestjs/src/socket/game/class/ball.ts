@@ -1,4 +1,4 @@
-import { BallInitPosition } from '../enum/initPosiiton.enum';
+import { BallInitPosition } from '../enum/initStatus.enum';
 import Position from './positon';
 
 export default class Ball {

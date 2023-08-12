@@ -1,4 +1,4 @@
-import { BarInitPosition } from '../enum/initPosiiton.enum';
+import { BarInitPosition } from '../enum/initStatus.enum';
 import { PlayerSide } from '../enum/playerSide.enum';
 import Position from './positon';
 
