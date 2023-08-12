@@ -1,16 +1,17 @@
 export default class Position {
-  constructor(private x: number, private y: number) {}
+  private x: number;
+  private y: number;
 
-  initialize = (x: number, y: number) => {
+  initialize(x: number, y: number): void {
     this.x = x;
     this.y = y;
-  };
+  }
 
-  updateX = (value: number) => {
-    this.x += value;
-  };
+  updateX(dx: number): void {
+    this.x += dx;
+  }
 
-  updateY = (value: number) => {
-    this.y += value;
-  };
+  updateY(dy: number): void {
+    this.y += dy;
+  }
 }
