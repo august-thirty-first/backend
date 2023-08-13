@@ -3,7 +3,7 @@ import GamePlayer from './gamePlayer';
 import GameMap from './gameMap';
 
 export default class RenderInfo {
-  gamePlayers: Map<string, GamePlayer> = new Map();
+  gamePlayers: { [socketId: string]: GamePlayer } = {};
 
   constructor(public gameMap: GameMap, public ball: Ball) {}
 
@@ -16,13 +16,11 @@ export default class RenderInfo {
   }
 
   addGamePlayer(gameplayer: GamePlayer) {
-    this.gamePlayers.set(gameplayer.socket.id, gameplayer);
+    this.gamePlayers[gameplayer.socket.id] = gameplayer;
   }
 
   updateGamePlayer(socketId: string, dx: number, dy: number) {
-    const player: GamePlayer = this.gamePlayers.get(socketId);
-    if (player) {
-      player.updateBarPosition(dx, dy);
-    }
+    const player: GamePlayer = this.gamePlayers[socketId];
+    player.updateBarPosition(dx, dy);
   }
 }
