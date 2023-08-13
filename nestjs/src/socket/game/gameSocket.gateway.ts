@@ -10,6 +10,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
+import { GameSocketService } from './gameSocket.service';
+import User from './class/user';
+import { parse } from 'cookie';
+import { UserStatus } from './enum/userStatus.enum';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -20,17 +24,30 @@ import { NormalJwt } from 'src/jwt/interface/jwt.type';
 export class GameSocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(@Inject(NormalJwt) private readonly jwtService: JwtService) {}
+  constructor(
+    @Inject(NormalJwt) private readonly jwtService: JwtService,
+    private readonly gameSocketService: GameSocketService,
+  ) {}
   @WebSocketServer() server: Server;
 
   private ladderQueue: Socket[] = [];
+  private users: { [socketId: string]: User } = {};
 
   afterInit(server: Server) {
-    console.log(`game socket: ${server} init`);
+    console.log(`game socket server: ${server} init`);
   }
 
   handleConnection(client: Socket) {
     console.log(`game socket: ${client.id} connected`);
+    const jwtPayload = this.jwtService.decode(
+      parse(client.handshake.headers.cookie).access_token,
+    );
+
+    this.users[client.id] = new User(
+      client,
+      jwtPayload['nickname'],
+      UserStatus.ONLINE,
+    );
   }
 
   handleDisconnect(client: Socket) {
@@ -39,6 +56,7 @@ export class GameSocketGateway
       element => element.id !== client.id,
     );
     console.log(`matching queue length : ${this.ladderQueue.length}`);
+    delete this.users[client.id];
   }
 
   @SubscribeMessage('joinQueue')
