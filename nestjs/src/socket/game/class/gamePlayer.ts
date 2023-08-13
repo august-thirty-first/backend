@@ -23,7 +23,7 @@ export default class GamePlayer extends User {
     this.bar.initializePosition();
   }
 
-  updateBar(dx: number, dy: number) {
+  updateBarPosition(dx: number, dy: number) {
     this.bar.updatePosition(dx, dy);
   }
 
