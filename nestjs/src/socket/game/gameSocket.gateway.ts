@@ -1,6 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -16,7 +18,7 @@ import { parse } from 'cookie';
 import { UserStatus } from './enum/userStatus.enum';
 import Game from './class/game';
 import { GameStatus } from './enum/gameStatus.enum';
-import getRoomId from './utils/getRoomId';
+import { ReadyDto } from './dto/ready.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -42,7 +44,7 @@ export class GameSocketGateway
     console.log(`game socket server: ${server} init`);
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} connected`);
     const jwtPayload = this.jwtService.decode(
       parse(client.handshake.headers.cookie).access_token,
@@ -55,7 +57,7 @@ export class GameSocketGateway
     );
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
     this.ladderQueue = this.ladderQueue.filter(
       element => element.id !== client.id,
@@ -64,16 +66,19 @@ export class GameSocketGateway
     const disconnectedUser: User = this.users[client.id];
     disconnectedUser.updateStatus(UserStatus.OFFLINE);
     // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
-    const roomId = getRoomId(client);
-    if (this.games[roomId].status === GameStatus.PRE_GAME) {
-      //TODO : PRE_GAME 이벤트  만들기
-      this.server.to(roomId).emit('someEvent');
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    if (curGame) {
+      if (this.games[roomId].status === GameStatus.PRE_GAME) {
+        //TODO : PRE_GAME 이벤트  만들기
+        this.server.to(roomId).emit('someEvent');
+      }
     }
     delete this.users[client.id];
   }
 
   @SubscribeMessage('joinQueue')
-  handleMessage(client: Socket): void {
+  handleJoinQueue(@ConnectedSocket() client: Socket): void {
     this.ladderQueue.push(client);
     console.log('join queue');
     console.log(`matching queue pushed : ${this.ladderQueue.length}`);
@@ -101,4 +106,10 @@ export class GameSocketGateway
       this.games[frontSocket.id].addUser(rightUser);
     }
   }
+
+  // @SubscribeMessage('ready')
+  // handleReady(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
+  //   const dataObj: ReadyDto = JSON.parse(data);
+
+  // }
 }
