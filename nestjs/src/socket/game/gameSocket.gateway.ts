@@ -71,8 +71,8 @@ export class GameSocketGateway
     const curGame = this.games[roomId];
     if (curGame) {
       if (this.games[roomId].status === GameStatus.PRE_GAME) {
-        //TODO : PRE_GAME 이벤트  만들기
-        this.server.to(roomId).emit('someEvent');
+        //TODO : gameEndBeforeStart 이벤트  만들기
+        this.server.to(roomId).emit('gameEndBeforeStart');
       }
     }
     delete this.users[client.id];
@@ -113,13 +113,22 @@ export class GameSocketGateway
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
     const readyDto: ReadyDto = JSON.parse(data);
+    const leftSideUser = curGame.users[0];
+    const rightSideUser = curGame.users[1];
+    console.log(readyDto);
     let curMap: GameMap;
-
     if (this.gameSocketService.voteMap(curGame, readyDto) === true) {
       curMap = this.gameSocketService.setMap(curGame);
-      // TODO: renderInfo 객체 생성 후 game 객체에 set
-      // TODO: game 객체 상태 IN_GAME으로 변경
-      // TODO: renderInfo를 같은 방에 있는 소켓에게 이벤트로 전달
+      const curRenderInfo = this.gameSocketService.initRenderInfo(
+        curMap,
+        leftSideUser,
+        rightSideUser,
+      );
+      curGame.setRenderInfo(curRenderInfo);
+      curGame.updateStatus(GameStatus.IN_GAME);
+      this.server
+        .to(roomId)
+        .emit('gameStart', JSON.stringify(curGame.renderInfo));
     }
   }
 }
