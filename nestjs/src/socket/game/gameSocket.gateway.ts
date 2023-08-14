@@ -117,6 +117,9 @@ export class GameSocketGateway
 
     if (this.gameSocketService.voteMap(curGame, readyDto) === true) {
       curMap = this.gameSocketService.setMap(curGame);
+      // TODO: renderInfo 객체 생성 후 game 객체에 set
+      // TODO: game 객체 상태 IN_GAME으로 변경
+      // TODO: renderInfo를 같은 방에 있는 소켓에게 이벤트로 전달
     }
   }
 }
