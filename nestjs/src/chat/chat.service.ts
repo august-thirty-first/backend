@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -24,10 +25,25 @@ export class ChatService {
     private chatParticipantRepository: ChatParticipantRepository,
   ) {}
 
+  checkChatStatusAndPassword(status: ChatStatus, password: string) {
+    if (status === ChatStatus.PROTECTED) {
+      if (password === null) {
+        throw new BadRequestException('Protected room require password');
+      }
+    } else {
+      if (password !== null) {
+        throw new BadRequestException(`${status} room do not require password`);
+      }
+    }
+  }
   async createChat(
     createChatDto: CreateChatDto,
     user_id: number,
   ): Promise<(Chat | ChatParticipant)[]> {
+    this.checkChatStatusAndPassword(
+      createChatDto.status,
+      createChatDto.password,
+    );
     const chat = await this.chatRepository.createChat(createChatDto);
     const chat_room_id = chat.id;
     const chatParticipantCreateDto = {
@@ -61,6 +77,10 @@ export class ChatService {
   }
 
   async updateChat(id: number, createChatDto: CreateChatDto): Promise<Chat> {
+    this.checkChatStatusAndPassword(
+      createChatDto.status,
+      createChatDto.password,
+    );
     const chat = await this.getChatById(id);
     if (!chat) {
       throw new NotFoundException(`Can't find Chat id ${id}`);
@@ -145,6 +165,10 @@ export class ChatService {
       })
       .andWhere('cp.user_id = :id', { id: user_id })
       .getOne();
+    this.checkChatStatusAndPassword(
+      participant.chat.status,
+      chatJoinDto.password,
+    );
     if (participant) {
       return this.joinAlreadyExistChat(participant, user_id);
     }
