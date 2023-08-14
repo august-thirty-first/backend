@@ -14,6 +14,9 @@ import { GameSocketService } from './gameSocket.service';
 import User from './class/user';
 import { parse } from 'cookie';
 import { UserStatus } from './enum/userStatus.enum';
+import Game from './class/game';
+import { GameStatus } from './enum/gameStatus.enum';
+import getRoomId from './utils/getRoomId';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -28,10 +31,12 @@ export class GameSocketGateway
     @Inject(NormalJwt) private readonly jwtService: JwtService,
     private readonly gameSocketService: GameSocketService,
   ) {}
+
   @WebSocketServer() server: Server;
 
   private ladderQueue: Socket[] = [];
   private users: { [socketId: string]: User } = {};
+  private games: { [roomId: string]: Game } = {};
 
   afterInit(server: Server) {
     console.log(`game socket server: ${server} init`);
@@ -56,17 +61,28 @@ export class GameSocketGateway
       element => element.id !== client.id,
     );
     console.log(`matching queue length : ${this.ladderQueue.length}`);
+    const disconnectedUser: User = this.users[client.id];
+    disconnectedUser.updateStatus(UserStatus.OFFLINE);
+    // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
+    const roomId = getRoomId(client);
+    if (this.games[roomId].status === GameStatus.PRE_GAME) {
+      //TODO : PRE_GAME 이벤트  만들기
+      this.server.to(roomId).emit('someEvent');
+    }
     delete this.users[client.id];
   }
 
   @SubscribeMessage('joinQueue')
   handleMessage(client: Socket): void {
-    console.log('join queue');
     this.ladderQueue.push(client);
+    console.log('join queue');
     console.log(`matching queue pushed : ${this.ladderQueue.length}`);
     if (this.ladderQueue.length >= 2) {
       const frontSocket = this.ladderQueue[0];
       const backSocket = this.ladderQueue[1];
+      const leftUser = this.users[frontSocket.id];
+      const rightUser = this.users[backSocket.id];
+
       if (frontSocket.id === backSocket.id) {
         console.log(`same socket! pop() queue`);
         this.ladderQueue.pop();
@@ -77,6 +93,12 @@ export class GameSocketGateway
       backSocket.join(frontSocket.id);
       this.ladderQueue = [];
       this.server.to(frontSocket.id).emit('joinGame');
+      this.games[frontSocket.id] = new Game(
+        frontSocket.id,
+        GameStatus.PRE_GAME,
+      );
+      this.games[frontSocket.id].addUser(leftUser);
+      this.games[frontSocket.id].addUser(rightUser);
     }
   }
 }
