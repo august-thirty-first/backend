@@ -129,7 +129,6 @@ export class GameSocketGateway
       this.server
         .to(roomId)
         .emit('gameStart', JSON.stringify(curGame.renderInfo));
-      // client.to(roomId).emit('gameStart', JSON.stringify(curGame.renderInfo));
     }
   }
 }
