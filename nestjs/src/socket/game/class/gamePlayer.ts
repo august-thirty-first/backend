@@ -1,4 +1,3 @@
-import { Socket } from 'socket.io';
 import User from './user';
 import { UserStatus } from '../enum/userStatus.enum';
 import Bar from './bar';
@@ -9,13 +8,13 @@ export default class GamePlayer extends User {
   bar: Bar;
 
   constructor(
-    socket: Socket,
+    socketId: string,
     nickName: string,
     status: UserStatus,
     public score: number,
     public side: PlayerSide,
   ) {
-    super(socket, nickName, status);
+    super(socketId, nickName, status);
     this.bar = new Bar(side, BAR_COLOR);
   }
 

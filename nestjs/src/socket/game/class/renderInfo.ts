@@ -20,7 +20,7 @@ export default class RenderInfo {
   }
 
   addGamePlayer(gameplayer: GamePlayer) {
-    this.gamePlayers[gameplayer.socket.id] = gameplayer;
+    this.gamePlayers[gameplayer.socketId] = gameplayer;
   }
 
   updateGamePlayer(socketId: string, dx: number, dy: number) {

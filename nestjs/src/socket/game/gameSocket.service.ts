@@ -56,14 +56,14 @@ export class GameSocketService {
   ): RenderInfo {
     const curRenderInfo = new RenderInfo(curMap);
     const leftSidePlayer = new GamePlayer(
-      leftSideUser.socket,
+      leftSideUser.socketId,
       leftSideUser.nickName,
       leftSideUser.status,
       0,
       PlayerSide.LEFT,
     );
     const rightSidePlayer = new GamePlayer(
-      rightSideUser.socket,
+      rightSideUser.socketId,
       rightSideUser.nickName,
       rightSideUser.status,
       0,

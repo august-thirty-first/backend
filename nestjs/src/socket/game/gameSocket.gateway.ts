@@ -52,7 +52,7 @@ export class GameSocketGateway
     );
 
     this.users[client.id] = new User(
-      client,
+      client.id,
       jwtPayload['nickname'],
       UserStatus.ONLINE,
     );
@@ -129,6 +129,7 @@ export class GameSocketGateway
       this.server
         .to(roomId)
         .emit('gameStart', JSON.stringify(curGame.renderInfo));
+      // client.to(roomId).emit('gameStart', JSON.stringify(curGame.renderInfo));
     }
   }
 }
