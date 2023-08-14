@@ -1,3 +1,4 @@
+import { MapDifficulty, MapType } from 'src/game/enum/gameOption.enum';
 import { GameStatus } from '../enum/gameStatus.enum';
 import GameHistory from './gameHistory';
 import RenderInfo from './renderInfo';
@@ -7,6 +8,8 @@ export default class Game {
   renderInfo: RenderInfo | null = null;
   history: GameHistory | null = null;
   users: User[] = [];
+  voteMapType: MapType[] = [];
+  voteMapDifficulty: MapDifficulty[] = [];
 
   constructor(public id: string, public status: GameStatus) {}
 
@@ -24,5 +27,13 @@ export default class Game {
 
   updateStatus(status: GameStatus) {
     this.status = status;
+  }
+
+  addVoteMapType(mapType: MapType): void {
+    this.voteMapType.push(mapType);
+  }
+
+  addVoteMapDifficulty(mapDifficulty: MapDifficulty): void {
+    this.voteMapDifficulty.push(mapDifficulty);
   }
 }
