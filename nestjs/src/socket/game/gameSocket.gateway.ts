@@ -19,6 +19,7 @@ import { UserStatus } from './enum/userStatus.enum';
 import Game from './class/game';
 import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
+import GameMap from './class/gameMap';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -107,9 +108,15 @@ export class GameSocketGateway
     }
   }
 
-  // @SubscribeMessage('ready')
-  // handleReady(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
-  //   const dataObj: ReadyDto = JSON.parse(data);
+  @SubscribeMessage('ready')
+  handleReady(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    const readyDto: ReadyDto = JSON.parse(data);
+    let curMap: GameMap;
 
-  // }
+    if (this.gameSocketService.voteMap(curGame, readyDto) === true) {
+      curMap = this.gameSocketService.setMap(curGame);
+    }
+  }
 }
