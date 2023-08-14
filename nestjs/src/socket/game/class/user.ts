@@ -4,7 +4,7 @@ import { UserStatus } from '../enum/userStatus.enum';
 export default class User {
   constructor(
     public readonly socket: Socket,
-    public readonly nickNmae: string,
+    public readonly nickName: string,
     public status: UserStatus,
   ) {}
 
