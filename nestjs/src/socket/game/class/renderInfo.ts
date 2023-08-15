@@ -6,6 +6,8 @@ import { BALL_COLOR } from '../enum/initStatus.enum';
 export default class RenderInfo {
   gamePlayers: { [socketId: string]: GamePlayer } = {};
   ball: Ball;
+  clientWidth: number;
+  clientHeight: number;
 
   constructor(public gameMap: GameMap) {
     this.ball = new Ball(BALL_COLOR);
