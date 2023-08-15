@@ -103,6 +103,14 @@ export class ChatService {
       .getMany();
   }
 
+  async getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
+    return this.chatParticipantRepository
+      .createQueryBuilder('cp')
+      .innerJoin('cp.chat', 'c')
+      .where('c.id = :id', { id: chat_room_id })
+      .getMany();
+  }
+
   async joinAlreadyExistChat(
     participant: ChatParticipant,
     user_id: number,
@@ -245,7 +253,7 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateNotBan(
+  async updateUnBan(
     user_id: number,
     chat_room_id: number,
     request_user_id: number,

@@ -48,11 +48,16 @@ export class ChatController {
     return this.chatService.updateChat(id, createChatDto);
   }
 
-  @Get('participant/:user_id')
-  getMyChatRoom(
-    @Param('user_id', ParseIntPipe) user_id,
+  @Get('participant/')
+  getMyChatRoom(@Req() req): Promise<ChatParticipant[]> {
+    return this.chatService.getMyChatRoom(req.user.id);
+  }
+
+  @Get('participant/:chat_room_id')
+  getChatRoomByChatId(
+    @Param('chat_room_id', ParseIntPipe) chat_room_id,
   ): Promise<ChatParticipant[]> {
-    return this.chatService.getMyChatRoom(user_id);
+    return this.chatService.getChatRoomByChatId(chat_room_id);
   }
 
   @Post('participant')
@@ -84,16 +89,16 @@ export class ChatController {
     return this.chatService.updateBan(user_id, chat_room_id, req.user.id);
   }
 
-  @Patch('participant/notban/:user_id/:chat_room_id')
-  switchNotBan(
+  @Patch('participant/unban/:user_id/:chat_room_id')
+  switchUnBan(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
     @Req() req,
   ) {
-    return this.chatService.updateNotBan(user_id, chat_room_id, req.user.id);
+    return this.chatService.updateUnBan(user_id, chat_room_id, req.user.id);
   }
 
-  @Delete('/:user_id/:chat_room_id')
+  @Delete('participant/:user_id/:chat_room_id')
   deleteCharParticipant(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
