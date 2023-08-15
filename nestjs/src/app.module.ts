@@ -6,11 +6,12 @@ import { PassportsModule } from './passports/passports.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './configs/typeorm.config';
 import { HomeModule } from './socket/home/home.module';
-import { GameModule } from './socket/game/game.module';
+import { GameSocketModule } from './socket/game/gameSocket.module';
 import { ProfileModule } from './profile/profile.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ChatModule } from './chat/chat.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ChatModule } from './chat/chat.module';
     TypeOrmModule.forRoot(typeORMConfig),
     HomeModule,
     GameModule,
+    GameSocketModule,
     ProfileModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'images'),
