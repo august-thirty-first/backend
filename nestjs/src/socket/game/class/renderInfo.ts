@@ -1,11 +1,15 @@
 import Ball from './ball';
 import GamePlayer from './gamePlayer';
 import GameMap from './gameMap';
+import { BALL_COLOR } from '../enum/initStatus.enum';
 
 export default class RenderInfo {
   gamePlayers: { [socketId: string]: GamePlayer } = {};
+  ball: Ball;
 
-  constructor(public gameMap: GameMap, public ball: Ball) {}
+  constructor(public gameMap: GameMap) {
+    this.ball = new Ball(BALL_COLOR);
+  }
 
   initializeBall() {
     this.ball.initializePosition();
@@ -16,7 +20,7 @@ export default class RenderInfo {
   }
 
   addGamePlayer(gameplayer: GamePlayer) {
-    this.gamePlayers[gameplayer.socket.id] = gameplayer;
+    this.gamePlayers[gameplayer.socketId] = gameplayer;
   }
 
   updateGamePlayer(socketId: string, dx: number, dy: number) {
