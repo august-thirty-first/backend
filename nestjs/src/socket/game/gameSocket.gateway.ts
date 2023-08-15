@@ -126,9 +126,7 @@ export class GameSocketGateway
       );
       curGame.setRenderInfo(curRenderInfo);
       curGame.updateStatus(GameStatus.IN_GAME);
-      this.server
-        .to(roomId)
-        .emit('gameStart', JSON.stringify(curGame.renderInfo));
+      this.server.to(roomId).emit('gameStart');
     }
   }
 }
