@@ -13,10 +13,15 @@ import { join } from 'path';
 import { User } from 'src/auth/entities/User.entity';
 import checkDuplicatedNicknameResponse from 'src/auth/interfaces/checkDuplicatedNicknameResponse.interface';
 import { UserRepository } from 'src/auth/user.repository';
+import {
+  FriendRequesting,
+  RequestStatus,
+} from 'src/friend/entities/FriendRequesting.entity';
+import { FriendRequestingRepository } from 'src/friend/friendRequesting.repository';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import JwtPayload from 'src/passports/interface/jwtPayload.interface';
 import MyInfoDto from './dto/myInfo.dto';
-import SearchUserDto from './dto/searchUser.dto';
+import SearchUserDto, { SearchUserRequestStatus } from './dto/searchUser.dto';
 import { UpdateUserDto } from './dto/userUpdate.dto';
 
 @Injectable()
@@ -24,6 +29,8 @@ export class ProfileService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+    @InjectRepository(FriendRequestingRepository)
+    private friendRequestingRepository: FriendRequestingRepository,
     @Inject(NormalJwt)
     private jwtService: JwtService,
   ) {}
@@ -34,6 +41,33 @@ export class ProfileService {
       strategy: 'excludeAll',
     });
     return profile;
+  }
+
+  async searchByUserProfile(
+    my_id: number,
+    nickname: string,
+  ): Promise<SearchUserDto | null> {
+    const profile: User | null = await this.userRepository.findOneBy({
+      nickname,
+    });
+    if (!profile) return null;
+    const result = plainToClass(SearchUserDto, profile, {
+      strategy: 'excludeAll',
+    });
+    result.friend_status = null;
+    const prev_request: FriendRequesting | null =
+      await this.friendRequestingRepository.findPrevRequest(my_id, profile.id);
+    switch (prev_request?.status) {
+      case RequestStatus.Allow:
+        result.friend_status = SearchUserRequestStatus.Allow;
+        break;
+      case RequestStatus.Requesting:
+        if (prev_request.to_user_id.id === my_id)
+          result.friend_status = SearchUserRequestStatus.RecvRequest;
+        else result.friend_status = SearchUserRequestStatus.SendRequest;
+        break;
+    }
+    return result;
   }
 
   async searchByUserNickname(nickname: string): Promise<SearchUserDto | null> {
