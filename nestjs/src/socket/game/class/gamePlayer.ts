@@ -20,10 +20,15 @@ export default class GamePlayer extends User {
 
   initializeBar() {
     this.bar.initializePosition();
+    this.bar.initializeVelocity();
   }
 
   updateBarPosition(dx: number, dy: number) {
     this.bar.updatePosition(dx, dy);
+  }
+
+  updateBarVelocity(dx: number, dy: number) {
+    this.bar.updateVelocity(dx, dy);
   }
 
   updateScore(dv: number) {
