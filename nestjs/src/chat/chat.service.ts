@@ -26,11 +26,11 @@ export class ChatService {
 
   checkChatStatusAndPassword(status: ChatStatus, password: string) {
     if (status === ChatStatus.PROTECTED) {
-      if (password === null) {
+      if (password.trim() === '') {
         throw new BadRequestException('Protected room require password');
       }
     } else {
-      if (password !== null) {
+      if (password.trim() !== '') {
         throw new BadRequestException(`${status} room do not require password`);
       }
     }
