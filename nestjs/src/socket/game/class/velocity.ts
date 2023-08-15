@@ -1,4 +1,4 @@
-export default class Position {
+export default class velocity {
   x: number;
   y: number;
 

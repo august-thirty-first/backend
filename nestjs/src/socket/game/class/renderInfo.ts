@@ -13,18 +13,32 @@ export default class RenderInfo {
 
   initializeBall() {
     this.ball.initializePosition();
+    this.ball.initializeVelocity();
   }
 
-  updateBallPosition(dx: number, dy: number) {
-    this.ball.updatePosition(dx, dy);
+  updateBall(dx: number, dy: number, type: 'position' | 'velocity') {
+    if (type === 'position') {
+      this.ball.updatePosition(dx, dy);
+    } else {
+      this.ball.updateVelocity(dx, dy);
+    }
   }
 
   addGamePlayer(gameplayer: GamePlayer) {
     this.gamePlayers[gameplayer.socketId] = gameplayer;
   }
 
-  updateGamePlayer(socketId: string, dx: number, dy: number) {
+  updateGamePlayer(
+    socketId: string,
+    dx: number,
+    dy: number,
+    type: 'position' | 'velocity',
+  ) {
     const player: GamePlayer = this.gamePlayers[socketId];
-    player.updateBarPosition(dx, dy);
+    if (type === 'position') {
+      player.updateBarPosition(dx, dy);
+    } else {
+      player.updateBarVelocity(dx, dy);
+    }
   }
 }

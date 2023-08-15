@@ -13,3 +13,8 @@ export enum BallInitPosition {
   X = 0,
   Y = 0,
 }
+
+export enum BarInitVelocity {
+  X = 0,
+  Y = 5,
+}
