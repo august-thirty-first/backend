@@ -1,4 +1,3 @@
-import { BallInitPosition } from '../enum/initStatus.enum';
 import getRandomNumberRange from '../utils/getRandomNumberRange';
 import Position from './positon';
 import velocity from './velocity';
