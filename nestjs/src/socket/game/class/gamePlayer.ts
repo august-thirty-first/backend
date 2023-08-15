@@ -18,8 +18,8 @@ export default class GamePlayer extends User {
     this.bar = new Bar(side, BAR_COLOR);
   }
 
-  initializeBar() {
-    this.bar.initializePosition();
+  initializeBar(clientWidth: number, clientHeight: number) {
+    this.bar.initializePosition(clientWidth, clientHeight);
     this.bar.initializeVelocity();
   }
 

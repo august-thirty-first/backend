@@ -11,8 +11,8 @@ export default class RenderInfo {
     this.ball = new Ball(BALL_COLOR);
   }
 
-  initializeBall() {
-    this.ball.initializePosition();
+  initializeBall(posX: number, posY: number) {
+    this.ball.initializePosition(posX, posY);
     this.ball.initializeVelocity();
   }
 

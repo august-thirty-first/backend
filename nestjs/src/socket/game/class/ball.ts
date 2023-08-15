@@ -12,8 +12,8 @@ export default class Ball {
     this.velocity = new velocity();
   }
 
-  initializePosition(): void {
-    this.position.initialize(BallInitPosition.X, BallInitPosition.Y);
+  initializePosition(x: number, y: number): void {
+    this.position.initialize(x, y);
   }
 
   initializeVelocity(): void {

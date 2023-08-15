@@ -15,14 +15,11 @@ export default class Bar {
     this.velocity = new velocity();
   }
 
-  initializePosition(): void {
+  initializePosition(clientWidth: number, clientHeight: number): void {
     if (this.side === PlayerSide.LEFT) {
-      this.position.initialize(BarInitPosition.LEFT_X, BarInitPosition.LEFT_Y);
+      this.position.initialize(0, clientHeight / 2);
     } else {
-      this.position.initialize(
-        BarInitPosition.RIGHT_X,
-        BarInitPosition.RIGHT_Y,
-      );
+      this.position.initialize(clientWidth, clientHeight / 2);
     }
   }
 
