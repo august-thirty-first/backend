@@ -1,6 +1,6 @@
 export default class Position {
-  private x: number;
-  private y: number;
+  x: number;
+  y: number;
 
   initialize(x: number, y: number): void {
     this.x = x;
