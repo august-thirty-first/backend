@@ -98,7 +98,6 @@ export class FriendService {
         avata_path: friend.avata_path,
       };
     });
-    console.log(friends);
     return friends;
   }
 
