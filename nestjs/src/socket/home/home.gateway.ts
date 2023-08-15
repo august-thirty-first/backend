@@ -55,6 +55,15 @@ export class HomeGateway
     return payload;
   }
 
+  @SubscribeMessage('deleteRoom')
+  handleOutOfRoom(client: any, payload: any): void {
+    console.log('delete room event');
+    console.log(payload);
+    client
+      .to(payload.roomId)
+      .emit('deleteRoom', `roomId ${payload.roomId} deleted`);
+  }
+
   @SubscribeMessage('enterRoom')
   handleEnterRoom(client: any, roomId: number) {
     const currentRooms = client.rooms;
