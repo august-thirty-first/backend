@@ -1,4 +1,3 @@
-import { BallInitPosition } from '../enum/initStatus.enum';
 import getRandomNumberRange from '../utils/getRandomNumberRange';
 import Position from './positon';
 import velocity from './velocity';
@@ -12,8 +11,8 @@ export default class Ball {
     this.velocity = new velocity();
   }
 
-  initializePosition(): void {
-    this.position.initialize(BallInitPosition.X, BallInitPosition.Y);
+  initializePosition(x: number, y: number): void {
+    this.position.initialize(x, y);
   }
 
   initializeVelocity(): void {

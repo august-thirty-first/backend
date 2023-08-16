@@ -20,6 +20,7 @@ import Game from './class/game';
 import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
+import FrameSizeDto from './dto/frameSize.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -40,9 +41,44 @@ export class GameSocketGateway
   private ladderQueue: Socket[] = [];
   private users: { [socketId: string]: User } = {};
   private games: { [roomId: string]: Game } = {};
+  private setIntervalId: NodeJS.Timer;
+  private isCalledOnce = false;
+
+  private updateRenderInfo(curGame: Game) {
+    this.server
+      .to(curGame.id)
+      .emit('updateRenderInfo', JSON.stringify(curGame.renderInfo));
+  }
+
+  private updateRenderInfoInterval() {
+    this.setIntervalId = setInterval(() => {
+      if (Object.keys(this.games).length > 0) {
+        for (const roomId in this.games) {
+          if (this.games.hasOwnProperty(roomId)) {
+            const curGame = this.games[roomId];
+            if (curGame.status === GameStatus.IN_GAME) {
+              this.updateRenderInfo(curGame);
+            }
+          }
+        }
+      } else {
+        clearInterval(this.setIntervalId);
+        this.isCalledOnce = false;
+        console.log('updateGame finished');
+      }
+    }, 2000);
+  }
 
   afterInit(server: Server) {
     console.log(`game socket server: ${server} init`);
+    setInterval(() => {
+      console.log('check games length function called');
+      if (!this.isCalledOnce && Object.keys(this.games).length > 0) {
+        this.isCalledOnce = true;
+        console.log('innerCalled');
+        this.updateRenderInfoInterval();
+      }
+    }, 5000);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
@@ -56,6 +92,7 @@ export class GameSocketGateway
       jwtPayload['nickname'],
       UserStatus.ONLINE,
     );
+    console.log('User join : ', Object.keys(this.users).length);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -67,7 +104,8 @@ export class GameSocketGateway
     const disconnectedUser: User = this.users[client.id];
     disconnectedUser.updateStatus(UserStatus.OFFLINE);
     // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
-    const roomId = this.gameSocketService.getRoomId(client);
+    const roomId = this.users[client.id].roomId;
+    console.log(`disconnected socket's room: ${roomId}`);
     const curGame = this.games[roomId];
     if (curGame) {
       if (this.games[roomId].status === GameStatus.PRE_GAME) {
@@ -76,6 +114,13 @@ export class GameSocketGateway
       }
     }
     delete this.users[client.id];
+    console.log('User left : ', Object.keys(this.users).length);
+    delete this.games[roomId];
+    console.log(
+      `delte game id: ${roomId} games length: ${
+        Object.keys(this.games).length
+      }`,
+    );
   }
 
   @SubscribeMessage('joinQueue')
@@ -103,6 +148,13 @@ export class GameSocketGateway
         frontSocket.id,
         GameStatus.PRE_GAME,
       );
+      console.log(
+        `new game id: ${this.games[frontSocket.id].id} length : ${
+          Object.keys(this.games).length
+        }`,
+      );
+      leftUser.updateRoomId(frontSocket.id);
+      rightUser.updateRoomId(frontSocket.id);
       this.games[frontSocket.id].addUser(leftUser);
       this.games[frontSocket.id].addUser(rightUser);
     }
@@ -125,8 +177,30 @@ export class GameSocketGateway
         rightSideUser,
       );
       curGame.setRenderInfo(curRenderInfo);
-      curGame.updateStatus(GameStatus.IN_GAME);
+      curGame.updateStatus(GameStatus.IN_READY);
       this.server.to(roomId).emit('gameStart');
     }
+  }
+
+  @SubscribeMessage('renderReady')
+  handleRenderReady(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: string,
+  ) {
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    const curRenderInfo = curGame.renderInfo;
+    const frameSizeDto: FrameSizeDto = JSON.parse(data);
+    // TODO: frameSizeDto를 2번 받는 문제 있음
+    if (
+      curRenderInfo.clientWidth === undefined &&
+      curRenderInfo.clientHeight === undefined
+    ) {
+      this.gameSocketService.initRenderInfoPositon(curRenderInfo, frameSizeDto);
+    }
+    this.server
+      .to(roomId)
+      .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
+    curGame.updateStatus(GameStatus.IN_GAME);
   }
 }

@@ -6,14 +6,21 @@ import { BALL_COLOR } from '../enum/initStatus.enum';
 export default class RenderInfo {
   gamePlayers: { [socketId: string]: GamePlayer } = {};
   ball: Ball;
+  clientWidth: number;
+  clientHeight: number;
 
   constructor(public gameMap: GameMap) {
     this.ball = new Ball(BALL_COLOR);
   }
 
-  initializeBall() {
-    this.ball.initializePosition();
+  initializeBall(posX: number, posY: number) {
+    this.ball.initializePosition(posX, posY);
     this.ball.initializeVelocity();
+  }
+
+  initiallizeFrameSize(clientWidth: number, clientHeight: number) {
+    this.clientWidth = clientWidth;
+    this.clientHeight = clientHeight;
   }
 
   updateBall(dx: number, dy: number, type: 'position' | 'velocity') {

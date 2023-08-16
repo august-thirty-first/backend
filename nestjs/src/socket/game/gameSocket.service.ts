@@ -9,7 +9,10 @@ import User from './class/user';
 import RenderInfo from './class/renderInfo';
 import { PlayerSide } from './enum/playerSide.enum';
 import GamePlayer from './class/gamePlayer';
+import FrameSizeDto from './dto/frameSize.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class GameSocketService {
   getRoomId(socket: Socket): string {
     const rooms: Set<string> = socket.rooms;
@@ -69,11 +72,26 @@ export class GameSocketService {
       0,
       PlayerSide.RIGHT,
     );
-    leftSidePlayer.initializeBar();
-    rightSidePlayer.initializeBar();
-    curRenderInfo.initializeBall();
     curRenderInfo.addGamePlayer(leftSidePlayer);
     curRenderInfo.addGamePlayer(rightSidePlayer);
     return curRenderInfo;
+  }
+
+  initRenderInfoPositon(curRenderInfo: RenderInfo, frameSizeDto: FrameSizeDto) {
+    curRenderInfo.initiallizeFrameSize(
+      frameSizeDto.clientWidth,
+      frameSizeDto.clientHeight,
+    );
+    curRenderInfo.initializeBall(
+      frameSizeDto.clientWidth / 2,
+      frameSizeDto.clientHeight / 2,
+    );
+    for (const socketId in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[socketId];
+      gamePlayer.initializeBar(
+        curRenderInfo.clientWidth,
+        curRenderInfo.clientHeight,
+      );
+    }
   }
 }
