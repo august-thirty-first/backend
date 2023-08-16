@@ -49,14 +49,14 @@ export class ChatController {
   }
 
   @Get('participant/')
-  getMyChatRoom(@Req() req): Promise<ChatParticipant[]> {
-    return this.chatService.getMyChatRoom(req.user.id);
+  getChatRoomByUserId(@Req() req): Promise<Chat[]> {
+    return this.chatService.getChatRoomByUserId(req.user.id);
   }
 
   @Get('participant/:chat_room_id')
   getChatRoomByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
-  ): Promise<ChatParticipant[]> {
+  ): Promise<Chat[]> {
     return this.chatService.getChatRoomByChatId(chat_room_id);
   }
 

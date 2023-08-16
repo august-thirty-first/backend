@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
+import { ChatRepository } from './chat.respository';
 
 export class ChatParticipantRepository extends Repository<ChatParticipant> {
   constructor(
@@ -18,7 +19,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
   async joinChat(
     chatParticipantCreateDto: ChatParticipantCreateDto,
     user_id: number,
-  ) {
+  ): Promise<ChatParticipant> {
     const { chat_room_id, authority } = chatParticipantCreateDto;
     const participant = this.create({
       chat: { id: chat_room_id },
@@ -33,7 +34,33 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return participant;
   }
 
-  async joinAlreadInChat(participant: ChatParticipant) {
+  async joinAlreadInChat(
+    participant: ChatParticipant,
+  ): Promise<ChatParticipant> {
     return this.save(participant);
+  }
+
+  async getChatParticipant(
+    user_id: number,
+    chat_room_id,
+  ): Promise<ChatParticipant> {
+    return await this.createQueryBuilder('cp')
+      .innerJoin('cp.chat', 'c')
+      .where('cp.user_id = :user_id', { user_id })
+      .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .getOne();
+  }
+
+  getChatRoomByUserId(user_id: number): Promise<ChatParticipant[]> {
+    return this.createQueryBuilder('cp')
+      .innerJoin('cp.chat', 'c')
+      .where('cp.user_id = :id', { id: user_id })
+      .getMany();
+  }
+  getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
+    return this.createQueryBuilder('cp')
+      .innerJoin('cp.chat', 'c')
+      .where('c.id = :id', { id: chat_room_id })
+      .getMany();
   }
 }
