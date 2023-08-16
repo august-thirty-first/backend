@@ -1,4 +1,3 @@
-import { parse } from 'cookie';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -11,6 +10,8 @@ import { Server, Socket } from 'socket.io';
 import { Inject } from '@nestjs/common';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
+import { ConnectionService } from './connection.service';
+import { parse } from 'cookie';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -23,9 +24,9 @@ export class HomeGateway
 {
   constructor(
     @Inject(NormalJwt)
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly connectionService: ConnectionService,
   ) {}
-
   @WebSocketServer() server: Server;
 
   afterInit(client: Socket) {
@@ -33,49 +34,27 @@ export class HomeGateway
   }
 
   handleConnection(client: Socket) {
-    client.emit('connection', '서버에 접속하였습니다');
-    const jwt = this.jwtService.decode(
-      parse(client.handshake.headers.cookie).access_token,
-    );
-
-    client['nickname'] = jwt['nickname'];
-    console.log(`home socket: ${client.id} connected`);
+    let jwt = null;
+    if (client.handshake.headers?.cookie) {
+      jwt = this.jwtService.decode(
+        parse(client.handshake.headers.cookie).access_token,
+      );
+    }
+    if (jwt && this.connectionService.addUserConnection(jwt['id'], client)) {
+      client['user_id'] = jwt['id'];
+      client['nickname'] = jwt['nickname'];
+      console.log(`home socket: ${client.id} connected`);
+      client.emit('connection', '서버에 접속하였습니다');
+    } else client.disconnect(true);
   }
 
   handleDisconnect(client: Socket) {
+    this.connectionService.removeUserConnection(client['user_id']);
     console.log(`home socket: ${client.id} disconnected`);
   }
 
   @SubscribeMessage('message')
   handleMessage(client: any, payload: any): string {
-    console.log(payload);
-    client
-      .to(payload.roomId)
-      .emit('message', `${client.nickname}: ${payload.inputMessage}`);
-    return payload;
-  }
-
-  @SubscribeMessage('deleteRoom')
-  handleOutOfRoom(client: any, payload: any): void {
-    console.log('delete room event');
-    console.log(payload);
-    client
-      .to(payload.roomId)
-      .emit('deleteRoom', `roomId ${payload.roomId} deleted`);
-  }
-
-  @SubscribeMessage('enterRoom')
-  handleEnterRoom(client: any, roomId: number) {
-    const currentRooms = client.rooms;
-
-    for (const room of currentRooms) {
-      if (room !== client.id) {
-        client.leave(room);
-        console.log(`leave Room: ${room}`);
-      }
-    }
-    client.join(roomId);
-    console.log(`join Room: ${roomId}`);
-    client.emit('roomChange', roomId);
+    return 'Hello world!';
   }
 }
