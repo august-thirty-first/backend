@@ -64,6 +64,7 @@ export class GameSocketGateway
       } else {
         clearInterval(this.setIntervalId);
         this.isCalledOnce = false;
+        console.log('updateGame finished');
       }
     }, 2000);
   }
@@ -71,8 +72,10 @@ export class GameSocketGateway
   afterInit(server: Server) {
     console.log(`game socket server: ${server} init`);
     setInterval(() => {
+      console.log('check games length function called');
       if (!this.isCalledOnce && Object.keys(this.games).length > 0) {
         this.isCalledOnce = true;
+        console.log('innerCalled');
         this.updateRenderInfoInterval();
       }
     }, 5000);
@@ -89,6 +92,7 @@ export class GameSocketGateway
       jwtPayload['nickname'],
       UserStatus.ONLINE,
     );
+    console.log('User join : ', Object.keys(this.users).length);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -101,6 +105,7 @@ export class GameSocketGateway
     disconnectedUser.updateStatus(UserStatus.OFFLINE);
     // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
     const roomId = this.users[client.id].roomId;
+    console.log(`disconnected socket's room: ${roomId}`);
     const curGame = this.games[roomId];
     if (curGame) {
       if (this.games[roomId].status === GameStatus.PRE_GAME) {
@@ -109,6 +114,13 @@ export class GameSocketGateway
       }
     }
     delete this.users[client.id];
+    console.log('User left : ', Object.keys(this.users).length);
+    delete this.games[roomId];
+    console.log(
+      `delte game id: ${roomId} games length: ${
+        Object.keys(this.games).length
+      }`,
+    );
   }
 
   @SubscribeMessage('joinQueue')
@@ -135,6 +147,11 @@ export class GameSocketGateway
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
+      );
+      console.log(
+        `new game id: ${this.games[frontSocket.id].id} length : ${
+          Object.keys(this.games).length
+        }`,
       );
       leftUser.updateRoomId(frontSocket.id);
       rightUser.updateRoomId(frontSocket.id);
