@@ -8,6 +8,7 @@ import { User } from './entities/User.entity';
 import { UserRepository } from './user.repository';
 import { MulterModules } from 'src/multer/multer.module';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
+import { HomeModule } from 'src/socket/home/home.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { NormalJwtModule } from 'src/jwt/jwt.module';
     TempJwtModule,
     TypeOrmModule.forFeature([User]),
     MulterModules,
+    HomeModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, UserRepository],
