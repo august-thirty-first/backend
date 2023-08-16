@@ -6,9 +6,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/User.entity';
 import { UserRepository } from 'src/auth/user.repository';
+import { FriendRequestStatus } from 'src/profile/dto/searchUser.dto';
+import { ConnectionService } from 'src/socket/home/connection.service';
 import { DataSource } from 'typeorm';
 import FriendCommonDto from './dto/friendCommon.dto';
-import FriendGetResponseDto from './dto/friendGetResponse.dto';
+import FriendGetResponseDto, {
+  FriendStatus,
+} from './dto/friendGetResponse.dto';
+import FriendRequestingAlarmsDto from './dto/friendRequestingAlarms.dto';
 import {
   FriendRequesting,
   RequestStatus,
@@ -27,6 +32,7 @@ export class FriendService {
     @InjectRepository(FriendRequestingRepository)
     private friendRequestingRepository: FriendRequestingRepository,
     private dataSource: DataSource,
+    private connectionService: ConnectionService,
   ) {}
 
   async approveRequestAndInsertFriends(
@@ -75,30 +81,46 @@ export class FriendService {
     }
   }
 
-  async getFriends(userId: number): Promise<FriendGetResponseDto[]> {
-    const search_result: Friends[] = await this.friendsRepository.find({
-      relations: {
-        user_id1: true,
-        user_id2: true,
-      },
-      where: [
-        {
-          user_id1: { id: userId },
-        },
-        {
-          user_id2: { id: userId },
-        },
-      ],
+  async getFriendRequest(userId: number): Promise<FriendRequestingAlarmsDto[]> {
+    const search_result: FriendRequesting[] =
+      await this.friendRequestingRepository.getFriendRequest(userId);
+    const result: FriendRequestingAlarmsDto[] = search_result.map(row => {
+      let another_user: User;
+      let status: FriendRequestStatus;
+      if (row.from_user_id.id === userId) {
+        another_user = row.to_user_id;
+        status = FriendRequestStatus.SendRequest;
+      } else {
+        another_user = row.from_user_id;
+        status = FriendRequestStatus.RecvRequest;
+      }
+      return {
+        id: another_user.id,
+        nickname: another_user.nickname,
+        avata_path: another_user.avata_path,
+        status: status,
+      };
     });
+    return result;
+  }
+
+  async getFriends(userId: number): Promise<FriendGetResponseDto[]> {
+    const search_result: Friends[] = await this.friendsRepository.getFriend(
+      userId,
+    );
     const friends: FriendGetResponseDto[] = search_result.map(row => {
       const friend = row.user_id1.id !== userId ? row.user_id1 : row.user_id2;
+      const check_online = this.connectionService.findUserConnection(friend.id);
+      let status: FriendStatus = null;
+      if (check_online) status = FriendStatus.Online;
+      else status = FriendStatus.Offline;
       return {
         id: friend.id,
         nickname: friend.nickname,
         avata_path: friend.avata_path,
+        status: status,
       };
     });
-    console.log(friends);
     return friends;
   }
 

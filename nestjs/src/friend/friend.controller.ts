@@ -20,6 +20,7 @@ import { UnauthorizedExceptionFilter } from 'src/filter/unauthorized-exception.f
 import { RequestStatus } from './entities/FriendRequesting.entity';
 import FriendCommonRequestBodyDto from './dto/friendCommonRequestBody.dto';
 import FriendGetResponseDto from './dto/friendGetResponse.dto';
+import FriendRequestingAlarmsDto from './dto/friendRequestingAlarms.dto';
 
 @Controller('friend')
 @UseFilters(new UnauthorizedExceptionFilter())
@@ -34,6 +35,14 @@ export class FriendController {
       user.id,
     );
     return friends;
+  }
+
+  @Get('alarms')
+  async getFriendRequest(
+    @Req() req: Request,
+  ): Promise<FriendRequestingAlarmsDto[]> {
+    const user: any = req.user;
+    return this.friendService.getFriendRequest(user.id);
   }
 
   @Post('request')

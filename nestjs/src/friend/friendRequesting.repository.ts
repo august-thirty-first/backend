@@ -19,6 +19,27 @@ export class FriendRequestingRepository extends Repository<FriendRequesting> {
     );
   }
 
+  async getFriendRequest(userId: number): Promise<FriendRequesting[]> {
+    const search_result: FriendRequesting[] =
+      await this.friendRequestingRepository.find({
+        relations: {
+          from_user_id: true,
+          to_user_id: true,
+        },
+        where: [
+          {
+            from_user_id: { id: userId },
+            status: RequestStatus.Requesting,
+          },
+          {
+            to_user_id: { id: userId },
+            status: RequestStatus.Requesting,
+          },
+        ],
+      });
+    return search_result;
+  }
+
   async updateRequest(request: FriendRequesting): Promise<void> {
     try {
       this.friendRequestingRepository.save(request);
