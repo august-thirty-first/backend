@@ -151,8 +151,25 @@ export class GameSocketGateway
         rightSideUser,
       );
       curGame.setRenderInfo(curRenderInfo);
-      curGame.updateStatus(GameStatus.IN_GAME);
+      curGame.updateStatus(GameStatus.IN_READY);
       this.server.to(roomId).emit('gameStart');
     }
+  }
+
+  @SubscribeMessage('renderReady')
+  handleRenderReady(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: string,
+  ) {
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    const curRenderInfo = curGame.renderInfo;
+    const frameSizeDto: FrameSizeDto = JSON.parse(data);
+    // TODO: frameSizeDto를 2번 받는 문제 있음
+    this.gameSocketService.initRenderInfoPositon(curRenderInfo, frameSizeDto);
+    this.server
+      .to(roomId)
+      .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
+    curGame.updateStatus(GameStatus.IN_GAME);
   }
 }
