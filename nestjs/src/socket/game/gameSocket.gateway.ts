@@ -93,7 +93,7 @@ export class GameSocketGateway
     const disconnectedUser: User = this.users[client.id];
     disconnectedUser.updateStatus(UserStatus.OFFLINE);
     // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
-    const roomId = this.gameSocketService.getRoomId(client);
+    const roomId = this.users[client.id].roomId;
     const curGame = this.games[roomId];
     if (curGame) {
       if (this.games[roomId].status === GameStatus.PRE_GAME) {
@@ -129,6 +129,8 @@ export class GameSocketGateway
         frontSocket.id,
         GameStatus.PRE_GAME,
       );
+      leftUser.updateRoomId(frontSocket.id);
+      rightUser.updateRoomId(frontSocket.id);
       this.games[frontSocket.id].addUser(leftUser);
       this.games[frontSocket.id].addUser(rightUser);
     }
