@@ -20,6 +20,7 @@ import Game from './class/game';
 import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
+import FrameSizeDto from './dto/frameSize.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -40,9 +41,34 @@ export class GameSocketGateway
   private ladderQueue: Socket[] = [];
   private users: { [socketId: string]: User } = {};
   private games: { [roomId: string]: Game } = {};
+  private setIntervalId: NodeJS.Timer;
+
+  private updateRenderInfo(curGame: Game) {
+    this.server
+      .to(curGame.id)
+      .emit('updateRenderInfo', JSON.stringify(curGame.renderInfo));
+  }
+
+  private updateRenderInfoInterval() {
+    this.setIntervalId = setInterval(() => {
+      if (Object.keys(this.games).length > 0) {
+        for (const roomId in this.games) {
+          if (this.games.hasOwnProperty(roomId)) {
+            const curGame = this.games[roomId];
+            if (curGame.status === GameStatus.IN_GAME) {
+              this.updateRenderInfo(curGame);
+            }
+          }
+        }
+      } else {
+        clearInterval(this.setIntervalId);
+      }
+    }, 20);
+  }
 
   afterInit(server: Server) {
     console.log(`game socket server: ${server} init`);
+    this.updateRenderInfoInterval();
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
