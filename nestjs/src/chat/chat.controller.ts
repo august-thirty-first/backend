@@ -65,41 +65,49 @@ export class ChatController {
     return this.chatService.joinChat(chatJoinDto, req.user.id);
   }
 
-  @Patch('participant/authority/:user_id/:chat_room_id')
+  @Patch('participant/authority/:target_user_id/:chat_room_id')
   switchAuthority(
-    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
     @Body() authority: ChatParticipantAuthority,
     @Req() req,
   ) {
     return this.chatService.updateAuthority(
-      user_id,
+      target_user_id,
       chat_room_id,
       authority,
       req.user.id,
     );
   }
 
-  @Patch('participant/ban/:user_id/:chat_room_id')
+  @Patch('participant/ban/:target_user_id/:chat_room_id')
   switchBan(
-    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
     @Req() req,
   ) {
-    return this.chatService.updateBan(user_id, chat_room_id, req.user.id);
+    return this.chatService.switchBan(
+      target_user_id,
+      chat_room_id,
+      req.user.id,
+    );
   }
 
-  @Patch('participant/unban/:user_id/:chat_room_id')
+  @Patch('participant/unban/:target_user_id/:chat_room_id')
   switchUnBan(
-    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
     @Req() req,
   ) {
-    return this.chatService.updateUnBan(user_id, chat_room_id, req.user.id);
+    return this.chatService.switchUnBan(
+      target_user_id,
+      chat_room_id,
+      req.user.id,
+    );
   }
 
   @Delete('participant/:user_id/:chat_room_id')
-  deleteCharParticipant(
+  deleteChatParticipant(
     @Param('user_id', ParseIntPipe) user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
   ): Promise<void> {

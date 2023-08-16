@@ -28,9 +28,10 @@ export class ChatRepository extends Repository<Chat> {
       chat = this.create({ room_name, password: null, status });
     }
     try {
-      return this.save(chat);
+      await this.save(chat);
     } catch (error) {
       console.log(error);
     }
+    return chat;
   }
 }

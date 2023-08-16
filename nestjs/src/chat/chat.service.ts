@@ -75,14 +75,14 @@ export class ChatService {
   }
 
   async updateChat(id: number, createChatDto: CreateChatDto): Promise<Chat> {
-    this.checkChatStatusAndPassword(
-      createChatDto.status,
-      createChatDto.password,
-    );
     const chat = await this.getChatById(id);
     if (!chat) {
       throw new NotFoundException(`Can't find Chat id ${id}`);
     }
+    this.checkChatStatusAndPassword(
+      createChatDto.status,
+      createChatDto.password,
+    );
     chat.status = createChatDto.status;
     chat.room_name = createChatDto.room_name;
     if (createChatDto.status === ChatStatus.PUBLIC) {
@@ -95,28 +95,15 @@ export class ChatService {
   }
 
   async getChatRoomByUserId(user_id: number): Promise<Chat[]> {
-    const chatParticipants = await this.chatParticipantRepository.find({
-      relations: {
-        chat: true,
-      },
-      where: {
-        user: { id: user_id },
-      },
-    });
+    const chatParticipants =
+      await this.chatParticipantRepository.getChatRoomByUserId(user_id);
     const chats = chatParticipants.map(participant => participant.chat);
     return chats;
   }
 
   async getChatRoomByChatId(chat_room_id: number): Promise<Chat[]> {
-    const chatParticipants = await this.chatParticipantRepository.find({
-      relations: {
-        chat: true,
-        user: true,
-      },
-      where: {
-        chat: { id: chat_room_id },
-      },
-    });
+    const chatParticipants =
+      await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
     const chats = chatParticipants.map(participant => participant.chat);
     return chats;
   }
@@ -211,42 +198,42 @@ export class ChatService {
   }
 
   async updateAuthority(
-    user_id: number,
+    target_user_id: number,
     chat_room_id: number,
     authority: ChatParticipantAuthority,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
+    await this.checkChatExist(chat_room_id);
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipant(
-        user_id,
+        target_user_id,
         chat_room_id,
       );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     chatParticipant.authority = authority;
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateBan(
-    user_id: number,
+  async switchBan(
+    target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
+    await this.checkChatExist(chat_room_id);
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipant(
-        user_id,
+        target_user_id,
         chat_room_id,
       );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     if (!chatParticipant.ban) {
@@ -256,21 +243,21 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateUnBan(
-    user_id: number,
+  async switchUnBan(
+    target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
+    await this.checkChatExist(chat_room_id);
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipant(
-        user_id,
+        target_user_id,
         chat_room_id,
       );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     if (!chatParticipant.ban) {

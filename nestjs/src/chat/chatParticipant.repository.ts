@@ -52,15 +52,23 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
   }
 
   getChatRoomByUserId(user_id: number): Promise<ChatParticipant[]> {
-    return this.createQueryBuilder('cp')
-      .innerJoin('cp.chat', 'c')
-      .where('cp.user_id = :id', { id: user_id })
-      .getMany();
+    return this.find({
+      relations: {
+        chat: true,
+      },
+      where: {
+        user: { id: user_id },
+      },
+    });
   }
   getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
-    return this.createQueryBuilder('cp')
-      .innerJoin('cp.chat', 'c')
-      .where('c.id = :id', { id: chat_room_id })
-      .getMany();
+    return this.find({
+      relations: {
+        chat: true,
+      },
+      where: {
+        chat: { id: chat_room_id },
+      },
+    });
   }
 }
