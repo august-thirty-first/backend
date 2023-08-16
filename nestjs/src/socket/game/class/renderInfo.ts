@@ -18,6 +18,11 @@ export default class RenderInfo {
     this.ball.initializeVelocity();
   }
 
+  initiallizeFrameSize(clientWidth: number, clientHeight: number) {
+    this.clientWidth = clientWidth;
+    this.clientHeight = clientHeight;
+  }
+
   updateBall(dx: number, dy: number, type: 'position' | 'velocity') {
     if (type === 'position') {
       this.ball.updatePosition(dx, dy);
