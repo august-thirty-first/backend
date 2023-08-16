@@ -42,6 +42,7 @@ export class GameSocketGateway
   private users: { [socketId: string]: User } = {};
   private games: { [roomId: string]: Game } = {};
   private setIntervalId: NodeJS.Timer;
+  private isCalledOnce = false;
 
   private updateRenderInfo(curGame: Game) {
     this.server
@@ -62,13 +63,19 @@ export class GameSocketGateway
         }
       } else {
         clearInterval(this.setIntervalId);
+        this.isCalledOnce = false;
       }
-    }, 20);
+    }, 2000);
   }
 
   afterInit(server: Server) {
     console.log(`game socket server: ${server} init`);
-    this.updateRenderInfoInterval();
+    setInterval(() => {
+      if (!this.isCalledOnce && Object.keys(this.games).length > 0) {
+        this.isCalledOnce = true;
+        this.updateRenderInfoInterval();
+      }
+    }, 5000);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
