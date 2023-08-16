@@ -10,6 +10,7 @@ import { GameModule } from './socket/game/game.module';
 import { ProfileModule } from './profile/profile.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { join } from 'path';
         index: false,
       },
     }),
+    FriendModule,
   ],
   controllers: [AppController],
   providers: [AppService],
