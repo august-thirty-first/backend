@@ -1,6 +1,7 @@
 import { UserStatus } from '../enum/userStatus.enum';
 
 export default class User {
+  public roomId: string;
   constructor(
     public readonly socketId: string,
     public readonly nickName: string,
@@ -9,5 +10,8 @@ export default class User {
 
   updateStatus(status: UserStatus) {
     this.status = status;
+  }
+  updateRoomId(roomId: string) {
+    this.roomId = roomId;
   }
 }
