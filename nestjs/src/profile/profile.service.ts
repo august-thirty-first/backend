@@ -21,7 +21,7 @@ import { FriendRequestingRepository } from 'src/friend/friendRequesting.reposito
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import JwtPayload from 'src/passports/interface/jwtPayload.interface';
 import MyInfoDto from './dto/myInfo.dto';
-import SearchUserDto, { SearchUserRequestStatus } from './dto/searchUser.dto';
+import SearchUserDto, { FriendRequestStatus } from './dto/searchUser.dto';
 import { UpdateUserDto } from './dto/userUpdate.dto';
 
 @Injectable()
@@ -59,12 +59,12 @@ export class ProfileService {
       await this.friendRequestingRepository.findPrevRequest(my_id, profile.id);
     switch (prev_request?.status) {
       case RequestStatus.Allow:
-        result.friend_status = SearchUserRequestStatus.Allow;
+        result.friend_status = FriendRequestStatus.Allow;
         break;
       case RequestStatus.Requesting:
         if (prev_request.to_user_id.id === my_id)
-          result.friend_status = SearchUserRequestStatus.RecvRequest;
-        else result.friend_status = SearchUserRequestStatus.SendRequest;
+          result.friend_status = FriendRequestStatus.RecvRequest;
+        else result.friend_status = FriendRequestStatus.SendRequest;
         break;
     }
     return result;

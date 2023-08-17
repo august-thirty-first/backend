@@ -7,6 +7,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Inject } from '@nestjs/common';
+import { NormalJwt } from 'src/jwt/interface/jwt.type';
+import { JwtService } from '@nestjs/jwt';
+import { ConnectionService } from './connection.service';
+import { parse } from 'cookie';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -17,6 +22,11 @@ import { Server, Socket } from 'socket.io';
 export class HomeGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor(
+    @Inject(NormalJwt)
+    private readonly jwtService: JwtService,
+    private readonly connectionService: ConnectionService,
+  ) {}
   @WebSocketServer() server: Server;
 
   afterInit(client: Socket) {
@@ -24,10 +34,22 @@ export class HomeGateway
   }
 
   handleConnection(client: Socket) {
-    console.log(`home socket: ${client.id} connected`);
+    let jwt = null;
+    if (client.handshake.headers?.cookie) {
+      jwt = this.jwtService.decode(
+        parse(client.handshake.headers.cookie).access_token,
+      );
+    }
+    if (jwt && this.connectionService.addUserConnection(jwt['id'], client)) {
+      client['user_id'] = jwt['id'];
+      client['nickname'] = jwt['nickname'];
+      console.log(`home socket: ${client.id} connected`);
+      client.emit('connection', '서버에 접속하였습니다');
+    } else client.disconnect(true);
   }
 
   handleDisconnect(client: Socket) {
+    this.connectionService.removeUserConnection(client['user_id']);
     console.log(`home socket: ${client.id} disconnected`);
   }
 

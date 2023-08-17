@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/User.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +15,7 @@ import signInToken from './interfaces/signInToken.interface';
 import { NormalJwt, TempJwt } from 'src/jwt/interface/jwt.type';
 import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 import * as speakeasy from 'speakeasy';
+import { ConnectionService } from 'src/socket/home/connection.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +26,7 @@ export class AuthService {
     private tempJwtService: JwtService,
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+    private connectionService: ConnectionService,
   ) {}
 
   async sign(intraName: string): Promise<signInToken> {
@@ -30,6 +37,8 @@ export class AuthService {
     const user: User = await this.userRepository.findOneBy({
       intra_name: intraName,
     });
+    if (user && this.connectionService.findUserConnection(user.id))
+      throw new ConflictException();
     if (!user) {
       const payload: TempJwtPayload = { intraName: intraName };
       result.token = this.tempJwtService.sign(payload);

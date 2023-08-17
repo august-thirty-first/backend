@@ -9,11 +9,13 @@ import { FriendController } from './friend.controller';
 import { UserRepository } from 'src/auth/user.repository';
 import { User } from 'src/auth/entities/User.entity';
 import { PassportsModule } from 'src/passports/passports.module';
+import { HomeModule } from 'src/socket/home/home.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Friends, FriendRequesting]),
     PassportsModule,
+    HomeModule,
   ],
   controllers: [FriendController],
   providers: [
