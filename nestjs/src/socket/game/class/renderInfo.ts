@@ -19,7 +19,6 @@ export default class RenderInfo {
   }
 
   initializeBall(posX: number, posY: number) {
-    console.log(posX, posY);
     this.ball.initializePosition(posX, posY);
     this.ball.initializeVelocity();
   }
