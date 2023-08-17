@@ -48,6 +48,7 @@ export class GameSocketGateway
     const curRenderInfo = curGame.renderInfo;
     this.gameSocketService.updateBallPosition(curRenderInfo);
     this.gameSocketService.checkWallCollision(curRenderInfo);
+    this.gameSocketService.checkBarCollision(curRenderInfo);
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));

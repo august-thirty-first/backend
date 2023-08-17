@@ -11,7 +11,6 @@ import { PlayerSide } from './enum/playerSide.enum';
 import GamePlayer from './class/gamePlayer';
 import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
-import { CONFIGURABLE_MODULE_ID } from '@nestjs/common/module-utils/constants';
 
 @Injectable()
 export class GameSocketService {
@@ -111,6 +110,24 @@ export class GameSocketService {
     }
     if (curBall.position.y - curBall.radius <= 0) {
       curBall.velocity.y *= -1;
+    }
+  }
+
+  checkBarCollision(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayerBar = curRenderInfo.gamePlayers[id].bar;
+
+      const dx = Math.abs(curBall.position.x - gamePlayerBar.getCenterPosX());
+      const dy = Math.abs(curBall.position.y - gamePlayerBar.getCenterPoxY());
+
+      if (
+        dx <= gamePlayerBar.width / 2 + curBall.radius &&
+        dy <= gamePlayerBar.width / 2 + curBall.radius
+      ) {
+        curBall.velocity.x *= -1;
+      }
     }
   }
 }

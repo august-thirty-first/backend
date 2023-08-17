@@ -52,4 +52,12 @@ export default class Bar {
     this.position.updateX(dx);
     this.position.updateY(dy);
   }
+
+  getCenterPosX() {
+    return this.position.x + this.width / 2;
+  }
+
+  getCenterPoxY() {
+    return this.position.y + this.length / 2;
+  }
 }
