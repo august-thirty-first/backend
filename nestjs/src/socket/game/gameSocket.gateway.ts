@@ -66,7 +66,7 @@ export class GameSocketGateway
         this.isCalledOnce = false;
         console.log('updateGame finished');
       }
-    }, 2000);
+    }, 15);
   }
 
   afterInit(server: Server) {
@@ -191,7 +191,6 @@ export class GameSocketGateway
     const curGame = this.games[roomId];
     const curRenderInfo = curGame.renderInfo;
     const frameSizeDto: FrameSizeDto = JSON.parse(data);
-    // TODO: frameSizeDto를 2번 받는 문제 있음
     if (
       curRenderInfo.clientWidth === undefined &&
       curRenderInfo.clientHeight === undefined
@@ -202,5 +201,34 @@ export class GameSocketGateway
       .to(roomId)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
     curGame.updateStatus(GameStatus.IN_GAME);
+  }
+
+  @SubscribeMessage('keyDown')
+  handleKeyDown(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: string,
+  ) {
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    const curRenderInfo = curGame.renderInfo;
+    const curGamePlayerBar = curRenderInfo.gamePlayers[client.id].bar;
+
+    switch (data) {
+      case 'keyW':
+        if (curGamePlayerBar.position.y - curGamePlayerBar.velocity.y >= 0) {
+          curGamePlayerBar.updatePosition(0, -curGamePlayerBar.velocity.y);
+        }
+        break;
+      case 'keyS':
+        if (
+          curGamePlayerBar.position.y +
+            curGamePlayerBar.length +
+            curGamePlayerBar.velocity.y <=
+          curRenderInfo.clientHeight
+        ) {
+          curGamePlayerBar.updatePosition(0, curGamePlayerBar.velocity.y);
+        }
+        break;
+    }
   }
 }
