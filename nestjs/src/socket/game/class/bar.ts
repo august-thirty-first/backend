@@ -39,7 +39,7 @@ export default class Bar {
       this.length = BarSize.EasyLength;
     } else {
       this.width = BarSize.HardWidth;
-      this.width = BarSize.HardLength;
+      this.length = BarSize.HardLength;
     }
   }
 
