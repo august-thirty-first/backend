@@ -2,16 +2,22 @@ export const BALL_COLOR = 'white';
 
 export const BAR_COLOR = 'white';
 
-export enum BarInitPosition {
-  LEFT_X = 0,
-  LEFT_Y = 0,
-  RIGHT_X = 0,
-  RIGHT_Y = 0,
+export enum BallDefaultRadius {
+  Radius = 4,
 }
 
-export enum BallInitPosition {
-  X = 0,
-  Y = 0,
+export enum BallHardRadius {
+  Radius = 2,
+}
+
+export enum BarDefaultSize {
+  Width = 3,
+  Length = 10,
+}
+
+export enum BarHardSize {
+  Width = 3,
+  Length = 5,
 }
 
 export enum BarInitVelocity {
