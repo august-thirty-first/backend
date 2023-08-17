@@ -66,7 +66,7 @@ export class GameSocketGateway
         this.isCalledOnce = false;
         console.log('updateGame finished');
       }
-    }, 2000);
+    }, 15);
   }
 
   afterInit(server: Server) {
