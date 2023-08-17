@@ -3,15 +3,15 @@ export const BALL_COLOR = 'white';
 export const BAR_COLOR = 'white';
 
 export enum BallRadius {
-  EasyRadius = 2,
-  HardRadius = 4,
+  EasyRadius = 30,
+  HardRadius = 40,
 }
 
 export enum BarSize {
-  EasyWidth = 3,
-  EasyLength = 10,
-  HardWidth = 3,
-  HardLength = 5,
+  EasyWidth = 30,
+  EasyLength = 100,
+  HardWidth = 30,
+  HardLength = 50,
 }
 
 export enum BarInitVelocity {
