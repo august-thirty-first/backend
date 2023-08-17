@@ -11,6 +11,7 @@ import { PlayerSide } from './enum/playerSide.enum';
 import GamePlayer from './class/gamePlayer';
 import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
+import { CONFIGURABLE_MODULE_ID } from '@nestjs/common/module-utils/constants';
 
 @Injectable()
 export class GameSocketService {
@@ -100,5 +101,16 @@ export class GameSocketService {
     const curBall = curRenderInfo.ball;
 
     curBall.updatePosition(curBall.velocity.x, curBall.velocity.y);
+  }
+
+  checkWallCollision(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    if (curBall.position.y + curBall.radius >= curRenderInfo.clientHeight) {
+      curBall.velocity.y *= -1;
+    }
+    if (curBall.position.y - curBall.radius <= 0) {
+      curBall.velocity.y *= -1;
+    }
   }
 }
