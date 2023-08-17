@@ -34,4 +34,12 @@ export class ChatRepository extends Repository<Chat> {
     }
     return chat;
   }
+
+  async getChatRoomWithPassword(chat_room_id: number): Promise<Chat> {
+    return this.chatRepository
+      .createQueryBuilder('chat')
+      .addSelect('chat.password')
+      .where('chat.id = :id', { id: chat_room_id })
+      .getOne();
+  }
 }

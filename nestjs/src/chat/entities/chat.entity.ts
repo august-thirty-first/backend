@@ -26,7 +26,7 @@ export class Chat extends BaseEntity {
   @Column({ type: 'enum', enum: ChatStatus, nullable: false })
   status: ChatStatus;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   password: string;
 
   @CreateDateColumn()

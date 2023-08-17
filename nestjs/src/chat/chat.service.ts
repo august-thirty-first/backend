@@ -154,9 +154,9 @@ export class ChatService {
     chatJoinDto: ChatJoinDto,
     user_id: number,
   ): Promise<ChatParticipant> {
-    const chatRoom = await this.chatRepository.findOneBy({
-      id: chatJoinDto.chat_room_id,
-    });
+    const chatRoom = await this.chatRepository.getChatRoomWithPassword(
+      chatJoinDto.chat_room_id,
+    );
     if (chatRoom.status === ChatStatus.PUBLIC) {
       const chatParticipantCreateDto = {
         chat_room_id: chatJoinDto.chat_room_id,
