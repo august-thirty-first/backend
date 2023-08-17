@@ -78,13 +78,13 @@ export class GameSocketService {
   }
 
   initRenderInfoPositon(curRenderInfo: RenderInfo, frameSizeDto: FrameSizeDto) {
-    curRenderInfo.initiallizeFrameSize(
+    curRenderInfo.initializeFrameSize(
       frameSizeDto.clientWidth,
       frameSizeDto.clientHeight,
     );
     curRenderInfo.initializeBall(
-      frameSizeDto.clientWidth / 2,
-      frameSizeDto.clientHeight / 2,
+      curRenderInfo.clientWidth / 2,
+      curRenderInfo.clientHeight / 2,
     );
     for (const socketId in curRenderInfo.gamePlayers) {
       const gamePlayer = curRenderInfo.gamePlayers[socketId];
