@@ -65,6 +65,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return this.find({
       relations: {
         chat: true,
+        user: true,
       },
       where: {
         chat: { id: chat_room_id },
