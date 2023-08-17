@@ -104,7 +104,7 @@ export class ChatService {
   async getChatRoomByChatId(
     chat_room_id: number,
     user_id: number,
-  ): Promise<Chat[]> {
+  ): Promise<ChatParticipant[]> {
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipant(
         user_id,
@@ -117,8 +117,7 @@ export class ChatService {
     }
     const chatParticipants =
       await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
-    const chats = chatParticipants.map(participant => participant.chat);
-    return chats;
+    return chatParticipants;
   }
 
   async isUserInChatRoom(user_id: number, chat_room_id: number) {
