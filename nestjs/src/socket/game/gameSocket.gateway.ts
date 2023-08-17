@@ -191,7 +191,6 @@ export class GameSocketGateway
     const curGame = this.games[roomId];
     const curRenderInfo = curGame.renderInfo;
     const frameSizeDto: FrameSizeDto = JSON.parse(data);
-    // TODO: frameSizeDto를 2번 받는 문제 있음
     if (
       curRenderInfo.clientWidth === undefined &&
       curRenderInfo.clientHeight === undefined
