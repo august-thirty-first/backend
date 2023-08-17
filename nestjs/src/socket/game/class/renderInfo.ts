@@ -19,11 +19,12 @@ export default class RenderInfo {
   }
 
   initializeBall(posX: number, posY: number) {
+    console.log(posX, posY);
     this.ball.initializePosition(posX, posY);
     this.ball.initializeVelocity();
   }
 
-  initiallizeFrameSize(clientWidth: number, clientHeight: number) {
+  initializeFrameSize(clientWidth: number, clientHeight: number) {
     this.clientWidth = clientWidth;
     this.clientHeight = clientHeight;
   }
