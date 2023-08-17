@@ -45,9 +45,11 @@ export class GameSocketGateway
   private isCalledOnce = false;
 
   private updateRenderInfo(curGame: Game) {
+    const curRenderInfo = curGame.renderInfo;
+    this.gameSocketService.updateBallPosition(curRenderInfo);
     this.server
       .to(curGame.id)
-      .emit('updateRenderInfo', JSON.stringify(curGame.renderInfo));
+      .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
   }
 
   private updateRenderInfoInterval() {

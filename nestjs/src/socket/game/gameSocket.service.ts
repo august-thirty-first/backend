@@ -95,4 +95,10 @@ export class GameSocketService {
       );
     }
   }
+
+  updateBallPosition(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    curBall.updatePosition(curBall.velocity.x, curBall.velocity.y);
+  }
 }
