@@ -24,9 +24,9 @@ export default class GamePlayer extends User {
     clientHeight: number,
     mapDifficulty: MapDifficulty,
   ) {
+    this.bar.initializeSize(mapDifficulty);
     this.bar.initializePosition(clientWidth, clientHeight);
     this.bar.initializeVelocity();
-    this.bar.initializeSize(mapDifficulty);
   }
 
   updateBarPosition(dx: number, dy: number) {

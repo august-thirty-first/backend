@@ -21,9 +21,12 @@ export default class Bar {
 
   initializePosition(clientWidth: number, clientHeight: number): void {
     if (this.side === PlayerSide.LEFT) {
-      this.position.initialize(0, clientHeight / 2);
+      this.position.initialize(0, clientHeight / 2 - this.length / 2);
     } else {
-      this.position.initialize(clientWidth, clientHeight / 2);
+      this.position.initialize(
+        clientWidth - this.width,
+        clientHeight / 2 - this.length / 2,
+      );
     }
   }
 
