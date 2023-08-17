@@ -202,4 +202,31 @@ export class GameSocketGateway
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
     curGame.updateStatus(GameStatus.IN_GAME);
   }
+
+  @SubscribeMessage('keyDown')
+  handleKeyDown(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: string,
+  ) {
+    const roomId = this.gameSocketService.getRoomId(client);
+    const curGame = this.games[roomId];
+    const curRenderInfo = curGame.renderInfo;
+    const curGamePlayerBar = curRenderInfo.gamePlayers[client.id].bar;
+
+    switch (data) {
+      case 'keyW':
+        if (curGamePlayerBar.position.y - curGamePlayerBar.velocity.y >= 0) {
+          curGamePlayerBar.updatePosition(0, -curGamePlayerBar.velocity.y);
+        }
+        break;
+      case 'keyS':
+        if (
+          curGamePlayerBar.position.y + curGamePlayerBar.velocity.y <=
+          curRenderInfo.clientHeight
+        ) {
+          curGamePlayerBar.updatePosition(0, curGamePlayerBar.velocity.y);
+        }
+        break;
+    }
+  }
 }
