@@ -62,11 +62,8 @@ export class ChatController {
   }
 
   @Post('participant/permission')
-  isUserInChatRoom(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
-    return this.chatService.isUserInChatRoom(
-      req.user.id,
-      chatJoinDto.chat_room_id,
-    );
+  isUserJoinableChatRoom(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
+    return this.chatService.isUserJoinableChatRoom(req.user.id, chatJoinDto);
   }
 
   @Post('participant')
@@ -115,11 +112,16 @@ export class ChatController {
     );
   }
 
-  @Delete('participant/:user_id/:chat_room_id')
+  @Delete('participant/:target_user_id/:chat_room_id')
   deleteChatParticipant(
-    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ): Promise<void> {
-    return this.chatService.deleteChatParticipant(user_id, chat_room_id);
+    return this.chatService.deleteChatParticipant(
+      target_user_id,
+      chat_room_id,
+      req.user.user_id,
+    );
   }
 }
