@@ -130,4 +130,38 @@ export class GameSocketService {
       }
     }
   }
+
+  updateScore(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+    let leftSidePlayer: GamePlayer;
+    let rightSidePlayer: GamePlayer;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.side === PlayerSide.LEFT) {
+        leftSidePlayer = gamePlayer;
+      } else {
+        rightSidePlayer = gamePlayer;
+      }
+    }
+
+    // leftSidePlayer 득점
+    if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
+      leftSidePlayer.score += 1;
+      curBall.initializePosition(
+        curRenderInfo.clientWidth / 2,
+        curRenderInfo.clientHeight / 2,
+      );
+      curBall.initializeVelocity();
+    }
+    // rightSidePlayer 득점
+    if (curBall.position.x - curBall.radius <= 0) {
+      rightSidePlayer.score += 1;
+      curBall.initializePosition(
+        curRenderInfo.clientWidth / 2,
+        curRenderInfo.clientHeight / 2,
+      );
+      curBall.initializeVelocity();
+    }
+  }
 }
