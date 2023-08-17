@@ -1,7 +1,8 @@
 import Ball from './ball';
 import GamePlayer from './gamePlayer';
 import GameMap from './gameMap';
-import { BALL_COLOR } from '../enum/initStatus.enum';
+import { BALL_COLOR, BallRadius } from '../enum/initStatus.enum';
+import { MapDifficulty } from 'src/game/enum/gameOption.enum';
 
 export default class RenderInfo {
   gamePlayers: { [socketId: string]: GamePlayer } = {};
@@ -10,7 +11,11 @@ export default class RenderInfo {
   clientHeight: number;
 
   constructor(public gameMap: GameMap) {
-    this.ball = new Ball(BALL_COLOR);
+    if (gameMap.difficulty === MapDifficulty.EASY) {
+      this.ball = new Ball(BALL_COLOR, BallRadius.EasyRadius);
+    } else {
+      this.ball = new Ball(BALL_COLOR, BallRadius.HardRadius);
+    }
   }
 
   initializeBall(posX: number, posY: number) {

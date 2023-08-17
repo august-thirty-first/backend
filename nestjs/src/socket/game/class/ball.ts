@@ -6,7 +6,7 @@ export default class Ball {
   position: Position;
   velocity: velocity;
 
-  constructor(private readonly color: string) {
+  constructor(private readonly color: string, public readonly radius: number) {
     this.position = new Position();
     this.velocity = new velocity();
   }
