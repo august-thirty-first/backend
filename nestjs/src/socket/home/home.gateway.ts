@@ -43,6 +43,11 @@ export class HomeGateway
     if (jwt && this.connectionService.addUserConnection(jwt['id'], client)) {
       client['user_id'] = jwt['id'];
       client['nickname'] = jwt['nickname'];
+      client['token_expiration'] = jwt['exp'] * 1000; // set milliseconds
+      setTimeout(() => {
+        if (client.connected && Date.now() > client['token_expiration'])
+          client.disconnect(); // handleDisconnect 함수 실행 됨
+      }, client['token_expiration'] - Date.now()); // timeOut 설정
       console.log(`home socket: ${client.id} connected`);
       client.emit('connection', '서버에 접속하였습니다');
     } else client.disconnect(true);
