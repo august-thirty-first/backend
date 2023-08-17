@@ -221,7 +221,9 @@ export class GameSocketGateway
         break;
       case 'keyS':
         if (
-          curGamePlayerBar.position.y + curGamePlayerBar.velocity.y <=
+          curGamePlayerBar.position.y +
+            curGamePlayerBar.length +
+            curGamePlayerBar.velocity.y <=
           curRenderInfo.clientHeight
         ) {
           curGamePlayerBar.updatePosition(0, curGamePlayerBar.velocity.y);
