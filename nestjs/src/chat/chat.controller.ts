@@ -61,12 +61,12 @@ export class ChatController {
     return this.chatService.getChatRoomByChatId(chat_room_id, req.user.id);
   }
 
-  @Get('participant/permission/:chat_room_id')
-  isUserInChatRoom(
-    @Req() req,
-    @Param('chat_room_id', ParseIntPipe) chat_room_id,
-  ) {
-    return this.chatService.isUserInChatRoom(req.user.id, chat_room_id);
+  @Post('participant/permission')
+  isUserInChatRoom(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
+    return this.chatService.isUserInChatRoom(
+      req.user.id,
+      chatJoinDto.chat_room_id,
+    );
   }
 
   @Post('participant')

@@ -26,7 +26,7 @@ export class ChatService {
 
   checkChatStatusAndPassword(status: ChatStatus, password: string) {
     if (status === ChatStatus.PROTECTED) {
-      if (!password.trim()) {
+      if (!password || !password.trim()) {
         throw new BadRequestException('Protected room require password');
       }
     } else {
@@ -129,6 +129,10 @@ export class ChatService {
     if (!chatParticipant) {
       throw new UnauthorizedException(
         'You do not have permission for this chat room',
+      );
+    } else if (chatParticipant.ban !== null) {
+      throw new UnauthorizedException(
+        'You have been banned from this chat room',
       );
     }
     return chatParticipant;
