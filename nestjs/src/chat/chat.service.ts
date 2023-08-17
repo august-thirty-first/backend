@@ -101,11 +101,38 @@ export class ChatService {
     return chats;
   }
 
-  async getChatRoomByChatId(chat_room_id: number): Promise<Chat[]> {
+  async getChatRoomByChatId(
+    chat_room_id: number,
+    user_id: number,
+  ): Promise<Chat[]> {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chat_room_id,
+      );
+    if (!chatParticipant) {
+      throw new UnauthorizedException(
+        'You do not have permission for this chat room',
+      );
+    }
     const chatParticipants =
       await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
     const chats = chatParticipants.map(participant => participant.chat);
     return chats;
+  }
+
+  async isUserInChatRoom(user_id: number, chat_room_id: number) {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chat_room_id,
+      );
+    if (!chatParticipant) {
+      throw new UnauthorizedException(
+        'You do not have permission for this chat room',
+      );
+    }
+    return chatParticipant;
   }
 
   async joinAlreadyExistChat(

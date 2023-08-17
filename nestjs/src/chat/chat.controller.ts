@@ -56,8 +56,17 @@ export class ChatController {
   @Get('participant/:chat_room_id')
   getChatRoomByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Req() req,
   ): Promise<Chat[]> {
-    return this.chatService.getChatRoomByChatId(chat_room_id);
+    return this.chatService.getChatRoomByChatId(chat_room_id, req.user.id);
+  }
+
+  @Get('participant/permission/:chat_room_id')
+  isUserInChatRoom(
+    @Req() req,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+  ) {
+    return this.chatService.isUserInChatRoom(req.user.user_id, chat_room_id);
   }
 
   @Post('participant')
