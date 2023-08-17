@@ -45,7 +45,6 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     chat_room_id,
   ): Promise<ChatParticipant> {
     return await this.createQueryBuilder('cp')
-      .innerJoin('cp.chat', 'c')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
       .getOne();

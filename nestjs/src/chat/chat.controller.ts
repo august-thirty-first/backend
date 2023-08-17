@@ -66,7 +66,7 @@ export class ChatController {
     @Req() req,
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
   ) {
-    return this.chatService.isUserInChatRoom(req.user.user_id, chat_room_id);
+    return this.chatService.isUserInChatRoom(req.user.id, chat_room_id);
   }
 
   @Post('participant')
