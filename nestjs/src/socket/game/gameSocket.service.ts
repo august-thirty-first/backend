@@ -91,6 +91,7 @@ export class GameSocketService {
       gamePlayer.initializeBar(
         curRenderInfo.clientWidth,
         curRenderInfo.clientHeight,
+        curRenderInfo.gameMap.difficulty,
       );
     }
   }

@@ -1,11 +1,15 @@
-import { BarInitPosition, BarInitVelocity } from '../enum/initStatus.enum';
+import { MapDifficulty } from 'src/game/enum/gameOption.enum';
+import { BarInitVelocity, BarSize } from '../enum/initStatus.enum';
 import { PlayerSide } from '../enum/playerSide.enum';
 import Position from './positon';
 import velocity from './velocity';
+import { map } from 'rxjs';
 
 export default class Bar {
   position: Position;
   velocity: velocity;
+  width: number;
+  length: number;
 
   constructor(
     private readonly side: PlayerSide,
@@ -25,6 +29,16 @@ export default class Bar {
 
   initializeVelocity(): void {
     this.velocity.initialize(BarInitVelocity.X, BarInitVelocity.Y);
+  }
+
+  initializeSize(mapDifficulty: MapDifficulty): void {
+    if (mapDifficulty === MapDifficulty.EASY) {
+      this.width = BarSize.EasyWidth;
+      this.length = BarSize.EasyLength;
+    } else {
+      this.width = BarSize.HardWidth;
+      this.width = BarSize.HardLength;
+    }
   }
 
   updateVelocity(dx: number, dy: number): void {

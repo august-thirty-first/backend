@@ -3,6 +3,7 @@ import { UserStatus } from '../enum/userStatus.enum';
 import Bar from './bar';
 import { PlayerSide } from '../enum/playerSide.enum';
 import { BAR_COLOR } from '../enum/initStatus.enum';
+import { MapDifficulty } from 'src/game/enum/gameOption.enum';
 
 export default class GamePlayer extends User {
   bar: Bar;
@@ -18,9 +19,14 @@ export default class GamePlayer extends User {
     this.bar = new Bar(side, BAR_COLOR);
   }
 
-  initializeBar(clientWidth: number, clientHeight: number) {
+  initializeBar(
+    clientWidth: number,
+    clientHeight: number,
+    mapDifficulty: MapDifficulty,
+  ) {
     this.bar.initializePosition(clientWidth, clientHeight);
     this.bar.initializeVelocity();
+    this.bar.initializeSize(mapDifficulty);
   }
 
   updateBarPosition(dx: number, dy: number) {
