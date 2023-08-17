@@ -3,7 +3,6 @@ import { BarInitVelocity, BarSize } from '../enum/initStatus.enum';
 import { PlayerSide } from '../enum/playerSide.enum';
 import Position from './positon';
 import velocity from './velocity';
-import { map } from 'rxjs';
 
 export default class Bar {
   position: Position;
