@@ -13,10 +13,10 @@ import {
 import { ChatService } from './chat.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateChatDto } from './dto/chatCreate.dto';
-import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
-import { ChatParticipantStatus } from './enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
+import { ChatJoinDto } from './dto/chatJoin.dto';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -28,8 +28,11 @@ export class ChatController {
   }
 
   @Post()
-  createChat(@Body() createChatDto: CreateChatDto): Promise<Chat> {
-    return this.chatService.createChat(createChatDto);
+  createChat(
+    @Body() createChatDto: CreateChatDto,
+    @Req() req,
+  ): Promise<(Chat | ChatParticipant)[]> {
+    return this.chatService.createChat(createChatDto, req.user.id);
   }
 
   @Delete('/:id')
@@ -45,51 +48,80 @@ export class ChatController {
     return this.chatService.updateChat(id, createChatDto);
   }
 
-  @Get('participant/:user_id')
-  getMyChatRoom(
-    @Param('user_id', ParseIntPipe) user_id,
+  @Get('participant/')
+  getChatRoomByUserId(@Req() req): Promise<Chat[]> {
+    return this.chatService.getChatRoomByUserId(req.user.id);
+  }
+
+  @Get('participant/:chat_room_id')
+  getChatRoomByChatId(
+    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Req() req,
   ): Promise<ChatParticipant[]> {
-    return this.chatService.getMyChatRoom(user_id);
+    return this.chatService.getChatRoomByChatId(chat_room_id, req.user.id);
+  }
+
+  @Post('participant/permission')
+  isUserJoinableChatRoom(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
+    return this.chatService.isUserJoinableChatRoom(req.user.id, chatJoinDto);
   }
 
   @Post('participant')
-  joinChat(
-    @Body() chatParticipantCreateDto: ChatParticipantCreateDto,
+  joinChat(@Body() chatJoinDto: ChatJoinDto, @Req() req) {
+    return this.chatService.joinChat(chatJoinDto, req.user.id);
+  }
+
+  @Patch('participant/authority/:target_user_id/:chat_room_id')
+  switchAuthority(
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
+    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Body() authority: ChatParticipantAuthority,
     @Req() req,
   ) {
-    return this.chatService.joinChat(chatParticipantCreateDto, req.user.id);
+    return this.chatService.updateAuthority(
+      target_user_id,
+      chat_room_id,
+      authority,
+      req.user.id,
+    );
   }
 
-  @Patch('participant/status/:user_id/:chat_room_id')
-  switchStatus(
-    @Param('user_id', ParseIntPipe) user_id: number,
-    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
-    @Body() status: ChatParticipantStatus,
-  ) {
-    return this.chatService.updateStatus(user_id, chat_room_id, status);
-  }
-
-  @Patch('participant/ban/:user_id/:chat_room_id')
+  @Patch('participant/ban/:target_user_id/:chat_room_id')
   switchBan(
-    @Param('user_id', ParseIntPipe) user_id: number,
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateBan(user_id, chat_room_id);
+    return this.chatService.switchBan(
+      target_user_id,
+      chat_room_id,
+      req.user.id,
+    );
   }
 
-  @Patch('participant/notban/:user_id/:chat_room_id')
-  switchNotBan(
-    @Param('user_id', ParseIntPipe) user_id: number,
+  @Patch('participant/unban/:target_user_id/:chat_room_id')
+  switchUnBan(
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ) {
-    return this.chatService.updateNotBan(user_id, chat_room_id);
+    return this.chatService.switchUnBan(
+      target_user_id,
+      chat_room_id,
+      req.user.id,
+    );
   }
 
-  @Delete('/:user_id/:chat_room_id')
-  deleteCharParticipant(
-    @Param('user_id', ParseIntPipe) user_id: number,
+  @Delete('participant/:target_user_id/:chat_room_id')
+  deleteChatParticipant(
+    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Req() req,
   ): Promise<void> {
-    return this.chatService.deleteChatParticipant(user_id, chat_room_id);
+    return this.chatService.deleteChatParticipant(
+      target_user_id,
+      chat_room_id,
+      req.user.user_id,
+    );
   }
 }

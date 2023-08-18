@@ -1,6 +1,7 @@
 import { User } from 'src/auth/entities/User.entity';
 import {
   BaseEntity,
+  BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
@@ -8,7 +9,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ChatParticipantStatus } from '../enum/chatParticipant.status.enum';
+import { ChatParticipantAuthority } from '../enum/chatParticipant.authority.enum';
 import { Chat } from './chat.entity';
 
 @Entity()
@@ -16,7 +17,7 @@ export class ChatParticipant extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Chat)
+  @ManyToOne(() => Chat, chat => chat.chatParticipants, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'chat_room_id' })
   chat: Chat;
 
@@ -24,25 +25,29 @@ export class ChatParticipant extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'enum', enum: ChatParticipantStatus, nullable: false })
-  status: ChatParticipantStatus;
+  @Column({ type: 'enum', enum: ChatParticipantAuthority, nullable: false })
+  authority: ChatParticipantAuthority;
 
   @Column({ nullable: true })
   ban: Date;
 
   @Column({ nullable: false })
-  status_time: Date;
+  authority_time: Date;
 
-  private originalStatus: ChatParticipantStatus;
+  @BeforeInsert()
+  setInitialAuthorityTime() {
+    this.authority_time = new Date();
+  }
+  private originalAuthority: ChatParticipantAuthority;
   @BeforeUpdate()
   rememberOriginalStatus() {
-    this.originalStatus = this.status;
+    this.originalAuthority = this.authority;
   }
 
   @BeforeUpdate()
   updateStatusTime() {
-    if (this.status !== this.originalStatus) {
-      this.status_time = new Date();
+    if (this.authority !== this.originalAuthority) {
+      this.authority_time = new Date();
     }
   }
 }
