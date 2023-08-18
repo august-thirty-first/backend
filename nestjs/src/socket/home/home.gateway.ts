@@ -36,9 +36,12 @@ export class HomeGateway
   handleConnection(client: Socket) {
     let jwt = null;
     if (client.handshake.headers?.cookie) {
-      jwt = this.jwtService.decode(
-        parse(client.handshake.headers.cookie).access_token,
-      );
+      const token = parse(client.handshake.headers.cookie).access_token;
+      try {
+        jwt = this.jwtService.verify(token);
+      } catch (error: any) {
+        jwt = null;
+      }
     }
     if (jwt && this.connectionService.addUserConnection(jwt['id'], client)) {
       client['user_id'] = jwt['id'];
