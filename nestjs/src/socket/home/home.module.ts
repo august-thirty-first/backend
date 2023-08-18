@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { HomeGateway } from './home.gateway';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
-import { PassportsModule } from 'src/passports/passports.module';
+import { ConnectionService } from './connection.service';
 
 @Module({
-  imports: [PassportsModule, NormalJwtModule],
-  providers: [HomeGateway],
+  imports: [NormalJwtModule],
+  providers: [HomeGateway, ConnectionService],
+  exports: [ConnectionService],
 })
 export class HomeModule {}
