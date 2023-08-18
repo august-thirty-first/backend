@@ -7,15 +7,17 @@ import { UserRepository } from 'src/auth/user.repository';
 import { PassportsModule } from 'src/passports/passports.module';
 import { MulterModules } from 'src/multer/multer.module';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
+import { FriendRequestingRepository } from 'src/friend/friendRequesting.repository';
+import { FriendRequesting } from 'src/friend/entities/FriendRequesting.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, FriendRequesting]),
     PassportsModule,
     MulterModules,
     NormalJwtModule,
   ],
   controllers: [ProfileController],
-  providers: [ProfileService, UserRepository],
+  providers: [ProfileService, UserRepository, FriendRequestingRepository],
 })
 export class ProfileModule {}

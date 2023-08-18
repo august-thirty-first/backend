@@ -48,10 +48,14 @@ export class ProfileController {
 
   @Get('user')
   async getUserProfile(
+    @Req() req: Request,
     @Query() searchUserDto: SearchUserDto,
   ): Promise<SearchUserDto | null> {
-    const result: SearchUserDto =
-      await this.profileService.searchByUserNickname(searchUserDto.nickname);
+    const user: any = req.user;
+    const result: SearchUserDto = await this.profileService.searchByUserProfile(
+      user.id,
+      searchUserDto.nickname,
+    );
     return result;
   }
 
