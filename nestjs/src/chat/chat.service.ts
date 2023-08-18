@@ -26,15 +26,16 @@ export class ChatService {
 
   checkChatStatusAndPassword(status: ChatStatus, password: string) {
     if (status === ChatStatus.PROTECTED) {
-      if (password.trim() === '') {
+      if (!password || !password.trim()) {
         throw new BadRequestException('Protected room require password');
       }
     } else {
-      if (password.trim() !== '') {
+      if (password.trim()) {
         throw new BadRequestException(`${status} room do not require password`);
       }
     }
   }
+
   async createChat(
     createChatDto: CreateChatDto,
     user_id: number,
@@ -58,12 +59,10 @@ export class ChatService {
   }
 
   async getAllChat(): Promise<Chat[]> {
-    const query = this.chatRepository.createQueryBuilder('Chat');
-    const chats = await query.getMany();
-    return chats;
+    return await this.chatRepository.find();
   }
 
-  async getChatById(id: number): Promise<Chat> {
+  getChatById(id: number): Promise<Chat> {
     return this.chatRepository.findOneBy({ id });
   }
 
@@ -76,14 +75,14 @@ export class ChatService {
   }
 
   async updateChat(id: number, createChatDto: CreateChatDto): Promise<Chat> {
-    this.checkChatStatusAndPassword(
-      createChatDto.status,
-      createChatDto.password,
-    );
     const chat = await this.getChatById(id);
     if (!chat) {
       throw new NotFoundException(`Can't find Chat id ${id}`);
     }
+    this.checkChatStatusAndPassword(
+      createChatDto.status,
+      createChatDto.password,
+    );
     chat.status = createChatDto.status;
     chat.room_name = createChatDto.room_name;
     if (createChatDto.status === ChatStatus.PUBLIC) {
@@ -95,20 +94,56 @@ export class ChatService {
     return this.chatRepository.save(chat);
   }
 
-  async getMyChatRoom(user_id: number): Promise<ChatParticipant[]> {
-    return this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .innerJoin('cp.chat', 'c')
-      .where('cp.user_id = :id', { id: user_id })
-      .getMany();
+  async getChatRoomByUserId(user_id: number): Promise<Chat[]> {
+    const chatParticipants =
+      await this.chatParticipantRepository.getChatRoomByUserId(user_id);
+    const chats = chatParticipants.map(participant => participant.chat);
+    return chats;
   }
 
-  async getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
-    return this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .innerJoin('cp.chat', 'c')
-      .where('c.id = :id', { id: chat_room_id })
-      .getMany();
+  async getChatRoomByChatId(
+    chat_room_id: number,
+    user_id: number,
+  ): Promise<ChatParticipant[]> {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chat_room_id,
+      );
+    if (!chatParticipant) {
+      throw new UnauthorizedException(
+        'You do not have permission for this chat room',
+      );
+    }
+    const chatParticipants =
+      await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
+    return chatParticipants;
+  }
+
+  async isUserJoinableChatRoom(user_id: number, chatJoinDto: ChatJoinDto) {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chatJoinDto.chat_room_id,
+      );
+    const chatRoom = await this.chatRepository.getChatRoomWithPassword(
+      chatJoinDto.chat_room_id,
+    );
+    if (!chatParticipant) {
+      throw new UnauthorizedException(
+        'You do not have permission for this chat room',
+      );
+    } else if (chatParticipant.ban !== null) {
+      throw new UnauthorizedException(
+        'You have been banned from this chat room',
+      );
+    } else if (
+      chatRoom.status === ChatStatus.PROTECTED &&
+      !(await bcrypt.compare(chatJoinDto.password, chatRoom.password))
+    ) {
+      throw new UnauthorizedException('password does not match');
+    }
+    return chatParticipant;
   }
 
   async joinAlreadyExistChat(
@@ -131,9 +166,9 @@ export class ChatService {
     chatJoinDto: ChatJoinDto,
     user_id: number,
   ): Promise<ChatParticipant> {
-    const chatRoom = await this.chatRepository.findOneBy({
-      id: chatJoinDto.chat_room_id,
-    });
+    const chatRoom = await this.chatRepository.getChatRoomWithPassword(
+      chatJoinDto.chat_room_id,
+    );
     if (chatRoom.status === ChatStatus.PUBLIC) {
       const chatParticipantCreateDto = {
         chat_room_id: chatJoinDto.chat_room_id,
@@ -161,33 +196,29 @@ export class ChatService {
     }
   }
 
-  async checkChatExist(id: number) {
-    if (
-      !(await this.chatParticipantRepository.findOneBy({
-        id,
-      }))
-    ) {
+  async checkChatExist(id: number): Promise<Chat> {
+    const result = await this.chatRepository.findOneBy({ id });
+
+    if (result === null) {
       throw new BadRequestException(`Chat room id ${id} does not exist`);
     }
+    return result;
   }
 
   async joinChat(
     chatJoinDto: ChatJoinDto,
     user_id: number,
   ): Promise<ChatParticipant> {
-    this.checkChatExist(chatJoinDto.chat_room_id);
-    const participant = await this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .where('cp.chat_room_id = :id', {
-        id: chatJoinDto.chat_room_id,
-      })
-      .andWhere('cp.user_id = :id', { id: user_id })
-      .getOne();
-    this.checkChatStatusAndPassword(
-      participant.chat.status,
-      chatJoinDto.password,
+    const chat = await this.checkChatExist(chatJoinDto.chat_room_id);
+    const participant = await this.chatParticipantRepository.getChatParticipant(
+      user_id,
+      chatJoinDto.chat_room_id,
     );
+    await this.checkChatStatusAndPassword(chat.status, chatJoinDto.password);
     if (participant) {
+      //ban 여부를 permission확인할때 보고 채팅방 나가기 또는 kick이 되면 participant가 삭제되기 때문에
+      //때문에 사실상 이 if문은 실행 될 일 없을듯
+      //다만 kick이 되었는데 DB에는 반영이 안되었거나 등등의 시스템 에러때만 들어갈듯
       return this.joinAlreadyExistChat(participant, user_id);
     }
     //최초로 join을 하는 경우
@@ -195,11 +226,12 @@ export class ChatService {
   }
 
   async checkAdminOrBoss(user_id: number, chat_room_id: number): Promise<void> {
-    const requestParticipant = await this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .where('user_id = :user_id', { user_id })
-      .andWhere('chat_room_id = :chat_room_id', { chat_room_id })
-      .getOne();
+    await this.checkChatExist(chat_room_id);
+    const requestParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chat_room_id,
+      );
     if (requestParticipant.authority === ChatParticipantAuthority.NORMAL) {
       throw new UnauthorizedException(
         `user_id ${user_id} is not boss or admin`,
@@ -208,42 +240,40 @@ export class ChatService {
   }
 
   async updateAuthority(
-    user_id: number,
+    target_user_id: number,
     chat_room_id: number,
     authority: ChatParticipantAuthority,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
-    const chatParticipant = await this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .where('user_id = :user_id', { user_id })
-      .andWhere('chat_room_id = :chat_room_id', { chat_room_id })
-      .getOne();
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        target_user_id,
+        chat_room_id,
+      );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     chatParticipant.authority = authority;
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateBan(
-    user_id: number,
+  async switchBan(
+    target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
-    const chatParticipant = await this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .where('user_id = :user_id', { user_id })
-      .andWhere('chat_room_id = :chat_room_id', { chat_room_id })
-      .getOne();
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        target_user_id,
+        chat_room_id,
+      );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     if (!chatParticipant.ban) {
@@ -253,21 +283,20 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async updateUnBan(
-    user_id: number,
+  async switchUnBan(
+    target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
   ) {
-    this.checkChatExist(chat_room_id);
-    this.checkAdminOrBoss(request_user_id, chat_room_id);
-    const chatParticipant = await this.chatParticipantRepository
-      .createQueryBuilder('cp')
-      .where('user_id = :user_id', { user_id })
-      .andWhere('chat_room_id = :chat_room_id', { chat_room_id })
-      .getOne();
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        target_user_id,
+        chat_room_id,
+      );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
     if (!chatParticipant.ban) {
@@ -277,15 +306,17 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async deleteChatParticipant(user_id, chat_room_id) {
+  async deleteChatParticipant(target_user_id, chat_room_id, request_user_id) {
+    await this.checkAdminOrBoss(request_user_id, chat_room_id);
+
     const result = await this.chatParticipantRepository.delete({
-      user: { id: user_id },
+      user: { id: target_user_id },
       chat: { id: chat_room_id },
     });
 
     if (result.affected === 0) {
       throw new NotFoundException(
-        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find Chat with user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
   }
