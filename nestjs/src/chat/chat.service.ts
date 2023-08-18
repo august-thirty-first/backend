@@ -139,7 +139,7 @@ export class ChatService {
       );
     } else if (
       chatRoom.status === ChatStatus.PROTECTED &&
-      !(await bcrypt.compare(chatRoom.password, chatRoom.password))
+      !(await bcrypt.compare(chatJoinDto.password, chatRoom.password))
     ) {
       throw new UnauthorizedException('password does not match');
     }

@@ -1,5 +1,7 @@
 import { parse } from 'cookie';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -11,6 +13,8 @@ import { Server, Socket } from 'socket.io';
 import { Inject } from '@nestjs/common';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
+import { MessageDto } from './dto/message.dto';
+import { RoomIdDto } from './dto/roomId.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -28,11 +32,11 @@ export class HomeGateway
 
   @WebSocketServer() server: Server;
 
-  afterInit(client: Socket) {
+  afterInit(@ConnectedSocket() client: Socket) {
     console.log('home gateway init');
   }
 
-  handleConnection(client: Socket) {
+  handleConnection(@ConnectedSocket() client: Socket) {
     client.emit('connection', '서버에 접속하였습니다');
     const jwt = this.jwtService.decode(
       parse(client.handshake.headers.cookie).access_token,
@@ -42,31 +46,42 @@ export class HomeGateway
     console.log(`home socket: ${client.id} connected`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`home socket: ${client.id} disconnected`);
   }
 
   @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    console.log(payload);
+  handleMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ): string {
+    const messageDto: MessageDto = JSON.parse(payload);
     client
-      .to(payload.roomId)
-      .emit('message', `${client.nickname}: ${payload.inputMessage}`);
+      .to(messageDto.roomId)
+      .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
     return payload;
   }
 
   @SubscribeMessage('deleteRoom')
-  handleOutOfRoom(client: any, payload: any): void {
+  handleOutOfRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ): void {
+    const roomIdDto: RoomIdDto = JSON.parse(payload);
+    client
+      .to(roomIdDto.roomId)
+      .emit('deleteRoom', `roomId ${roomIdDto.roomId} deleted`);
     console.log('delete room event');
     console.log(payload);
-    client
-      .to(payload.roomId)
-      .emit('deleteRoom', `roomId ${payload.roomId} deleted`);
   }
 
   @SubscribeMessage('enterRoom')
-  handleEnterRoom(client: any, roomId: number) {
+  handleEnterRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
     const currentRooms = client.rooms;
+    const roomIdDto: RoomIdDto = JSON.parse(payload);
 
     for (const room of currentRooms) {
       if (room !== client.id) {
@@ -74,8 +89,8 @@ export class HomeGateway
         console.log(`leave Room: ${room}`);
       }
     }
-    client.join(roomId);
-    console.log(`join Room: ${roomId}`);
-    client.emit('roomChange', roomId);
+    client.join(roomIdDto.roomId);
+    console.log(`join Room: ${roomIdDto.roomId}`);
+    client.emit('roomChange', roomIdDto.roomId);
   }
 }
