@@ -18,3 +18,8 @@ export enum BarInitVelocity {
   X = 0,
   Y = 5,
 }
+
+export enum BallInitVelocityRange {
+  Min = 4,
+  Max = 7,
+}
