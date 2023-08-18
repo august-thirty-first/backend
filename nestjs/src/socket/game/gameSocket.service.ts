@@ -95,4 +95,73 @@ export class GameSocketService {
       );
     }
   }
+
+  updateBallPosition(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    curBall.updatePosition(curBall.velocity.x, curBall.velocity.y);
+  }
+
+  checkWallCollision(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    if (curBall.position.y + curBall.radius >= curRenderInfo.clientHeight) {
+      curBall.velocity.y *= -1;
+    }
+    if (curBall.position.y - curBall.radius <= 0) {
+      curBall.velocity.y *= -1;
+    }
+  }
+
+  checkBarCollision(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayerBar = curRenderInfo.gamePlayers[id].bar;
+
+      const dx = Math.abs(curBall.position.x - gamePlayerBar.getCenterPosX());
+      const dy = Math.abs(curBall.position.y - gamePlayerBar.getCenterPoxY());
+
+      if (
+        dx <= gamePlayerBar.width / 2 + curBall.radius &&
+        dy <= gamePlayerBar.width / 2 + curBall.radius
+      ) {
+        curBall.velocity.x *= -1;
+      }
+    }
+  }
+
+  updateScore(curRenderInfo: RenderInfo): void {
+    const curBall = curRenderInfo.ball;
+    let leftSidePlayer: GamePlayer;
+    let rightSidePlayer: GamePlayer;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.side === PlayerSide.LEFT) {
+        leftSidePlayer = gamePlayer;
+      } else {
+        rightSidePlayer = gamePlayer;
+      }
+    }
+
+    // leftSidePlayer 득점
+    if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
+      leftSidePlayer.score += 1;
+      curBall.initializePosition(
+        curRenderInfo.clientWidth / 2,
+        curRenderInfo.clientHeight / 2,
+      );
+      curBall.initializeVelocity();
+    }
+    // rightSidePlayer 득점
+    if (curBall.position.x - curBall.radius <= 0) {
+      rightSidePlayer.score += 1;
+      curBall.initializePosition(
+        curRenderInfo.clientWidth / 2,
+        curRenderInfo.clientHeight / 2,
+      );
+      curBall.initializeVelocity();
+    }
+  }
 }
