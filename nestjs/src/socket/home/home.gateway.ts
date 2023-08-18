@@ -47,16 +47,23 @@ export class HomeGateway
         jwt = null;
       }
     }
-    if (jwt && this.connectionService.addUserConnection(jwt['id'], client)) {
-      client['user_id'] = jwt['id'];
-      client['nickname'] = jwt['nickname'];
-      client['token_expiration'] = jwt['exp'] * 1000; // set milliseconds
-      setTimeout(() => {
-        if (client.connected && Date.now() > client['token_expiration'])
-          client.disconnect(); // handleDisconnect 함수 실행 됨
-      }, client['token_expiration'] - Date.now()); // timeOut 설정
-      console.log(`home socket: ${client.id} connected`);
-      client.emit('connection', '서버에 접속하였습니다');
+    if (jwt) {
+      if (this.connectionService.addUserConnection(jwt['id'], client)) {
+        client['user_id'] = jwt['id'];
+        client['nickname'] = jwt['nickname'];
+        client['token_expiration'] = jwt['exp'] * 1000; // set milliseconds
+        setTimeout(() => {
+          if (client.connected && Date.now() > client['token_expiration']) {
+            client.emit('expired', '토큰 만료');
+            client.disconnect(true);
+          }
+        }, client['token_expiration'] - Date.now()); // timeOut 설정
+        console.log(`home socket: ${client.id} connected`);
+        client.emit('connection', '서버에 접속하였습니다');
+      } else {
+        client.emit('multipleConnect', '다중 로그인');
+        client.disconnect(true);
+      }
     } else client.disconnect(true);
   }
 
