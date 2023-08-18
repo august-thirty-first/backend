@@ -61,8 +61,10 @@ export class HomeGateway
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
       } else {
-        client.emit('multipleConnect', '다중 로그인');
-        client.disconnect(true);
+        setTimeout(() => {
+          client.emit('multipleConnect', '다중 로그인');
+          client.disconnect(true);
+        }, 500);
       }
     } else client.disconnect(true);
   }
