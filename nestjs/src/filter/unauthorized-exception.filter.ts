@@ -16,6 +16,9 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
       response.clearCookie('access_token');
       exception.message = 'UNAUTHORIZED';
     }
-    response.status(HttpStatus.UNAUTHORIZED).json(exception.getResponse());
+    response.status(HttpStatus.UNAUTHORIZED).json({
+      statusCode: HttpStatus.UNAUTHORIZED,
+      message: exception.message,
+    });
   }
 }
