@@ -118,7 +118,7 @@ export class ProfileController {
     });
     if (!verified) throw new UnauthorizedException('Token 값을 확인해주세요.');
     const user: any = req.user;
-    this.profileService.updateOtp(user.id, otpSetupDto.secret);
+    await this.profileService.updateOtp(user.id, otpSetupDto.secret);
     res.status(HttpStatus.NO_CONTENT).send();
   }
 
@@ -126,7 +126,7 @@ export class ProfileController {
   async deleteOtp(@Req() req: Request, @Res() res: Response): Promise<void> {
     const user: any = req.user;
 
-    this.profileService.deleteOtp(user.id);
+    await this.profileService.deleteOtp(user.id);
     res.status(HttpStatus.NO_CONTENT).send();
   }
 }
