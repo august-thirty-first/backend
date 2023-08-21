@@ -43,7 +43,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
 
   getChatParticipantByUserChatRoom(
     user_id: number,
-    chat_room_id,
+    chat_room_id: number,
   ): Promise<ChatParticipant> {
     return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
