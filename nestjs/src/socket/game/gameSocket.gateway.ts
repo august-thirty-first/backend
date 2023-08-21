@@ -54,6 +54,11 @@ export class GameSocketGateway
     this.gameSocketService.updateGameStatus(curGame);
     if (curGame.status === GameStatus.GAME_OVER) {
       this.gameSocketService.createGameHistory(curGame);
+      // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
+      this.server
+        .to(curGame.id)
+        .emit('gameOver', JSON.stringify(curGame.history));
+      // TODO: games 에서 curGame 지우기
     }
     this.server
       .to(curGame.id)
