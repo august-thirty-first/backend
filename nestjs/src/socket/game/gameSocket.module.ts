@@ -8,11 +8,7 @@ import { GameHistoryRepository } from './gameHistory.repository';
 import { GameHistory } from './entities/gameHistory.entity';
 
 @Module({
-  imports: [
-    NormalJwtModule,
-    PassportModule,
-    TypeOrmModule.forFeature([GameHistory]),
-  ],
+  imports: [NormalJwtModule, TypeOrmModule.forFeature([GameHistory])],
   providers: [GameSocketGateway, GameSocketService, GameHistoryRepository],
 })
 export class GameSocketModule {}
