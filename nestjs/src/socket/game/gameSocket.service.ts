@@ -12,7 +12,6 @@ import GamePlayer from './class/gamePlayer';
 import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GameHistory } from './entities/gameHistory.entity';
 import { GameHistoryRepository } from './gameHistory.repository';
 import { GameStatus, TARGET_SCORE } from './enum/gameStatus.enum';
 import MatchHistory from './class/matchHistory';
