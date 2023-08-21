@@ -11,9 +11,25 @@ import { PlayerSide } from './enum/playerSide.enum';
 import GamePlayer from './class/gamePlayer';
 import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { GameHistory } from './entities/gameHistory.entity';
+import { GameHistoryRepository } from './gameHistory.repository';
+import { GameStatus } from './enum/gameStatus.enum';
 
 @Injectable()
 export class GameSocketService {
+  constructor(
+    @InjectRepository(GameHistory)
+    private gameHistoryRepository: GameHistoryRepository,
+  ) {}
+
+  private isGameOver(leftSideScore: number, rightSideScore: number): boolean {
+    if (leftSideScore >= 10 || rightSideScore >= 10) {
+      return true;
+    }
+    return false;
+  }
+
   getRoomId(socket: Socket): string {
     const rooms: Set<string> = socket.rooms;
     let roomId: string;
@@ -162,6 +178,25 @@ export class GameSocketService {
         curRenderInfo.clientHeight / 2,
       );
       curBall.initializeVelocity();
+    }
+  }
+
+  updateGameStatus(curGame: Game): void {
+    const curRenderInfo = curGame.renderInfo;
+    let leftSidePlayer: GamePlayer;
+    let rightSidePlayer: GamePlayer;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.side === PlayerSide.LEFT) {
+        leftSidePlayer = gamePlayer;
+      } else {
+        rightSidePlayer = gamePlayer;
+      }
+    }
+
+    if (this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)) {
+      curGame.status = GameStatus.GAME_OVER;
     }
   }
 }

@@ -51,6 +51,7 @@ export class GameSocketGateway
     this.gameSocketService.checkWallCollision(curRenderInfo);
     this.gameSocketService.checkBarCollision(curRenderInfo);
     this.gameSocketService.updateScore(curRenderInfo);
+    this.gameSocketService.updateGameStatus(curGame);
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
