@@ -16,6 +16,8 @@ import { MessageDto } from './dto/message.dto';
 import { RoomIdDto } from './dto/roomId.dto';
 import { ConnectionService } from './connection.service';
 import { parse } from 'cookie';
+import { MessageService } from './message.service';
+import { MuteDto } from './dto/mute.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -30,6 +32,7 @@ export class HomeGateway
     @Inject(NormalJwt)
     private readonly jwtService: JwtService,
     private readonly connectionService: ConnectionService,
+    private readonly messageService: MessageService,
   ) {}
   @WebSocketServer() server: Server;
 
@@ -38,15 +41,7 @@ export class HomeGateway
   }
 
   handleConnection(client: Socket) {
-    let jwt = null;
-    if (client.handshake.headers?.cookie) {
-      const token = parse(client.handshake.headers.cookie).access_token;
-      try {
-        jwt = this.jwtService.verify(token);
-      } catch (error: any) {
-        jwt = null;
-      }
-    }
+    const jwt = this.messageService.getJwt(client);
     if (jwt) {
       if (this.connectionService.addUserConnection(jwt['id'], client)) {
         client['user_id'] = jwt['id'];
@@ -76,12 +71,37 @@ export class HomeGateway
   handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
-  ): string {
+  ) {
     const messageDto: MessageDto = JSON.parse(payload);
-    client
-      .to(messageDto.roomId)
-      .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
-    return payload;
+    if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
+      client.emit('message', 'Muted!!!!');
+    } else {
+      client
+        .to(messageDto.roomId)
+        .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
+    }
+  }
+
+  @SubscribeMessage('mute')
+  handleMuteSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const muteDto: MuteDto = JSON.parse(payload);
+
+    if (
+      this.messageService.isBossOrAdmin(
+        client['user_id'],
+        parseInt(muteDto.roomId),
+      )
+    ) {
+      client.emit('muteReturnStatus', this.messageService.muteUser(muteDto));
+    } else {
+      client.emit(
+        'muteReturnStatus',
+        'You do not have the right to mute others',
+      );
+    }
   }
 
   @SubscribeMessage('deleteRoom')
