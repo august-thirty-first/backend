@@ -53,6 +53,9 @@ export class GameSocketGateway
     this.gameSocketService.checkBarCollision(curRenderInfo);
     this.gameSocketService.updateScore(curRenderInfo);
     this.gameSocketService.updateGameStatus(curGame);
+    this.server
+      .to(curGame.id)
+      .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
     if (curGame.status === GameStatus.GAME_OVER) {
       this.gameSocketService.createGameHistory(curGame);
       // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
@@ -60,11 +63,7 @@ export class GameSocketGateway
         .to(curGameRoomId)
         .emit('gameOver', JSON.stringify(curGame.history));
       delete this.games[curGameRoomId];
-      // console.log('game deleted after finish');
-    } else {
-      this.server
-        .to(curGame.id)
-        .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
+      console.log('game deleted after finish');
     }
   }
 
