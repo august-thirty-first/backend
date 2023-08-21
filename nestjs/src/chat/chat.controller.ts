@@ -77,14 +77,12 @@ export class ChatController {
     return this.chatService.joinChat(chatJoinDto, req.user.id);
   }
 
-  @Patch('participant/authority/:target_user_id/')
+  @Patch('participant/authority')
   switchAuthority(
-    @Param('target_user_id', ParseIntPipe) target_user_id: number,
     @Body() chatParticipantAuthorityDto: ChatParticipantAuthorityDto,
     @Req() req,
   ): Promise<ChatParticipant> {
     return this.chatService.updateAuthority(
-      target_user_id,
       chatParticipantAuthorityDto,
       req.user.id,
     );
