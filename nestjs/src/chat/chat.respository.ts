@@ -17,6 +17,22 @@ export class ChatRepository extends Repository<Chat> {
     );
   }
 
+  getAllChat(): Promise<Chat[]> {
+    return this.find();
+  }
+
+  getChatById(id: number): Promise<Chat> {
+    return this.findOneBy({ id });
+  }
+
+  deleteChat(id: number) {
+    return this.chatRepository.delete({ id });
+  }
+
+  getChatByChatId(chat_room_id: number): Promise<Chat> {
+    return this.findOneBy({ id: chat_room_id });
+  }
+
   async createChat(createChatDto: CreateChatDto): Promise<Chat> {
     const { room_name, status, password } = createChatDto;
     let chat;
@@ -35,7 +51,7 @@ export class ChatRepository extends Repository<Chat> {
     return chat;
   }
 
-  async getChatRoomWithPassword(chat_room_id: number): Promise<Chat> {
+  getChatRoomWithPassword(chat_room_id: number): Promise<Chat> {
     return this.chatRepository
       .createQueryBuilder('chat')
       .addSelect('chat.password')

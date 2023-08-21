@@ -41,20 +41,14 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return this.save(participant);
   }
 
-  async getChatParticipant(
+  getChatParticipantByUserChatRoom(
     user_id: number,
     chat_room_id,
   ): Promise<ChatParticipant> {
-    const chatParticipant = await this.createQueryBuilder('cp')
+    return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
       .getOne();
-    if (!chatParticipant) {
-      throw new NotFoundException(
-        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
-      );
-    }
-    return chatParticipant;
   }
 
   getChatRoomByUserId(user_id: number): Promise<ChatParticipant[]> {
@@ -67,8 +61,20 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
       },
     });
   }
+
   getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
     return this.find({
+      select: {
+        user: {
+          id: true,
+          nickname: true,
+          intra_name: false,
+          avata_path: false,
+          otp_key: false,
+          created_at: false,
+          updated_at: false,
+        },
+      },
       relations: {
         chat: true,
         user: true,
