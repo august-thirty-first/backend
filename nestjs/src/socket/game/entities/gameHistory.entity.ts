@@ -24,8 +24,8 @@ export class GameHistory extends BaseEntity {
   loser: User;
 
   @Column({ type: 'enum', enum: GameType, nullable: false })
-  game_type: GameType;
+  gameType: GameType;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 }
