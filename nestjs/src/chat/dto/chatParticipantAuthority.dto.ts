@@ -12,4 +12,7 @@ export class ChatParticipantAuthorityDto extends PickType(ChatParticipantDto, [
 
   @IsNotEmpty()
   authority: ChatParticipantAuthority;
+
+  @IsNotEmpty()
+  target_user_id: number;
 }

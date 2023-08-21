@@ -238,7 +238,6 @@ export class ChatService {
   }
 
   async updateAuthority(
-    target_user_id: number,
     chatParticipantAuthorityDto: ChatParticipantAuthorityDto,
     request_user_id: number,
   ) {
@@ -248,12 +247,12 @@ export class ChatService {
     );
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
-        target_user_id,
+        chatParticipantAuthorityDto.target_user_id,
         chatParticipantAuthorityDto.chat_room_id,
       );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chatParticipantAuthorityDto.chat_room_id}`,
+        `Can't find ChatParticipant user_id ${chatParticipantAuthorityDto.target_user_id} chat_room_id ${chatParticipantAuthorityDto.chat_room_id}`,
       );
     } else if (
       chatParticipantAuthorityDto.authority === ChatParticipantAuthority.BOSS
