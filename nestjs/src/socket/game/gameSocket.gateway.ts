@@ -52,6 +52,9 @@ export class GameSocketGateway
     this.gameSocketService.checkBarCollision(curRenderInfo);
     this.gameSocketService.updateScore(curRenderInfo);
     this.gameSocketService.updateGameStatus(curGame);
+    if (curGame.status === GameStatus.GAME_OVER) {
+      this.gameSocketService.createGameHistory(curGame);
+    }
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));

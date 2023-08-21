@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { GameHistory } from './entities/gameHistory.entity';
 import { GameHistoryRepository } from './gameHistory.repository';
 import { GameStatus } from './enum/gameStatus.enum';
+import MatchHistory from './class/matchHistory';
 
 @Injectable()
 export class GameSocketService {
@@ -198,5 +199,32 @@ export class GameSocketService {
     if (this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)) {
       curGame.status = GameStatus.GAME_OVER;
     }
+  }
+
+  async createGameHistory(curGame: Game): Promise<void> {
+    const curRenderInfo = curGame.renderInfo;
+    const gameType = curGame.gameType;
+    const history = new MatchHistory();
+    let winnerId: number;
+    let winnerNickname: string;
+    let loserId: number;
+    let loserNickname: string;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.score >= 10) {
+        winnerId = gamePlayer.userId;
+        winnerNickname = gamePlayer.nickName;
+      } else {
+        loserId = gamePlayer.userId;
+        winnerNickname = gamePlayer.nickName;
+      }
+    }
+    history.updateResult(winnerNickname, loserNickname);
+    await this.gameHistoryRepository.createGameHistory({
+      winnerId,
+      loserId,
+      gameType,
+    });
   }
 }
