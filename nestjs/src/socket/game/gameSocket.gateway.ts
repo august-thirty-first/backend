@@ -47,6 +47,7 @@ export class GameSocketGateway
 
   private updateRenderInfo(curGame: Game) {
     const curRenderInfo = curGame.renderInfo;
+    const curGameRoomId = curGame.id;
     this.gameSocketService.updateBallPosition(curRenderInfo);
     this.gameSocketService.checkWallCollision(curRenderInfo);
     this.gameSocketService.checkBarCollision(curRenderInfo);
@@ -56,9 +57,9 @@ export class GameSocketGateway
       this.gameSocketService.createGameHistory(curGame);
       // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
       this.server
-        .to(curGame.id)
+        .to(curGameRoomId)
         .emit('gameOver', JSON.stringify(curGame.history));
-      // TODO: games 에서 curGame 지우기
+      delete this.games[curGameRoomId];
     }
     this.server
       .to(curGame.id)
@@ -138,12 +139,6 @@ export class GameSocketGateway
     }
     delete this.users[client.id];
     console.log('User left : ', Object.keys(this.users).length);
-    delete this.games[roomId];
-    console.log(
-      `delte game id: ${roomId} games length: ${
-        Object.keys(this.games).length
-      }`,
-    );
   }
 
   @SubscribeMessage('joinQueue')
