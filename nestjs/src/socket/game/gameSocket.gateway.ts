@@ -88,16 +88,23 @@ export class GameSocketGateway
 
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} connected`);
-    const jwtPayload = this.jwtService.decode(
-      parse(client.handshake.headers.cookie).access_token,
-    );
-
-    this.users[client.id] = new User(
-      client.id,
-      jwtPayload['nickname'],
-      UserStatus.ONLINE,
-    );
-    console.log('User join : ', Object.keys(this.users).length);
+    let jwtPayload = null;
+    if (client.handshake.headers?.cookie) {
+      const token = parse(client.handshake.headers.cookie).access_token;
+      try {
+        jwtPayload = this.jwtService.verify(token);
+      } catch (error: any) {
+        jwtPayload = null;
+      }
+    }
+    if (jwtPayload) {
+      this.users[client.id] = new User(
+        client.id,
+        jwtPayload['nickname'],
+        UserStatus.ONLINE,
+      );
+      console.log('User join : ', Object.keys(this.users).length);
+    } else client.disconnect(true);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
