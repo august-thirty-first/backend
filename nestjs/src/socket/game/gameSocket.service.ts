@@ -77,6 +77,7 @@ export class GameSocketService {
     const curRenderInfo = new RenderInfo(curMap);
     const leftSidePlayer = new GamePlayer(
       leftSideUser.socketId,
+      leftSideUser.userId,
       leftSideUser.nickName,
       leftSideUser.status,
       0,
@@ -84,6 +85,7 @@ export class GameSocketService {
     );
     const rightSidePlayer = new GamePlayer(
       rightSideUser.socketId,
+      leftSidePlayer.userId,
       rightSideUser.nickName,
       rightSideUser.status,
       0,
