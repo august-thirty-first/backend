@@ -3,6 +3,7 @@ import { GameStatus } from '../enum/gameStatus.enum';
 import GameHistory from './gameHistory';
 import RenderInfo from './renderInfo';
 import User from './user';
+import { GameType } from '../enum/gameType.enum';
 
 export default class Game {
   renderInfo: RenderInfo | null = null;
@@ -11,7 +12,11 @@ export default class Game {
   voteMapType: MapType[] = [];
   voteMapDifficulty: MapDifficulty[] = [];
 
-  constructor(public id: string, public status: GameStatus) {}
+  constructor(
+    public id: string,
+    public status: GameStatus,
+    public gameType: GameType,
+  ) {}
 
   setRenderInfo(renderInfo: RenderInfo) {
     this.renderInfo = renderInfo;

@@ -21,6 +21,7 @@ import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
+import { GameType } from './enum/gameType.enum';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -160,6 +161,7 @@ export class GameSocketGateway
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
+        GameType.LADDER,
       );
       console.log(
         `new game id: ${this.games[frontSocket.id].id} length : ${
