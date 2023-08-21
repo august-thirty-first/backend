@@ -14,7 +14,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GameHistory } from './entities/gameHistory.entity';
 import { GameHistoryRepository } from './gameHistory.repository';
-import { GameStatus } from './enum/gameStatus.enum';
+import { GameStatus, TARGET_SCORE } from './enum/gameStatus.enum';
 import MatchHistory from './class/matchHistory';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class GameSocketService {
   ) {}
 
   private isGameOver(leftSideScore: number, rightSideScore: number): boolean {
-    if (leftSideScore >= 10 || rightSideScore >= 10) {
+    if (leftSideScore >= TARGET_SCORE || rightSideScore >= TARGET_SCORE) {
       return true;
     }
     return false;
@@ -214,7 +214,7 @@ export class GameSocketService {
 
     for (const id in curRenderInfo.gamePlayers) {
       const gamePlayer = curRenderInfo.gamePlayers[id];
-      if (gamePlayer.score >= 10) {
+      if (gamePlayer.score >= TARGET_SCORE) {
         winnerId = gamePlayer.userId;
         winnerNickname = gamePlayer.nickName;
       } else {
