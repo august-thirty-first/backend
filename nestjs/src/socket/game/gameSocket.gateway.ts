@@ -60,6 +60,7 @@ export class GameSocketGateway
         .to(curGameRoomId)
         .emit('gameOver', JSON.stringify(curGame.history));
       delete this.games[curGameRoomId];
+      // console.log('game deleted after finish');
     } else {
       this.server
         .to(curGame.id)
@@ -112,8 +113,8 @@ export class GameSocketGateway
     if (jwtPayload) {
       this.users[client.id] = new User(
         client.id,
-        jwtPayload['nickname'],
         jwtPayload['id'],
+        jwtPayload['nickname'],
         UserStatus.ONLINE,
       );
       console.log('User join : ', Object.keys(this.users).length);
