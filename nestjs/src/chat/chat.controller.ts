@@ -35,17 +35,13 @@ export class ChatController {
     return this.chatService.createChat(createChatDto, req.user.id);
   }
 
-  @Delete('/:id')
-  deleteChat(@Param('id', ParseIntPipe) id): Promise<void> {
-    return this.chatService.deleteChat(id);
-  }
-
   @Patch('/:id')
   updateChat(
     @Param('id', ParseIntPipe) id,
     @Body() createChatDto: CreateChatDto,
+    @Req() req,
   ): Promise<Chat> {
-    return this.chatService.updateChat(id, createChatDto);
+    return this.chatService.updateChat(id, createChatDto, req.user.id);
   }
 
   @Get('participant/')
