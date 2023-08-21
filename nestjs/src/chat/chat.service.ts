@@ -102,11 +102,16 @@ export class ChatService {
     }
   }
 
-  async updateChat(id: number, createChatDto: CreateChatDto): Promise<Chat> {
+  async updateChat(
+    id: number,
+    createChatDto: CreateChatDto,
+    request_user_id: number,
+  ): Promise<Chat> {
     const chat = await this.getChatById(id);
     if (!chat) {
       throw new NotFoundException(`Can't find Chat id ${id}`);
     }
+    await this.checkAdminOrBoss(request_user_id, chat.id);
     this.checkChatStatusAndPassword(
       createChatDto.status,
       createChatDto.password,
