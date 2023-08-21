@@ -60,10 +60,11 @@ export class GameSocketGateway
         .to(curGameRoomId)
         .emit('gameOver', JSON.stringify(curGame.history));
       delete this.games[curGameRoomId];
+    } else {
+      this.server
+        .to(curGame.id)
+        .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
     }
-    this.server
-      .to(curGame.id)
-      .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
   }
 
   private updateRenderInfoInterval() {
