@@ -20,7 +20,7 @@ import MatchHistory from './class/matchHistory';
 @Injectable()
 export class GameSocketService {
   constructor(
-    @InjectRepository(GameHistory)
+    @InjectRepository(GameHistoryRepository)
     private gameHistoryRepository: GameHistoryRepository,
   ) {}
 
