@@ -101,6 +101,7 @@ export class GameSocketGateway
       this.users[client.id] = new User(
         client.id,
         jwtPayload['nickname'],
+        jwtPayload['id'],
         UserStatus.ONLINE,
       );
       console.log('User join : ', Object.keys(this.users).length);
