@@ -14,6 +14,7 @@ import * as bcrypt from 'bcryptjs';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
 import { ChatJoinDto } from './dto/chatJoin.dto';
+import { ChatParticipantAuthorityDto } from './dto/chatParticipantAuthority.dto';
 
 @Injectable()
 export class ChatService {
@@ -30,7 +31,7 @@ export class ChatService {
         throw new BadRequestException('Protected room require password');
       }
     } else {
-      if (password.trim()) {
+      if (password && password.trim()) {
         throw new BadRequestException(`${status} room do not require password`);
       }
     }
@@ -139,7 +140,8 @@ export class ChatService {
       );
     } else if (
       chatRoom.status === ChatStatus.PROTECTED &&
-      !(await bcrypt.compare(chatJoinDto.password, chatRoom.password))
+      (!chatJoinDto.password ||
+        !(await bcrypt.compare(chatJoinDto.password, chatRoom.password)))
     ) {
       throw new UnauthorizedException('password does not match');
     }
@@ -210,22 +212,25 @@ export class ChatService {
     user_id: number,
   ): Promise<ChatParticipant> {
     const chat = await this.checkChatExist(chatJoinDto.chat_room_id);
-    const participant = await this.chatParticipantRepository.getChatParticipant(
-      user_id,
-      chatJoinDto.chat_room_id,
-    );
-    await this.checkChatStatusAndPassword(chat.status, chatJoinDto.password);
-    if (participant) {
-      //ban 여부를 permission확인할때 보고 채팅방 나가기 또는 kick이 되면 participant가 삭제되기 때문에
-      //때문에 사실상 이 if문은 실행 될 일 없을듯
-      //다만 kick이 되었는데 DB에는 반영이 안되었거나 등등의 시스템 에러때만 들어갈듯
-      return this.joinAlreadyExistChat(participant, user_id);
-    }
+    // const participant = await this.chatParticipantRepository.getChatParticipant(
+    //   user_id,
+    //   chatJoinDto.chat_room_id,
+    // );
+    // await this.checkChatStatusAndPassword(chat.status, chatJoinDto.password);
+    // if (participant) {
+    //   //ban 여부를 permission확인할때 보고 채팅방 나가기 또는 kick이 되면 participant가 삭제되기 때문에
+    //   //때문에 사실상 이 if문은 실행 될 일 없을듯
+    //   //다만 kick이 되었는데 DB에는 반영이 안되었거나 등등의 시스템 에러때만 들어갈듯
+    //   return this.joinAlreadyExistChat(participant, user_id);
+    // }
     //최초로 join을 하는 경우
     return this.joinNotExistChat(chatJoinDto, user_id);
   }
 
-  async checkAdminOrBoss(user_id: number, chat_room_id: number): Promise<void> {
+  async checkAdminOrBoss(
+    user_id: number,
+    chat_room_id: number,
+  ): Promise<ChatParticipantAuthority> {
     await this.checkChatExist(chat_room_id);
     const requestParticipant =
       await this.chatParticipantRepository.getChatParticipant(
@@ -237,26 +242,35 @@ export class ChatService {
         `user_id ${user_id} is not boss or admin`,
       );
     }
+    return requestParticipant.authority;
   }
 
   async updateAuthority(
     target_user_id: number,
-    chat_room_id: number,
-    authority: ChatParticipantAuthority,
+    chatParticipantAuthorityDto: ChatParticipantAuthorityDto,
     request_user_id: number,
   ) {
-    await this.checkAdminOrBoss(request_user_id, chat_room_id);
+    await this.checkAdminOrBoss(
+      request_user_id,
+      chatParticipantAuthorityDto.chat_room_id,
+    );
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipant(
         target_user_id,
-        chat_room_id,
+        chatParticipantAuthorityDto.chat_room_id,
       );
     if (!chatParticipant) {
       throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
+        `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chatParticipantAuthorityDto.chat_room_id}`,
       );
+    } else if (
+      chatParticipantAuthorityDto.authority === ChatParticipantAuthority.BOSS
+    ) {
+      throw new UnauthorizedException(`Can't switch authority to boss`);
+    } else if (chatParticipant.authority === ChatParticipantAuthority.BOSS) {
+      throw new UnauthorizedException(`Can't switch boss's authority`);
     }
-    chatParticipant.authority = authority;
+    chatParticipant.authority = chatParticipantAuthorityDto.authority;
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
@@ -276,7 +290,7 @@ export class ChatService {
         `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
     }
-    if (!chatParticipant.ban) {
+    if (chatParticipant.ban) {
       throw new NotFoundException(`Already banned`);
     }
     chatParticipant.ban = new Date();
@@ -306,7 +320,30 @@ export class ChatService {
     return this.chatParticipantRepository.save(chatParticipant);
   }
 
-  async deleteChatParticipant(target_user_id, chat_room_id, request_user_id) {
+  async leaveChatParticipant(
+    chat_room_id: number,
+    user_id: number,
+  ): Promise<void> {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipant(
+        user_id,
+        chat_room_id,
+      );
+    if (chatParticipant.authority === ChatParticipantAuthority.BOSS) {
+      await this.deleteChat(chat_room_id);
+    } else {
+      await this.chatParticipantRepository.deleteChatParticipant(
+        chat_room_id,
+        user_id,
+      );
+    }
+  }
+
+  async kickChatParticipant(
+    target_user_id: number,
+    chat_room_id: number,
+    request_user_id: number,
+  ): Promise<void> {
     await this.checkAdminOrBoss(request_user_id, chat_room_id);
 
     const result = await this.chatParticipantRepository.delete({

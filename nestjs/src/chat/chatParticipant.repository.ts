@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
 import { ChatRepository } from './chat.respository';
+import { NotFoundException } from '@nestjs/common';
 
 export class ChatParticipantRepository extends Repository<ChatParticipant> {
   constructor(
@@ -44,10 +45,16 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     user_id: number,
     chat_room_id,
   ): Promise<ChatParticipant> {
-    return await this.createQueryBuilder('cp')
+    const chatParticipant = await this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
       .getOne();
+    if (!chatParticipant) {
+      throw new NotFoundException(
+        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
+      );
+    }
+    return chatParticipant;
   }
 
   getChatRoomByUserId(user_id: number): Promise<ChatParticipant[]> {
@@ -70,5 +77,18 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
         chat: { id: chat_room_id },
       },
     });
+  }
+
+  async deleteChatParticipant(chat_room_id: number, user_id: number) {
+    const result = await this.chatParticipantRepository.delete({
+      user: { id: user_id },
+      chat: { id: chat_room_id },
+    });
+
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
+      );
+    }
   }
 }
