@@ -118,7 +118,7 @@ export class HomeGateway
       )
     ) {
       const targetSocket = this.connectionService.findSocketByUserId(
-        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.targetUserId),
       );
       client.emit(
         'kickReturnStatus',
