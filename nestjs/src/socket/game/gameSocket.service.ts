@@ -11,9 +11,25 @@ import { PlayerSide } from './enum/playerSide.enum';
 import GamePlayer from './class/gamePlayer';
 import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { GameHistoryRepository } from './gameHistory.repository';
+import { GameStatus, TARGET_SCORE } from './enum/gameStatus.enum';
+import MatchHistory from './class/matchHistory';
 
 @Injectable()
 export class GameSocketService {
+  constructor(
+    @InjectRepository(GameHistoryRepository)
+    private gameHistoryRepository: GameHistoryRepository,
+  ) {}
+
+  private isGameOver(leftSideScore: number, rightSideScore: number): boolean {
+    if (leftSideScore >= TARGET_SCORE || rightSideScore >= TARGET_SCORE) {
+      return true;
+    }
+    return false;
+  }
+
   getRoomId(socket: Socket): string {
     const rooms: Set<string> = socket.rooms;
     let roomId: string;
@@ -60,6 +76,7 @@ export class GameSocketService {
     const curRenderInfo = new RenderInfo(curMap);
     const leftSidePlayer = new GamePlayer(
       leftSideUser.socketId,
+      leftSideUser.userId,
       leftSideUser.nickName,
       leftSideUser.status,
       0,
@@ -67,6 +84,7 @@ export class GameSocketService {
     );
     const rightSidePlayer = new GamePlayer(
       rightSideUser.socketId,
+      leftSidePlayer.userId,
       rightSideUser.nickName,
       rightSideUser.status,
       0,
@@ -163,5 +181,51 @@ export class GameSocketService {
       );
       curBall.initializeVelocity();
     }
+  }
+
+  updateGameStatus(curGame: Game): void {
+    const curRenderInfo = curGame.renderInfo;
+    let leftSidePlayer: GamePlayer;
+    let rightSidePlayer: GamePlayer;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.side === PlayerSide.LEFT) {
+        leftSidePlayer = gamePlayer;
+      } else {
+        rightSidePlayer = gamePlayer;
+      }
+    }
+
+    if (this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)) {
+      curGame.status = GameStatus.GAME_OVER;
+    }
+  }
+
+  async createGameHistory(curGame: Game): Promise<void> {
+    const curRenderInfo = curGame.renderInfo;
+    const gameType = curGame.gameType;
+    const history = new MatchHistory();
+    let winnerId: number;
+    let winnerNickname: string;
+    let loserId: number;
+    let loserNickname: string;
+
+    for (const id in curRenderInfo.gamePlayers) {
+      const gamePlayer = curRenderInfo.gamePlayers[id];
+      if (gamePlayer.score >= TARGET_SCORE) {
+        winnerId = gamePlayer.userId;
+        winnerNickname = gamePlayer.nickName;
+      } else {
+        loserId = gamePlayer.userId;
+        winnerNickname = gamePlayer.nickName;
+      }
+    }
+    history.updateResult(winnerNickname, loserNickname);
+    await this.gameHistoryRepository.createGameHistory({
+      winnerId,
+      loserId,
+      gameType,
+    });
   }
 }

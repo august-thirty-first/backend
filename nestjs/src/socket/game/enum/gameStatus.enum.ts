@@ -1,4 +1,4 @@
-export const TARGET_SCORE = 10;
+export const TARGET_SCORE = 3;
 
 export enum GameStatus {
   PRE_GAME,

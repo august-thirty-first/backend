@@ -21,6 +21,7 @@ import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
+import { GameType } from './enum/gameType.enum';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -46,13 +47,24 @@ export class GameSocketGateway
 
   private updateRenderInfo(curGame: Game) {
     const curRenderInfo = curGame.renderInfo;
+    const curGameRoomId = curGame.id;
     this.gameSocketService.updateBallPosition(curRenderInfo);
     this.gameSocketService.checkWallCollision(curRenderInfo);
     this.gameSocketService.checkBarCollision(curRenderInfo);
     this.gameSocketService.updateScore(curRenderInfo);
+    this.gameSocketService.updateGameStatus(curGame);
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
+    if (curGame.status === GameStatus.GAME_OVER) {
+      this.gameSocketService.createGameHistory(curGame);
+      // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
+      this.server
+        .to(curGameRoomId)
+        .emit('gameOver', JSON.stringify(curGame.history));
+      delete this.games[curGameRoomId];
+      console.log('game deleted after finish');
+    }
   }
 
   private updateRenderInfoInterval() {
@@ -88,16 +100,24 @@ export class GameSocketGateway
 
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} connected`);
-    const jwtPayload = this.jwtService.decode(
-      parse(client.handshake.headers.cookie).access_token,
-    );
-
-    this.users[client.id] = new User(
-      client.id,
-      jwtPayload['nickname'],
-      UserStatus.ONLINE,
-    );
-    console.log('User join : ', Object.keys(this.users).length);
+    let jwtPayload = null;
+    if (client.handshake.headers?.cookie) {
+      const token = parse(client.handshake.headers.cookie).access_token;
+      try {
+        jwtPayload = this.jwtService.verify(token);
+      } catch (error: any) {
+        jwtPayload = null;
+      }
+    }
+    if (jwtPayload) {
+      this.users[client.id] = new User(
+        client.id,
+        jwtPayload['id'],
+        jwtPayload['nickname'],
+        UserStatus.ONLINE,
+      );
+      console.log('User join : ', Object.keys(this.users).length);
+    } else client.disconnect(true);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -120,12 +140,6 @@ export class GameSocketGateway
     }
     delete this.users[client.id];
     console.log('User left : ', Object.keys(this.users).length);
-    delete this.games[roomId];
-    console.log(
-      `delte game id: ${roomId} games length: ${
-        Object.keys(this.games).length
-      }`,
-    );
   }
 
   @SubscribeMessage('joinQueue')
@@ -152,6 +166,7 @@ export class GameSocketGateway
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
+        GameType.LADDER,
       );
       console.log(
         `new game id: ${this.games[frontSocket.id].id} length : ${
