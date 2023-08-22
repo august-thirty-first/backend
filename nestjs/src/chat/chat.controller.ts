@@ -24,7 +24,7 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
   @Get()
   getAllChat(): Promise<Chat[]> {
-    return this.chatService.getAllChat();
+    return this.chatService.getOpenChat();
   }
 
   @Post()

@@ -26,9 +26,9 @@ export class ChatService {
   ) {}
 
   checkChatStatusAndPassword(status: ChatStatus, password: string) {
-    if (status === ChatStatus.PROTECTED) {
+    if (status === ChatStatus.PROTECTED || status === ChatStatus.PRIVATE) {
       if (!password || !password.trim()) {
-        throw new BadRequestException('Protected room require password');
+        throw new BadRequestException(`${status} room require password`);
       }
     } else {
       if (password && password.trim()) {
@@ -86,8 +86,8 @@ export class ChatService {
     return result;
   }
 
-  getAllChat(): Promise<Chat[]> {
-    return this.chatRepository.getAllChat();
+  getOpenChat(): Promise<Chat[]> {
+    return this.chatRepository.getOpenChat();
   }
 
   getChatById(id: number): Promise<Chat> {
@@ -207,8 +207,6 @@ export class ChatService {
           user_id,
         );
       }
-    } else {
-      //추후에 private room에 대한 로직 들어갈 예정
     }
   }
 
@@ -223,6 +221,9 @@ export class ChatService {
       throw new BadRequestException(
         `Chat room id ${chatJoinDto.chat_room_id} does not exist`,
       );
+    }
+    if (chat.status === ChatStatus.PRIVATE) {
+      throw new BadRequestException('Can not join private room');
     }
     const participant =
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
