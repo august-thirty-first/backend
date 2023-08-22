@@ -15,7 +15,6 @@ import { JwtService } from '@nestjs/jwt';
 import { MessageDto } from './dto/message.dto';
 import { RoomIdDto } from './dto/roomId.dto';
 import { ConnectionService } from './connection.service';
-import { parse } from 'cookie';
 import { MessageService } from './message.service';
 import { SkillDto } from './dto/skill.dto';
 
@@ -101,6 +100,42 @@ export class HomeGateway
         'muteReturnStatus',
         'You do not have the right to mute others',
       );
+    }
+  }
+
+  @SubscribeMessage('ban')
+  handleBanSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      parseInt(skillDto.targetUserId),
+    );
+    if (
+      this.messageService.isBossOrAdmin(
+        client['user_id'],
+        parseInt(skillDto.roomId),
+      )
+    ) {
+      if (targetSocket) {
+        const rooms = targetSocket.rooms;
+        if (rooms && rooms.has(skillDto.roomId)) {
+          targetSocket.leave(skillDto.roomId);
+          targetSocket.emit(
+            'ban',
+            `You have been left from the room: ${skillDto.roomId}`,
+          );
+          client.emit(
+            'banReturnStatus',
+            'Successfully banned the user and left them from the room',
+          );
+        }
+      } else {
+        client.emit('banReturnStatus', 'Target User is not connected');
+      }
+    } else {
+      client.emit('banReturnStatus', 'You do not have the right to ban others');
     }
   }
 
