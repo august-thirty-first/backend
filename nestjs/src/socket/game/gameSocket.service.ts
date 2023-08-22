@@ -233,6 +233,7 @@ export class GameSocketService {
       }
     }
     history.updateResult(winnerNickname, loserNickname);
+    curGame.setGameHistory(history);
     await this.gameHistoryRepository.createGameHistory({
       winnerId,
       loserId,
