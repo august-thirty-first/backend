@@ -17,7 +17,7 @@ import { RoomIdDto } from './dto/roomId.dto';
 import { ConnectionService } from './connection.service';
 import { parse } from 'cookie';
 import { MessageService } from './message.service';
-import { MuteDto } from './dto/mute.dto';
+import { SkillDto } from './dto/skill.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -87,19 +87,47 @@ export class HomeGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
-    const muteDto: MuteDto = JSON.parse(payload);
+    const skillDto: SkillDto = JSON.parse(payload);
 
     if (
       this.messageService.isBossOrAdmin(
         client['user_id'],
-        parseInt(muteDto.roomId),
+        parseInt(skillDto.roomId),
       )
     ) {
-      client.emit('muteReturnStatus', this.messageService.muteUser(muteDto));
+      client.emit('muteReturnStatus', this.messageService.muteUser(skillDto));
     } else {
       client.emit(
         'muteReturnStatus',
         'You do not have the right to mute others',
+      );
+    }
+  }
+
+  @SubscribeMessage('kick')
+  handleKickSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+
+    if (
+      this.messageService.isBossOrAdmin(
+        client['user_id'],
+        parseInt(skillDto.roomId),
+      )
+    ) {
+      const targetSocket = this.connectionService.findSocketByUserId(
+        parseInt(skillDto.target_user_id),
+      );
+      client.emit(
+        'kickReturnStatus',
+        this.messageService.kickUser(skillDto, targetSocket),
+      );
+    } else {
+      client.emit(
+        'kickReturnStatus',
+        'You do not have the right to kick others',
       );
     }
   }

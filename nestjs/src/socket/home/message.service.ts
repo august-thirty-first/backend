@@ -7,7 +7,7 @@ import { ChatParticipantAuthority } from 'src/chat/enum/chatParticipant.authorit
 import { parse } from 'cookie';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
-import { MuteDto } from './dto/mute.dto';
+import { SkillDto } from './dto/skill.dto';
 
 @Injectable()
 export class MessageService {
@@ -52,25 +52,54 @@ export class MessageService {
     return result;
   }
 
-  async muteUser(muteDto: MuteDto): Promise<string> {
+  async muteUser(skillDto: SkillDto): Promise<string> {
     if (
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
-        parseInt(muteDto.target_user_id),
-        parseInt(muteDto.roomId),
+        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.roomId),
       )
     ) {
-      const muteUser = this.mute.get([muteDto.target_user_id, muteDto.roomId]);
+      const muteUser = this.mute.get([
+        skillDto.target_user_id,
+        skillDto.roomId,
+      ]);
       if (!muteUser) {
-        this.mute.set([muteDto.target_user_id, muteDto.roomId], true);
+        this.mute.set([skillDto.target_user_id, skillDto.roomId], true);
         setTimeout(() => {
-          this.mute.delete([muteDto.target_user_id, muteDto.roomId]);
+          this.mute.delete([skillDto.target_user_id, skillDto.roomId]);
         }, 10000); //10초동안 mute
-        return `user ${muteDto.target_user_id} is muted`;
+        return `user ${skillDto.target_user_id} is muted`;
       } else {
-        return `user ${muteDto.target_user_id} is already muted`;
+        return `user ${skillDto.target_user_id} is already muted`;
       }
     }
-    return `user ${muteDto.target_user_id} is not in chat room id ${muteDto.roomId}`;
+    return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+  }
+
+  async kickUser(skillDto: SkillDto, targetSocket: Socket): Promise<string> {
+    if (!targetSocket) {
+      return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+    }
+
+    const willKickedUser =
+      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.roomId),
+      );
+    if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
+      return `Can not kick boss ${skillDto.target_user_id}`;
+    }
+    try {
+      await this.chatParticipantRepository.deleteChatParticipant(
+        parseInt(skillDto.roomId),
+        parseInt(skillDto.target_user_id),
+      );
+    } catch {
+      return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+    }
+    targetSocket.leave(skillDto.roomId);
+    targetSocket.emit(`kick`, 'You have been kicked from the room');
+    return `user ${skillDto.target_user_id} is kicked`;
   }
 
   isImMute(user_id: string, chat_room_id: string): boolean {
