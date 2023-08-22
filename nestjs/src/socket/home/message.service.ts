@@ -55,51 +55,48 @@ export class MessageService {
   async muteUser(skillDto: SkillDto): Promise<string> {
     if (
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
-        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.targetUserId),
         parseInt(skillDto.roomId),
       )
     ) {
-      const muteUser = this.mute.get([
-        skillDto.target_user_id,
-        skillDto.roomId,
-      ]);
+      const muteUser = this.mute.get([skillDto.targetUserId, skillDto.roomId]);
       if (!muteUser) {
-        this.mute.set([skillDto.target_user_id, skillDto.roomId], true);
+        this.mute.set([skillDto.targetUserId, skillDto.roomId], true);
         setTimeout(() => {
-          this.mute.delete([skillDto.target_user_id, skillDto.roomId]);
+          this.mute.delete([skillDto.targetUserId, skillDto.roomId]);
         }, 10000); //10초동안 mute
-        return `user ${skillDto.target_user_id} is muted`;
+        return `user ${skillDto.targetUserId} is muted`;
       } else {
-        return `user ${skillDto.target_user_id} is already muted`;
+        return `user ${skillDto.targetUserId} is already muted`;
       }
     }
-    return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+    return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
   }
 
   async kickUser(skillDto: SkillDto, targetSocket: Socket): Promise<string> {
     if (!targetSocket) {
-      return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
     }
 
     const willKickedUser =
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
-        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.targetUserId),
         parseInt(skillDto.roomId),
       );
     if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
-      return `Can not kick boss ${skillDto.target_user_id}`;
+      return `Can not kick boss ${skillDto.targetUserId}`;
     }
     try {
       await this.chatParticipantRepository.deleteChatParticipant(
         parseInt(skillDto.roomId),
-        parseInt(skillDto.target_user_id),
+        parseInt(skillDto.targetUserId),
       );
     } catch {
-      return `user ${skillDto.target_user_id} is not in chat room id ${skillDto.roomId}`;
+      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
     }
     targetSocket.leave(skillDto.roomId);
     targetSocket.emit(`kick`, 'You have been kicked from the room');
-    return `user ${skillDto.target_user_id} is kicked`;
+    return `user ${skillDto.targetUserId} is kicked`;
   }
 
   isImMute(user_id: string, chat_room_id: string): boolean {
