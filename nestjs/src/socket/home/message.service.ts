@@ -55,22 +55,22 @@ export class MessageService {
   async muteUser(muteDto: MuteDto): Promise<string> {
     if (
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
-        parseInt(muteDto.target_user_id),
+        parseInt(muteDto.targetUserId),
         parseInt(muteDto.roomId),
       )
     ) {
-      const muteUser = this.mute.get([muteDto.target_user_id, muteDto.roomId]);
+      const muteUser = this.mute.get([muteDto.targetUserId, muteDto.roomId]);
       if (!muteUser) {
-        this.mute.set([muteDto.target_user_id, muteDto.roomId], true);
+        this.mute.set([muteDto.targetUserId, muteDto.roomId], true);
         setTimeout(() => {
-          this.mute.delete([muteDto.target_user_id, muteDto.roomId]);
+          this.mute.delete([muteDto.targetUserId, muteDto.roomId]);
         }, 10000); //10초동안 mute
-        return `user ${muteDto.target_user_id} is muted`;
+        return `user ${muteDto.targetUserId} is muted`;
       } else {
-        return `user ${muteDto.target_user_id} is already muted`;
+        return `user ${muteDto.targetUserId} is already muted`;
       }
     }
-    return `user ${muteDto.target_user_id} is not in chat room id ${muteDto.roomId}`;
+    return `user ${muteDto.targetUserId} is not in chat room id ${muteDto.roomId}`;
   }
 
   isImMute(user_id: string, chat_room_id: string): boolean {
