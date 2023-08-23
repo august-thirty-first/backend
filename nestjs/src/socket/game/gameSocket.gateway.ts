@@ -22,6 +22,7 @@ import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
 import { GameType } from './enum/gameType.enum';
+import { GameConnectionService } from './gameConnection.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -35,6 +36,7 @@ export class GameSocketGateway
   constructor(
     @Inject(NormalJwt) private readonly jwtService: JwtService,
     private readonly gameSocketService: GameSocketService,
+    private readonly gameConnectionService: GameConnectionService,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -118,18 +120,26 @@ export class GameSocketGateway
       }
     }
     if (jwtPayload) {
-      this.users[client.id] = new User(
-        client.id,
-        jwtPayload['id'],
-        jwtPayload['nickname'],
-        UserStatus.ONLINE,
-      );
-      console.log('User join : ', Object.keys(this.users).length);
-    } else client.disconnect(true);
+      if (
+        this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
+      ) {
+        this.users[client.id] = new User(
+          client.id,
+          jwtPayload['id'],
+          jwtPayload['nickname'],
+          UserStatus.ONLINE,
+        );
+        console.log('User join : ', Object.keys(this.users).length);
+      } else {
+        // TODO: 동일한 유저가 게임을 하는 경우 막기
+      }
+    } else client.disconnect();
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
+    const disconnectedUser: User = this.users[client.id];
+    this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
