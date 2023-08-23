@@ -49,7 +49,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
-      .andWhere('cp.ban IS NOT NULL')
+      .andWhere('cp.ban IS NULL')
       .getOne();
   }
 
