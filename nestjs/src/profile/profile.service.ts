@@ -43,6 +43,27 @@ export class ProfileService {
     return profile;
   }
 
+  async getFriendStatus(
+    my_id: number,
+    target_id: number,
+  ): Promise<FriendRequestStatus> {
+    let result: FriendRequestStatus = null;
+    const prev_request: FriendRequesting | null =
+      await this.friendRequestingRepository.findPrevRequest(my_id, target_id);
+
+    switch (prev_request?.status) {
+      case RequestStatus.Allow:
+        result = FriendRequestStatus.Allow;
+        break;
+      case RequestStatus.Requesting:
+        if (prev_request.to_user_id.id === my_id)
+          result = FriendRequestStatus.RecvRequest;
+        else result = FriendRequestStatus.SendRequest;
+        break;
+    }
+    return result;
+  }
+
   async searchByUserProfile(
     my_id: number,
     nickname: string,
@@ -54,19 +75,7 @@ export class ProfileService {
     const result = plainToClass(SearchUserDto, profile, {
       strategy: 'excludeAll',
     });
-    result.friend_status = null;
-    const prev_request: FriendRequesting | null =
-      await this.friendRequestingRepository.findPrevRequest(my_id, profile.id);
-    switch (prev_request?.status) {
-      case RequestStatus.Allow:
-        result.friend_status = FriendRequestStatus.Allow;
-        break;
-      case RequestStatus.Requesting:
-        if (prev_request.to_user_id.id === my_id)
-          result.friend_status = FriendRequestStatus.RecvRequest;
-        else result.friend_status = FriendRequestStatus.SendRequest;
-        break;
-    }
+    result.friend_status = await this.getFriendStatus(my_id, profile.id);
     return result;
   }
 
