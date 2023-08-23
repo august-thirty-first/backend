@@ -10,12 +10,14 @@ import { UserRepository } from 'src/auth/user.repository';
 import { User } from 'src/auth/entities/User.entity';
 import { PassportsModule } from 'src/passports/passports.module';
 import { HomeModule } from 'src/socket/home/home.module';
+import { GameSocketModule } from 'src/socket/game/gameSocket.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Friends, FriendRequesting]),
     PassportsModule,
     HomeModule,
+    GameSocketModule,
   ],
   controllers: [FriendController],
   providers: [
