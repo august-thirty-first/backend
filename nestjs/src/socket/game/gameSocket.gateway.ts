@@ -175,7 +175,6 @@ export class GameSocketGateway
       backSocket.leave(backSocket.id);
       backSocket.join(frontSocket.id);
       this.ladderQueue = [];
-      this.server.to(frontSocket.id).emit('joinGame');
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
@@ -190,6 +189,7 @@ export class GameSocketGateway
       rightUser.updateRoomId(frontSocket.id);
       this.games[frontSocket.id].addUser(leftUser);
       this.games[frontSocket.id].addUser(rightUser);
+      this.server.to(frontSocket.id).emit('joinGame');
     }
   }
 
