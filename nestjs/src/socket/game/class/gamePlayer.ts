@@ -10,12 +10,13 @@ export default class GamePlayer extends User {
 
   constructor(
     socketId: string,
+    userId: number,
     nickName: string,
     status: UserStatus,
     public score: number,
     public side: PlayerSide,
   ) {
-    super(socketId, nickName, status);
+    super(socketId, userId, nickName, status);
     this.bar = new Bar(side, BAR_COLOR);
   }
 

@@ -1,4 +1,4 @@
-export default class GameHistory {
+export default class MatchHistory {
   winnerNickname: string;
   loserNickname: string;
 
