@@ -122,26 +122,26 @@ export class GameSocketGateway
       }
     }
     if (jwtPayload) {
-      if (
-        this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
-      ) {
-        this.users[client.id] = new User(
-          client.id,
-          jwtPayload['id'],
-          jwtPayload['nickname'],
-          UserStatus.PRE_GAME,
-        );
-        console.log('User join : ', Object.keys(this.users).length);
-      } else {
-        // TODO: 동일한 유저가 게임을 하는 경우 막기
-      }
+      // if (
+      //   this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
+      // ) {
+      this.users[client.id] = new User(
+        client.id,
+        jwtPayload['id'],
+        jwtPayload['nickname'],
+        UserStatus.PRE_GAME,
+      );
+      console.log('User join : ', Object.keys(this.users).length);
+      // } else {
+      //   // TODO: 동일한 유저가 게임을 하는 경우 막기
+      // }
     } else client.disconnect();
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
-    const disconnectedUser: User = this.users[client.id];
-    this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    // const disconnectedUser: User = this.users[client.id];
+    // this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
