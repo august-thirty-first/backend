@@ -69,8 +69,10 @@ export class GameSocketGateway
           this.server
             .to(curGameRoomId)
             .emit('gameOver', JSON.stringify(curGame.history));
+          break;
         case GameStatus.GAME_OVER_IN_PLAYING:
           this.server.to(curGameRoomId).emit('gameOverInPlaying');
+          break;
       }
       delete this.games[curGameRoomId];
       console.log('game deleted after finish');
