@@ -51,17 +51,25 @@ export class GameSocketGateway
     this.gameSocketService.updateBallPosition(curRenderInfo);
     this.gameSocketService.checkWallCollision(curRenderInfo);
     this.gameSocketService.checkBarCollision(curRenderInfo);
-    this.gameSocketService.updateScore(curRenderInfo);
+    this.gameSocketService.updateScore(curGame);
     this.gameSocketService.updateGameStatus(curGame);
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
-    if (curGame.status === GameStatus.GAME_OVER) {
+    if (
+      curGame.status === GameStatus.GAME_OVER ||
+      curGame.status === GameStatus.GAME_OVER_IN_PLAYING
+    ) {
       this.gameSocketService.createGameHistory(curGame);
       // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
-      this.server
-        .to(curGameRoomId)
-        .emit('gameOver', JSON.stringify(curGame.history));
+      switch (curGame.status) {
+        case GameStatus.GAME_OVER:
+          this.server
+            .to(curGameRoomId)
+            .emit('gameOver', JSON.stringify(curGame.history));
+        case GameStatus.GAME_OVER_IN_PLAYING:
+          this.server.to(curGameRoomId).emit('gameOverInPlaying');
+      }
       delete this.games[curGameRoomId];
       console.log('game deleted after finish');
     }
@@ -131,12 +139,12 @@ export class GameSocketGateway
         // 룸에 남아있는 상대방에게 게임 종료 이벤트 전송 후 게임 삭제
         this.server.to(roomId).emit('gameOverInOptionPage');
         delete this.games[roomId];
-      console.log('game deleted in option selection page');
+        console.log('game deleted in option selection page');
       } else if (this.games[roomId].status === GameStatus.IN_GAME) {
-        // 게임 도중 소켓 연결이 끊겼을 때
-        this.server.to(roomId).emit('gameOverInPlaying');
         // 연결이 끊긴 플레이어의 상태를 offline으로 변경
-        curGame.renderInfo.gamePlayers[client.id].updateStatus(UserStatus.OFFLINE);
+        curGame.renderInfo.gamePlayers[client.id].updateStatus(
+          UserStatus.OFFLINE,
+        );
       }
     } else {
       // 대기열에서 끊긴 경우 (대기열 창 or 1:1 수락창)

@@ -150,7 +150,8 @@ export class GameSocketService {
     }
   }
 
-  updateScore(curRenderInfo: RenderInfo): void {
+  updateScore(curGame: Game): void {
+    const curRenderInfo = curGame.renderInfo;
     const curBall = curRenderInfo.ball;
     let leftSidePlayer: GamePlayer;
     let rightSidePlayer: GamePlayer;
@@ -164,7 +165,10 @@ export class GameSocketService {
       }
     }
 
-    if (leftSidePlayer.status === UserStatus.ONLINE && rightSidePlayer.status === UserStatus.ONLINE) {
+    if (
+      leftSidePlayer.status === UserStatus.ONLINE &&
+      rightSidePlayer.status === UserStatus.ONLINE
+    ) {
       // leftSidePlayer 득점
       if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
         leftSidePlayer.score += 1;
@@ -184,6 +188,7 @@ export class GameSocketService {
         curBall.initializeVelocity();
       }
     } else {
+      curGame.updateStatus(GameStatus.GAME_OVER_IN_PLAYING);
       if (leftSidePlayer.status === UserStatus.OFFLINE) {
         leftSidePlayer.score = 0;
         rightSidePlayer.score = TARGET_SCORE;
