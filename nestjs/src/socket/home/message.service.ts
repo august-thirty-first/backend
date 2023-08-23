@@ -8,19 +8,35 @@ import { parse } from 'cookie';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
 import { SkillDto } from './dto/skill.dto';
+import { BlackListRepository } from './blackList.repository';
 
 @Injectable()
 export class MessageService {
   constructor(
     @Inject(NormalJwt)
     private readonly jwtService: JwtService,
+    @InjectRepository(BlackListRepository)
+    private blackListRepository: BlackListRepository,
     @InjectRepository(ChatRepository)
     private chatRepository: ChatRepository,
     @InjectRepository(ChatParticipantRepository)
     private chatParticipantRepository: ChatParticipantRepository,
   ) {}
-  //           Map<[user_id, chat_room_id], true/false>
+  //            Map<[user_id, chat_room_id], true/false>
   private mute: Map<[string, string], boolean> = new Map();
+  //            Map<[from_user_id, to_user_id], true/false>
+  private blackList: Map<[string, string], boolean> = new Map();
+
+  async initBlackList(fromUserId: number) {
+    const myBlackList = await this.blackListRepository.getBlackListByFromId(
+      fromUserId,
+    );
+    // myBlackList 배열을 사용하여 blackList 맵 채우기
+    myBlackList.forEach(item => {
+      this.blackList.set([fromUserId.toString(), item.to.id.toString()], true);
+    });
+  }
+
   getJwt(client: Socket) {
     let jwt = null;
     if (client.handshake.headers?.cookie) {

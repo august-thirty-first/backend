@@ -55,6 +55,7 @@ export class HomeGateway
         }, client['token_expiration'] - Date.now()); // timeOut 설정
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
+        this.messageService.initBlackList(jwt['id']);
       } else {
         client.emit('multipleConnect', '다중 로그인');
         client.disconnect(true);
