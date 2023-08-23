@@ -182,8 +182,6 @@ export class GameSocketGateway
       const leftUser = this.users[frontSocket.id];
       const rightUser = this.users[backSocket.id];
 
-      leftUser.updateStatus(UserStatus.IN_GAME);
-      rightUser.updateStatus(UserStatus.IN_GAME);
       if (frontSocket.id === backSocket.id) {
         console.log(`same socket! pop() queue`);
         this.ladderQueue.pop();
@@ -203,6 +201,8 @@ export class GameSocketGateway
           Object.keys(this.games).length
         }`,
       );
+      leftUser.updateStatus(UserStatus.IN_GAME);
+      rightUser.updateStatus(UserStatus.IN_GAME);
       leftUser.updateRoomId(frontSocket.id);
       rightUser.updateRoomId(frontSocket.id);
       this.games[frontSocket.id].addUser(leftUser);
