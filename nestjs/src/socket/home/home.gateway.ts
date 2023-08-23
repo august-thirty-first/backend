@@ -93,13 +93,19 @@ export class HomeGateway
     const targetSocket = this.connectionService.findSocketByUserId(
       parseInt(directMessageDto.targetUserId),
     );
-    //서로 block이 된 상태인지 확인하는 로직 필요
     if (targetSocket) {
-      this.handleLeaveAllRoom(client);
-      targetSocket.emit(
-        'directMessage',
-        `${client['nickname']}: ${directMessageDto.inputMessage}`,
-      );
+      if (
+        !this.messageService.isBlackList(
+          directMessageDto.targetUserId,
+          client['user_id'],
+        )
+      ) {
+        this.handleLeaveAllRoom(client);
+        targetSocket.emit(
+          'directMessage',
+          `${client['nickname']}: ${directMessageDto.inputMessage}`,
+        );
+      }
     } else {
       client.emit('directMessage', `${targetSocket['nickname']} is offline`);
     }
