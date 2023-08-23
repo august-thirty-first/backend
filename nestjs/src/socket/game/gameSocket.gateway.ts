@@ -114,7 +114,7 @@ export class GameSocketGateway
         client.id,
         jwtPayload['id'],
         jwtPayload['nickname'],
-        UserStatus.ONLINE,
+        UserStatus.PRE_GAME,
       );
       console.log('User join : ', Object.keys(this.users).length);
     } else client.disconnect(true);
@@ -162,6 +162,8 @@ export class GameSocketGateway
       const leftUser = this.users[frontSocket.id];
       const rightUser = this.users[backSocket.id];
 
+      leftUser.updateStatus(UserStatus.IN_GAME);
+      rightUser.updateStatus(UserStatus.IN_GAME);
       if (frontSocket.id === backSocket.id) {
         console.log(`same socket! pop() queue`);
         this.ladderQueue.pop();
@@ -258,6 +260,15 @@ export class GameSocketGateway
           curGamePlayerBar.updatePosition(0, curGamePlayerBar.velocity.y);
         }
         break;
+    }
+  }
+
+  @SubscribeMessage('validateSocket')
+  handleValidateSocket(@ConnectedSocket() client: Socket) {
+    if (this.users[client.id].status === UserStatus.IN_GAME) {
+      client.emit('validateSuccess');
+    } else {
+      client.emit('validateFail');
     }
   }
 }
