@@ -19,4 +19,8 @@ export class ConnectionService {
   removeUserConnection(userId: number): void {
     this.userConnections.delete(userId);
   }
+
+  findSocketByUserId(userId: number): Socket | undefined {
+    return this.userConnections[userId];
+  }
 }
