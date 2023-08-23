@@ -5,20 +5,20 @@ import {
   UnauthorizedException,
   HttpStatus,
 } from '@nestjs/common';
-import unauthorizedException from './interface/unauthorized.interface';
+import { Response } from 'express';
 
 @Catch(UnauthorizedException)
 export class UnauthorizedExceptionFilter implements ExceptionFilter {
   catch(exception: UnauthorizedException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const result: unauthorizedException = {
+    const response: Response = ctx.getResponse();
+    if (exception.message === 'Unauthorized') {
+      response.clearCookie('access_token');
+      exception.message = 'UNAUTHORIZED';
+    }
+    response.status(HttpStatus.UNAUTHORIZED).json({
       statusCode: HttpStatus.UNAUTHORIZED,
-      message: 'UNAUTHORIZED',
-    };
-    response
-      .clearCookie('access_token')
-      .status(HttpStatus.UNAUTHORIZED)
-      .json(result);
+      message: exception.message,
+    });
   }
 }
