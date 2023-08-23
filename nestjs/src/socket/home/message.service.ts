@@ -37,6 +37,39 @@ export class MessageService {
     });
   }
 
+  async setBlackList(fromUserId: string, toUserId: string): Promise<string> {
+    if (this.blackList.has([fromUserId, toUserId])) {
+      return 'already in black list';
+    }
+    await this.blackListRepository.createBlackList(
+      parseInt(fromUserId),
+      parseInt(toUserId),
+    );
+    this.blackList.set([fromUserId, toUserId], true);
+    return 'set black list success';
+  }
+
+  async unSetBlackList(fromUserId: string, toUserId: string): Promise<string> {
+    if (!this.blackList.has([fromUserId, toUserId])) {
+      return 'already not in black list';
+    }
+
+    const result = await this.blackListRepository.deleteBlackList(
+      parseInt(fromUserId),
+      parseInt(toUserId),
+    );
+    if (result.affected == 0) {
+      return 'delete error';
+    } else {
+      this.blackList.delete([fromUserId, toUserId]);
+    }
+    return 'unset black list success';
+  }
+
+  isBlackList(fromUserId: string, toUserId: string): boolean {
+    return this.blackList.has([fromUserId, toUserId]);
+  }
+
   getJwt(client: Socket) {
     let jwt = null;
     if (client.handshake.headers?.cookie) {

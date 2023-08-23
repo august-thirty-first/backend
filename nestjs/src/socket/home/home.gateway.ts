@@ -18,6 +18,7 @@ import { ConnectionService } from './connection.service';
 import { MessageService } from './message.service';
 import { SkillDto } from './dto/skill.dto';
 import { directMessageDto } from './dto/directMessage.dto';
+import { UserIdDto } from './dto/userId.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -102,6 +103,38 @@ export class HomeGateway
     } else {
       client.emit('directMessage', `${targetSocket['nickname']} is offline`);
     }
+  }
+
+  @SubscribeMessage('setBlackList')
+  async handleBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'setBlackList',
+      await this.messageService.setBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
+  }
+
+  @SubscribeMessage('unSetBlackList')
+  async handleUnSetBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'unSetBlackList',
+      await this.messageService.unSetBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
   }
 
   @SubscribeMessage('mute')

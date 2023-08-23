@@ -26,12 +26,7 @@ export class BlackListRepository extends Repository<BlackList> {
       from: { id: fromUserId },
       to: { id: toUserId },
     });
-    try {
-      await this.save(blackList);
-    } catch (error) {
-      console.log(error);
-    }
-    return blackList;
+    return this.save(blackList);
   }
 
   deleteBlackList(fromUserId: number, toUserId: number): Promise<DeleteResult> {
