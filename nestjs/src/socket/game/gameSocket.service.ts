@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { GameHistoryRepository } from './gameHistory.repository';
 import { GameStatus, TARGET_SCORE } from './enum/gameStatus.enum';
 import MatchHistory from './class/matchHistory';
+import { UserStatus } from './enum/userStatus.enum';
 
 @Injectable()
 export class GameSocketService {
@@ -163,23 +164,33 @@ export class GameSocketService {
       }
     }
 
-    // leftSidePlayer 득점
-    if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
-      leftSidePlayer.score += 1;
-      curBall.initializePosition(
-        curRenderInfo.clientWidth / 2,
-        curRenderInfo.clientHeight / 2,
-      );
-      curBall.initializeVelocity();
-    }
-    // rightSidePlayer 득점
-    if (curBall.position.x - curBall.radius <= 0) {
-      rightSidePlayer.score += 1;
-      curBall.initializePosition(
-        curRenderInfo.clientWidth / 2,
-        curRenderInfo.clientHeight / 2,
-      );
-      curBall.initializeVelocity();
+    if (leftSidePlayer.status === UserStatus.ONLINE && rightSidePlayer.status === UserStatus.ONLINE) {
+      // leftSidePlayer 득점
+      if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
+        leftSidePlayer.score += 1;
+        curBall.initializePosition(
+          curRenderInfo.clientWidth / 2,
+          curRenderInfo.clientHeight / 2,
+        );
+        curBall.initializeVelocity();
+      }
+      // rightSidePlayer 득점
+      if (curBall.position.x - curBall.radius <= 0) {
+        rightSidePlayer.score += 1;
+        curBall.initializePosition(
+          curRenderInfo.clientWidth / 2,
+          curRenderInfo.clientHeight / 2,
+        );
+        curBall.initializeVelocity();
+      }
+    } else {
+      if (leftSidePlayer.status === UserStatus.OFFLINE) {
+        leftSidePlayer.score = 0;
+        rightSidePlayer.score = TARGET_SCORE;
+      } else {
+        leftSidePlayer.score = TARGET_SCORE;
+        rightSidePlayer.score = 0;
+      }
     }
   }
 
@@ -222,6 +233,7 @@ export class GameSocketService {
       }
     }
     history.updateResult(winnerNickname, loserNickname);
+    curGame.setGameHistory(history);
     await this.gameHistoryRepository.createGameHistory({
       winnerId,
       loserId,
