@@ -17,6 +17,7 @@ import { RoomIdDto } from './dto/roomId.dto';
 import { ConnectionService } from './connection.service';
 import { MessageService } from './message.service';
 import { SkillDto } from './dto/skill.dto';
+import { directMessageDto } from './dto/directMessage.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -78,6 +79,26 @@ export class HomeGateway
       client
         .to(messageDto.roomId)
         .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
+    }
+  }
+
+  @SubscribeMessage('directMessage')
+  handleRequestDM(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const directMessageDto: directMessageDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      parseInt(directMessageDto.targetUserId),
+    );
+    //서로 block이 된 상태인지 확인하는 로직 필요
+    if (targetSocket) {
+      targetSocket.emit(
+        'directMessage',
+        `${client['nickname']}: ${directMessageDto.inputMessage}`,
+      );
+    } else {
+      client.emit('directMessage', `${targetSocket['nickname']} is offline`);
     }
   }
 
