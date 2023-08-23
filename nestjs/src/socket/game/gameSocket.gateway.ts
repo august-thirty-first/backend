@@ -261,6 +261,9 @@ export class GameSocketGateway
   ) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const curRenderInfo = curGame.renderInfo;
     const curGamePlayerBar = curRenderInfo.gamePlayers[client.id].bar;
     // TODO: 함수 서비스단으로 뺴기
