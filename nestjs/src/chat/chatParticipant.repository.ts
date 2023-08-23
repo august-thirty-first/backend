@@ -1,10 +1,8 @@
-import { In, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
-import { ChatRepository } from './chat.respository';
 import { NotFoundException } from '@nestjs/common';
-import { ChatStatus } from './enum/chat.status.enum';
 
 export class ChatParticipantRepository extends Repository<ChatParticipant> {
   constructor(
