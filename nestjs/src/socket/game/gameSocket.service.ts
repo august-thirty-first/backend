@@ -164,7 +164,10 @@ export class GameSocketService {
       }
     }
 
-    if (leftSidePlayer.status === UserStatus.ONLINE && rightSidePlayer.status === UserStatus.ONLINE) {
+    if (
+      leftSidePlayer.status === UserStatus.IN_GAME &&
+      rightSidePlayer.status === UserStatus.IN_GAME
+    ) {
       // leftSidePlayer 득점
       if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
         leftSidePlayer.score += 1;
