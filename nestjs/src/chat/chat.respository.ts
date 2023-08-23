@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Chat } from './entities/chat.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChatDto } from './dto/chatCreate.dto';
@@ -17,8 +17,10 @@ export class ChatRepository extends Repository<Chat> {
     );
   }
 
-  getAllChat(): Promise<Chat[]> {
-    return this.find();
+  getOpenChat(): Promise<Chat[]> {
+    return this.find({
+      where: { status: In([ChatStatus.PROTECTED, ChatStatus.PUBLIC]) },
+    });
   }
 
   getChatById(id: number): Promise<Chat> {
@@ -36,7 +38,7 @@ export class ChatRepository extends Repository<Chat> {
   async createChat(createChatDto: CreateChatDto): Promise<Chat> {
     const { room_name, status, password } = createChatDto;
     let chat;
-    if (status === ChatStatus.PROTECTED) {
+    if (status === ChatStatus.PROTECTED || status === ChatStatus.PRIVATE) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
       chat = this.create({ room_name, password: hashedPassword, status });
