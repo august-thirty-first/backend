@@ -9,6 +9,7 @@ import { UserRepository } from './user.repository';
 import { MulterModules } from 'src/multer/multer.module';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
 import { HomeModule } from 'src/socket/home/home.module';
+import { CryptoService } from './utils/crypto.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { HomeModule } from 'src/socket/home/home.module';
     HomeModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository],
+  providers: [AuthService, UserRepository, CryptoService],
 })
 export class AuthModule {}

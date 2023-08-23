@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -16,6 +17,7 @@ import { NormalJwt, TempJwt } from 'src/jwt/interface/jwt.type';
 import checkDuplicatedNicknameResponse from './interfaces/checkDuplicatedNicknameResponse.interface';
 import * as speakeasy from 'speakeasy';
 import { ConnectionService } from 'src/socket/home/connection.service';
+import { CryptoService } from './utils/crypto.service';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +29,7 @@ export class AuthService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     private connectionService: ConnectionService,
+    private cryptoService: CryptoService,
   ) {}
 
   async sign(intraName: string): Promise<signInToken> {
@@ -78,8 +81,11 @@ export class AuthService {
     const user: User = await this.userRepository.findOneBy({
       intra_name: intraName,
     });
+    if (!user.otp_key)
+      throw new BadRequestException('OTP 설정을 하지 않았습니다.');
+    const decrypt_otp_key = this.cryptoService.decrypt(user.otp_key);
     const verify: boolean = speakeasy.totp.verify({
-      secret: user.otp_key,
+      secret: decrypt_otp_key,
       encoding: 'base32',
       token: token,
     });

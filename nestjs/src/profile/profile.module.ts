@@ -9,6 +9,7 @@ import { MulterModules } from 'src/multer/multer.module';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
 import { FriendRequestingRepository } from 'src/friend/friendRequesting.repository';
 import { FriendRequesting } from 'src/friend/entities/FriendRequesting.entity';
+import { CryptoService } from 'src/auth/utils/crypto.service';
 
 @Module({
   imports: [
@@ -18,6 +19,11 @@ import { FriendRequesting } from 'src/friend/entities/FriendRequesting.entity';
     NormalJwtModule,
   ],
   controllers: [ProfileController],
-  providers: [ProfileService, UserRepository, FriendRequestingRepository],
+  providers: [
+    ProfileService,
+    UserRepository,
+    FriendRequestingRepository,
+    CryptoService,
+  ],
 })
 export class ProfileModule {}
