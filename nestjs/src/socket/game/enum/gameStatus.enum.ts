@@ -5,4 +5,5 @@ export enum GameStatus {
   IN_READY,
   IN_GAME,
   GAME_OVER,
+  GAME_OVER_IN_PLAYING,
 }
