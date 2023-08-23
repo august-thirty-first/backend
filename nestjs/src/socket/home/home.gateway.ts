@@ -78,9 +78,17 @@ export class HomeGateway
     if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
       client.emit('message', 'Muted!!!!');
     } else {
-      client
-        .to(messageDto.roomId)
-        .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
+      this.server.sockets.sockets.forEach(socket => {
+        if (
+          socket.rooms.has(messageDto.roomId) &&
+          !this.messageService.isBlackList(socket['user_id'], client['user_id'])
+        ) {
+          socket.emit(
+            'message',
+            `${client['nickname']}: ${messageDto.inputMessage}`,
+          );
+        }
+      });
     }
   }
 
