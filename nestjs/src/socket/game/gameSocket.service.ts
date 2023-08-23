@@ -213,7 +213,10 @@ export class GameSocketService {
       }
     }
 
-    if (this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)) {
+    if (
+      curGame.status === GameStatus.IN_GAME &&
+      this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)
+    ) {
       curGame.status = GameStatus.GAME_OVER;
     }
   }
