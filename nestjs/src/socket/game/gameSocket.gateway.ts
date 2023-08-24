@@ -69,8 +69,10 @@ export class GameSocketGateway
           this.server
             .to(curGameRoomId)
             .emit('gameOver', JSON.stringify(curGame.history));
+          break;
         case GameStatus.GAME_OVER_IN_PLAYING:
           this.server.to(curGameRoomId).emit('gameOverInPlaying');
+          break;
       }
       delete this.games[curGameRoomId];
       console.log('game deleted after finish');
@@ -127,19 +129,20 @@ export class GameSocketGateway
           client.id,
           jwtPayload['id'],
           jwtPayload['nickname'],
-          UserStatus.ONLINE,
+          UserStatus.PRE_GAME,
         );
         console.log('User join : ', Object.keys(this.users).length);
       } else {
-        // TODO: 동일한 유저가 게임을 하는 경우 막기
+        client.emit('multipleLadderConnect');
+        client.disconnect();
       }
     } else client.disconnect();
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
-    const disconnectedUser: User = this.users[client.id];
-    this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    // const disconnectedUser: User = this.users[client.id];
+    // this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
@@ -189,7 +192,6 @@ export class GameSocketGateway
       backSocket.leave(backSocket.id);
       backSocket.join(frontSocket.id);
       this.ladderQueue = [];
-      this.server.to(frontSocket.id).emit('joinGame');
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
@@ -200,10 +202,13 @@ export class GameSocketGateway
           Object.keys(this.games).length
         }`,
       );
+      leftUser.updateStatus(UserStatus.IN_GAME);
+      rightUser.updateStatus(UserStatus.IN_GAME);
       leftUser.updateRoomId(frontSocket.id);
       rightUser.updateRoomId(frontSocket.id);
       this.games[frontSocket.id].addUser(leftUser);
       this.games[frontSocket.id].addUser(rightUser);
+      this.server.to(frontSocket.id).emit('joinGame');
     }
   }
 
@@ -257,6 +262,9 @@ export class GameSocketGateway
   ) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const curRenderInfo = curGame.renderInfo;
     const curGamePlayerBar = curRenderInfo.gamePlayers[client.id].bar;
     // TODO: 함수 서비스단으로 뺴기
@@ -276,6 +284,15 @@ export class GameSocketGateway
           curGamePlayerBar.updatePosition(0, curGamePlayerBar.velocity.y);
         }
         break;
+    }
+  }
+
+  @SubscribeMessage('validateSocket')
+  handleValidateSocket(@ConnectedSocket() client: Socket) {
+    if (this.users[client.id].status === UserStatus.IN_GAME) {
+      client.emit('validateSuccess');
+    } else {
+      client.emit('validateFail');
     }
   }
 }
