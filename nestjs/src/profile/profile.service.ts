@@ -10,6 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
+import GetAchievementDto from 'src/achievement/dto/getAchievement.dto';
+import { UserAchievement } from 'src/achievement/entities/UserAchievement.entity';
+import { UserAchievementRepository } from 'src/achievement/userAchievement.repository';
 import { User } from 'src/auth/entities/User.entity';
 import checkDuplicatedNicknameResponse from 'src/auth/interfaces/checkDuplicatedNicknameResponse.interface';
 import { UserRepository } from 'src/auth/user.repository';
@@ -28,6 +31,8 @@ import { UpdateUserDto } from './dto/userUpdate.dto';
 @Injectable()
 export class ProfileService {
   constructor(
+    @InjectRepository(UserAchievementRepository)
+    private readonly userAchievementRepository: UserAchievementRepository,
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @InjectRepository(FriendRequestingRepository)
@@ -45,6 +50,42 @@ export class ProfileService {
     return profile;
   }
 
+  async getFriendStatus(
+    my_id: number,
+    target_id: number,
+  ): Promise<FriendRequestStatus> {
+    let result: FriendRequestStatus = null;
+    const prev_request: FriendRequesting | null =
+      await this.friendRequestingRepository.findPrevRequest(my_id, target_id);
+
+    switch (prev_request?.status) {
+      case RequestStatus.Allow:
+        result = FriendRequestStatus.Allow;
+        break;
+      case RequestStatus.Requesting:
+        if (prev_request.to_user_id.id === my_id)
+          result = FriendRequestStatus.RecvRequest;
+        else result = FriendRequestStatus.SendRequest;
+        break;
+    }
+    return result;
+  }
+
+  async getProfileUserAchievement(
+    user_id: number,
+  ): Promise<GetAchievementDto[]> {
+    const achievements: UserAchievement[] =
+      await this.userAchievementRepository.getUserAchievement(user_id);
+
+    const result: GetAchievementDto[] = achievements.map(row => {
+      return {
+        title: row.achievement_id.title,
+        description: row.achievement_id.description,
+      };
+    });
+    return result;
+  }
+
   async searchByUserProfile(
     my_id: number,
     nickname: string,
@@ -56,19 +97,8 @@ export class ProfileService {
     const result = plainToClass(SearchUserDto, profile, {
       strategy: 'excludeAll',
     });
-    result.friend_status = null;
-    const prev_request: FriendRequesting | null =
-      await this.friendRequestingRepository.findPrevRequest(my_id, profile.id);
-    switch (prev_request?.status) {
-      case RequestStatus.Allow:
-        result.friend_status = FriendRequestStatus.Allow;
-        break;
-      case RequestStatus.Requesting:
-        if (prev_request.to_user_id.id === my_id)
-          result.friend_status = FriendRequestStatus.RecvRequest;
-        else result.friend_status = FriendRequestStatus.SendRequest;
-        break;
-    }
+    result.friend_status = await this.getFriendStatus(my_id, profile.id);
+    result.achievements = await this.getProfileUserAchievement(profile.id);
     return result;
   }
 
