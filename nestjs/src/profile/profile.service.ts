@@ -16,6 +16,7 @@ import { UserAchievementRepository } from 'src/achievement/userAchievement.repos
 import { User } from 'src/auth/entities/User.entity';
 import checkDuplicatedNicknameResponse from 'src/auth/interfaces/checkDuplicatedNicknameResponse.interface';
 import { UserRepository } from 'src/auth/user.repository';
+import { CryptoService } from 'src/auth/utils/crypto.service';
 import {
   FriendRequesting,
   RequestStatus,
@@ -38,6 +39,7 @@ export class ProfileService {
     private friendRequestingRepository: FriendRequestingRepository,
     @Inject(NormalJwt)
     private jwtService: JwtService,
+    private cryptoService: CryptoService,
   ) {}
 
   async myInfo(id: number): Promise<MyInfoDto> {
@@ -147,7 +149,7 @@ export class ProfileService {
     if (user.otp_key)
       throw new BadRequestException('이미 OTP KEY를 설정하셨습니다.');
 
-    user.otp_key = secret;
+    user.otp_key = this.cryptoService.encrypt(secret);
     try {
       await this.userRepository.save(user);
     } catch (error) {
