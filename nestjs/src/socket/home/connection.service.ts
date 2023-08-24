@@ -21,6 +21,6 @@ export class ConnectionService {
   }
 
   findSocketByUserId(userId: number): Socket | undefined {
-    return this.userConnections[userId];
+    return this.userConnections.get(userId);
   }
 }

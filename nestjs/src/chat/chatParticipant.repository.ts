@@ -40,6 +40,16 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return this.save(participant);
   }
 
+  getAllChatParticipantByUserChatRoom(
+    user_id: number,
+    chat_room_id: number,
+  ): Promise<ChatParticipant> {
+    return this.createQueryBuilder('cp')
+      .where('cp.user_id = :user_id', { user_id })
+      .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .getOne();
+  }
+
   getChatParticipantByUserChatRoom(
     user_id: number,
     chat_room_id: number,

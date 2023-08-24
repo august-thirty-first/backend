@@ -41,7 +41,7 @@ export class HomeGateway
     console.log('home gateway init');
   }
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     const jwt = this.messageService.getJwt(client);
     if (jwt) {
       if (this.connectionService.addUserConnection(jwt['id'], client)) {
@@ -56,7 +56,7 @@ export class HomeGateway
         }, client['token_expiration'] - Date.now()); // timeOut 설정
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
-        this.messageService.initBlackList(jwt['id']);
+        await this.messageService.initBlackList(jwt['id']);
       } else {
         client.emit('multipleConnect', '다중 로그인');
         client.disconnect(true);
@@ -152,19 +152,22 @@ export class HomeGateway
   }
 
   @SubscribeMessage('mute')
-  handleMuteSomeone(
+  async handleMuteSomeone(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
 
     if (
-      this.messageService.isBossOrAdmin(
+      await this.messageService.isBossOrAdmin(
         client['user_id'],
         parseInt(skillDto.roomId),
       )
     ) {
-      client.emit('muteReturnStatus', this.messageService.muteUser(skillDto));
+      client.emit(
+        'muteReturnStatus',
+        await this.messageService.muteUser(skillDto),
+      );
     } else {
       client.emit(
         'muteReturnStatus',
@@ -210,7 +213,7 @@ export class HomeGateway
   }
 
   @SubscribeMessage('kick')
-  handleKickSomeone(
+  async handleKickSomeone(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
@@ -227,7 +230,7 @@ export class HomeGateway
       );
       client.emit(
         'kickReturnStatus',
-        this.messageService.kickUser(skillDto, targetSocket),
+        await this.messageService.kickUser(skillDto, targetSocket),
       );
     } else {
       client.emit(
