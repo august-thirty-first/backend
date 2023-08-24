@@ -23,7 +23,7 @@ import { ChatParticipantAuthorityDto } from './dto/chatParticipantAuthority.dto'
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
   @Get()
-  getAllChat(): Promise<Chat[]> {
+  getOpenChat(): Promise<Chat[]> {
     return this.chatService.getOpenChat();
   }
 

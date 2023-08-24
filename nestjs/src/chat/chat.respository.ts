@@ -1,4 +1,4 @@
-import { In, Repository } from 'typeorm';
+import { DeleteResult, In, Repository } from 'typeorm';
 import { Chat } from './entities/chat.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChatDto } from './dto/chatCreate.dto';
@@ -27,7 +27,7 @@ export class ChatRepository extends Repository<Chat> {
     return this.findOneBy({ id });
   }
 
-  deleteChat(id: number) {
+  deleteChat(id: number): Promise<DeleteResult> {
     return this.chatRepository.delete({ id });
   }
 

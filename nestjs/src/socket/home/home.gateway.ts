@@ -18,6 +18,7 @@ import { ConnectionService } from './connection.service';
 import { MessageService } from './message.service';
 import { SkillDto } from './dto/skill.dto';
 import { directMessageDto } from './dto/directMessage.dto';
+import { UserIdDto } from './dto/userId.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -55,6 +56,7 @@ export class HomeGateway
         }, client['token_expiration'] - Date.now()); // timeOut 설정
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
+        this.messageService.initBlackList(jwt['id']);
       } else {
         client.emit('multipleConnect', '다중 로그인');
         client.disconnect(true);
@@ -76,9 +78,17 @@ export class HomeGateway
     if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
       client.emit('message', 'Muted!!!!');
     } else {
-      client
-        .to(messageDto.roomId)
-        .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
+      this.server.sockets.sockets.forEach(socket => {
+        if (
+          socket.rooms.has(messageDto.roomId) &&
+          !this.messageService.isBlackList(socket['user_id'], client['user_id'])
+        ) {
+          socket.emit(
+            'message',
+            `${client['nickname']}: ${messageDto.inputMessage}`,
+          );
+        }
+      });
     }
   }
 
@@ -91,16 +101,54 @@ export class HomeGateway
     const targetSocket = this.connectionService.findSocketByUserId(
       parseInt(directMessageDto.targetUserId),
     );
-    //서로 block이 된 상태인지 확인하는 로직 필요
     if (targetSocket) {
-      this.handleLeaveAllRoom(client);
-      targetSocket.emit(
-        'directMessage',
-        `${client['nickname']}: ${directMessageDto.inputMessage}`,
-      );
+      if (
+        !this.messageService.isBlackList(
+          directMessageDto.targetUserId,
+          client['user_id'],
+        )
+      ) {
+        this.handleLeaveAllRoom(client);
+        targetSocket.emit(
+          'directMessage',
+          `${client['nickname']}: ${directMessageDto.inputMessage}`,
+        );
+      }
     } else {
       client.emit('directMessage', `${targetSocket['nickname']} is offline`);
     }
+  }
+
+  @SubscribeMessage('setBlackList')
+  async handleBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'setBlackList',
+      await this.messageService.setBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
+  }
+
+  @SubscribeMessage('unSetBlackList')
+  async handleUnSetBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'unSetBlackList',
+      await this.messageService.unSetBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
   }
 
   @SubscribeMessage('mute')
