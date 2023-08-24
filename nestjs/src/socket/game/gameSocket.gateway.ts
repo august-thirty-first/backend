@@ -293,7 +293,8 @@ export class GameSocketGateway
     if (this.users[client.id].status === UserStatus.IN_GAME) {
       client.emit('validateSuccess');
     } else {
-      client.emit('validateFail');
+      // client.emit('validateFail');
+      client.disconnect();
     }
   }
 }
