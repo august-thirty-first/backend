@@ -42,9 +42,8 @@ export class FriendRequestingRepository extends Repository<FriendRequesting> {
 
   async updateRequest(request: FriendRequesting): Promise<void> {
     try {
-      this.friendRequestingRepository.save(request);
+      await this.friendRequestingRepository.save(request);
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException();
     }
   }
@@ -77,9 +76,8 @@ export class FriendRequestingRepository extends Repository<FriendRequesting> {
       status: RequestStatus.Requesting,
     });
     try {
-      this.friendRequestingRepository.save(req_entity);
+      await this.friendRequestingRepository.save(req_entity);
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException();
     }
     return;
