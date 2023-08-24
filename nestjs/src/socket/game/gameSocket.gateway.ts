@@ -21,6 +21,8 @@ import { GameStatus } from './enum/gameStatus.enum';
 import { ReadyDto } from './dto/ready.dto';
 import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
+import { GameType } from './enum/gameType.enum';
+import { GameConnectionService } from './gameConnection.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -34,6 +36,7 @@ export class GameSocketGateway
   constructor(
     @Inject(NormalJwt) private readonly jwtService: JwtService,
     private readonly gameSocketService: GameSocketService,
+    private readonly gameConnectionService: GameConnectionService,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -46,13 +49,32 @@ export class GameSocketGateway
 
   private updateRenderInfo(curGame: Game) {
     const curRenderInfo = curGame.renderInfo;
+    const curGameRoomId = curGame.id;
     this.gameSocketService.updateBallPosition(curRenderInfo);
     this.gameSocketService.checkWallCollision(curRenderInfo);
     this.gameSocketService.checkBarCollision(curRenderInfo);
-    this.gameSocketService.updateScore(curRenderInfo);
+    this.gameSocketService.updateScore(curGame);
+    this.gameSocketService.updateGameStatus(curGame);
     this.server
       .to(curGame.id)
       .emit('updateRenderInfo', JSON.stringify(curRenderInfo));
+    if (
+      curGame.status === GameStatus.GAME_OVER ||
+      curGame.status === GameStatus.GAME_OVER_IN_PLAYING
+    ) {
+      this.gameSocketService.createGameHistory(curGame);
+      // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
+      switch (curGame.status) {
+        case GameStatus.GAME_OVER:
+          this.server
+            .to(curGameRoomId)
+            .emit('gameOver', JSON.stringify(curGame.history));
+        case GameStatus.GAME_OVER_IN_PLAYING:
+          this.server.to(curGameRoomId).emit('gameOverInPlaying');
+      }
+      delete this.games[curGameRoomId];
+      console.log('game deleted after finish');
+    }
   }
 
   private updateRenderInfoInterval() {
@@ -88,44 +110,63 @@ export class GameSocketGateway
 
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} connected`);
-    const jwtPayload = this.jwtService.decode(
-      parse(client.handshake.headers.cookie).access_token,
-    );
-
-    this.users[client.id] = new User(
-      client.id,
-      jwtPayload['nickname'],
-      UserStatus.ONLINE,
-    );
-    console.log('User join : ', Object.keys(this.users).length);
+    let jwtPayload = null;
+    if (client.handshake.headers?.cookie) {
+      const token = parse(client.handshake.headers.cookie).access_token;
+      try {
+        jwtPayload = this.jwtService.verify(token);
+      } catch (error: any) {
+        jwtPayload = null;
+      }
+    }
+    if (jwtPayload) {
+      if (
+        this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
+      ) {
+        this.users[client.id] = new User(
+          client.id,
+          jwtPayload['id'],
+          jwtPayload['nickname'],
+          UserStatus.ONLINE,
+        );
+        console.log('User join : ', Object.keys(this.users).length);
+      } else {
+        // TODO: 동일한 유저가 게임을 하는 경우 막기
+      }
+    } else client.disconnect();
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
-    this.ladderQueue = this.ladderQueue.filter(
-      element => element.id !== client.id,
-    );
-    console.log(`matching queue length : ${this.ladderQueue.length}`);
     const disconnectedUser: User = this.users[client.id];
-    disconnectedUser.updateStatus(UserStatus.OFFLINE);
-    // 소켓 연결이 해제된 유저가 속해있던 게임의 상태가 PRE_GAME일때 할 행동
-    const roomId = this.users[client.id].roomId;
+    this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
-    const curGame = this.games[roomId];
+    const curGame: Game = this.games[roomId];
+    // 게임에 룸에 참가한 유저가 끊겼을 경우 (게임 옵션 창까지 들어간 유저)
     if (curGame) {
       if (this.games[roomId].status === GameStatus.PRE_GAME) {
-        //TODO : gameEndBeforeStart 이벤트  만들기
-        this.server.to(roomId).emit('gameEndBeforeStart');
+        // 룸에 남아있는 상대방에게 게임 종료 이벤트 전송 후 게임 삭제
+        this.server.to(roomId).emit('gameOverInOptionPage');
+        delete this.games[roomId];
+        console.log('game deleted in option selection page');
+      } else if (this.games[roomId].status === GameStatus.IN_GAME) {
+        // 연결이 끊긴 플레이어의 상태를 offline으로 변경
+        curGame.renderInfo.gamePlayers[client.id].updateStatus(
+          UserStatus.OFFLINE,
+        );
       }
+    } else {
+      // 대기열에서 끊긴 경우 (대기열 창 or 1:1 수락창)
+      // 옵션창에서 게임 끊긴 상대방
+      // - 끊긴 본인은 레더 큐에서 제거
+      this.ladderQueue = this.ladderQueue.filter(
+        element => element.id !== client.id,
+      );
+      console.log(`matching queue length : ${this.ladderQueue.length}`);
     }
     delete this.users[client.id];
     console.log('User left : ', Object.keys(this.users).length);
-    delete this.games[roomId];
-    console.log(
-      `delte game id: ${roomId} games length: ${
-        Object.keys(this.games).length
-      }`,
-    );
   }
 
   @SubscribeMessage('joinQueue')
@@ -152,6 +193,7 @@ export class GameSocketGateway
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
+        GameType.LADDER,
       );
       console.log(
         `new game id: ${this.games[frontSocket.id].id} length : ${
@@ -217,7 +259,7 @@ export class GameSocketGateway
     const curGame = this.games[roomId];
     const curRenderInfo = curGame.renderInfo;
     const curGamePlayerBar = curRenderInfo.gamePlayers[client.id].bar;
-
+    // TODO: 함수 서비스단으로 뺴기
     switch (data) {
       case 'keyW':
         if (curGamePlayerBar.position.y - curGamePlayerBar.velocity.y >= 0) {

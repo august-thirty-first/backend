@@ -1,24 +1,29 @@
 import { MapDifficulty, MapType } from 'src/game/enum/gameOption.enum';
 import { GameStatus } from '../enum/gameStatus.enum';
-import GameHistory from './gameHistory';
 import RenderInfo from './renderInfo';
 import User from './user';
+import { GameType } from '../enum/gameType.enum';
+import MatchHistory from './matchHistory';
 
 export default class Game {
   renderInfo: RenderInfo | null = null;
-  history: GameHistory | null = null;
+  history: MatchHistory;
   users: User[] = [];
   voteMapType: MapType[] = [];
   voteMapDifficulty: MapDifficulty[] = [];
 
-  constructor(public id: string, public status: GameStatus) {}
+  constructor(
+    public id: string,
+    public status: GameStatus,
+    public gameType: GameType,
+  ) {}
 
   setRenderInfo(renderInfo: RenderInfo) {
     this.renderInfo = renderInfo;
   }
 
-  setGameHistory(gameHistory: GameHistory) {
-    this.history = gameHistory;
+  setGameHistory(history: MatchHistory) {
+    this.history = history;
   }
 
   addUser(user: User) {
