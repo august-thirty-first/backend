@@ -132,6 +132,7 @@ export class GameSocketGateway
           UserStatus.PRE_GAME,
         );
         console.log('User join : ', Object.keys(this.users).length);
+        console.log('User id : ', this.users[client.id].userId);
       } else {
         client.emit('multipleLadderConnect');
         client.disconnect();
@@ -141,8 +142,8 @@ export class GameSocketGateway
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} disconnected`);
-    // const disconnectedUser: User = this.users[client.id];
-    // this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    const disconnectedUser: User = this.users[client.id];
+    this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];

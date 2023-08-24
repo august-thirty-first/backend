@@ -85,7 +85,7 @@ export class GameSocketService {
     );
     const rightSidePlayer = new GamePlayer(
       rightSideUser.socketId,
-      leftSidePlayer.userId,
+      rightSideUser.userId,
       rightSideUser.nickName,
       rightSideUser.status,
       0,
@@ -231,13 +231,15 @@ export class GameSocketService {
     let loserNickname: string;
 
     for (const id in curRenderInfo.gamePlayers) {
-      const gamePlayer = curRenderInfo.gamePlayers[id];
-      if (gamePlayer.score >= TARGET_SCORE) {
-        winnerId = gamePlayer.userId;
-        winnerNickname = gamePlayer.nickName;
-      } else {
-        loserId = gamePlayer.userId;
-        winnerNickname = gamePlayer.nickName;
+      if (curRenderInfo.gamePlayers.hasOwnProperty(id)) {
+        const gamePlayer = curRenderInfo.gamePlayers[id];
+        if (gamePlayer.score >= TARGET_SCORE) {
+          winnerId = gamePlayer.userId;
+          winnerNickname = gamePlayer.nickName;
+        } else {
+          loserId = gamePlayer.userId;
+          loserNickname = gamePlayer.nickName;
+        }
       }
     }
     history.updateResult(winnerNickname, loserNickname);
