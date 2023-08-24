@@ -13,6 +13,7 @@ import { join } from 'path';
 import { FriendModule } from './friend/friend.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
+import { AchievementModule } from './achievement/achievement.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GameModule } from './game/game.module';
     }),
     FriendModule,
     ChatModule,
+    AchievementModule,
   ],
   controllers: [AppController],
   providers: [AppService],
