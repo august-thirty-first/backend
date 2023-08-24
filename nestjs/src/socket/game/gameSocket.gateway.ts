@@ -122,19 +122,20 @@ export class GameSocketGateway
       }
     }
     if (jwtPayload) {
-      // if (
-      //   this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
-      // ) {
-      this.users[client.id] = new User(
-        client.id,
-        jwtPayload['id'],
-        jwtPayload['nickname'],
-        UserStatus.PRE_GAME,
-      );
-      console.log('User join : ', Object.keys(this.users).length);
-      // } else {
-      //   // TODO: 동일한 유저가 게임을 하는 경우 막기
-      // }
+      if (
+        this.gameConnectionService.addGameConnection(jwtPayload['id'], client)
+      ) {
+        this.users[client.id] = new User(
+          client.id,
+          jwtPayload['id'],
+          jwtPayload['nickname'],
+          UserStatus.PRE_GAME,
+        );
+        console.log('User join : ', Object.keys(this.users).length);
+      } else {
+        client.emit('multipleLadderConnect');
+        client.disconnect();
+      }
     } else client.disconnect();
   }
 
