@@ -235,7 +235,7 @@ export class ChatService {
       throw new BadRequestException('Can not join private room');
     }
     const participant =
-      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         user_id,
         chatJoinDto.chat_room_id,
       );
@@ -338,7 +338,7 @@ export class ChatService {
       throw new UnauthorizedException('Can not unban yourself');
     }
     const chatParticipant =
-      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         target_user_id,
         chat_room_id,
       );

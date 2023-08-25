@@ -1,4 +1,8 @@
+import { IsNumber, IsString } from 'class-validator';
+
 export class directMessageDto {
-  targetUserId: string;
+  @IsNumber()
+  targetUserId: number;
+  @IsString()
   inputMessage: string;
 }

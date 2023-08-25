@@ -1,4 +1,8 @@
+import { IsNumber, IsString } from 'class-validator';
+
 export class MessageDto {
-  roomId: string;
+  @IsNumber()
+  roomId: number;
+  @IsString()
   inputMessage: string;
 }

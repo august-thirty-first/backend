@@ -1,4 +1,9 @@
+import { IsNumber } from 'class-validator';
+
 export class SkillDto {
-  roomId: string;
-  targetUserId: string;
+  @IsNumber()
+  roomId: number;
+
+  @IsNumber()
+  targetUserId: number;
 }
