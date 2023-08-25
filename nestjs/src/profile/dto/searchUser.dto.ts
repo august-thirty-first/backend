@@ -3,6 +3,7 @@ import { PickType } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
 import GetAchievementDto from 'src/achievement/dto/getAchievement.dto';
+import GameDataDto from './gameData.dto';
 
 export enum FriendRequestStatus {
   Allow = 'allow',
@@ -15,6 +16,10 @@ export default class SearchUserDto extends PickType(UserDto, [
   'nickname',
   'avata_path',
 ]) {
+  constructor() {
+    super();
+    this.game_data = new GameDataDto();
+  }
   @Expose()
   id: number;
 
@@ -28,4 +33,5 @@ export default class SearchUserDto extends PickType(UserDto, [
 
   friend_status: FriendRequestStatus;
   achievements: GetAchievementDto[];
+  game_data: GameDataDto;
 }

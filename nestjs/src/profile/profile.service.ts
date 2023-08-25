@@ -24,6 +24,9 @@ import {
 import { FriendRequestingRepository } from 'src/friend/friendRequesting.repository';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import JwtPayload from 'src/passports/interface/jwtPayload.interface';
+import { GetGameHistoryDto } from 'src/socket/game/dto/getGameHistory.dto';
+import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
+import { GameHistoryRepository } from 'src/socket/game/gameHistory.repository';
 import MyInfoDto from './dto/myInfo.dto';
 import SearchUserDto, { FriendRequestStatus } from './dto/searchUser.dto';
 import { UpdateUserDto } from './dto/userUpdate.dto';
@@ -37,6 +40,8 @@ export class ProfileService {
     private userRepository: UserRepository,
     @InjectRepository(FriendRequestingRepository)
     private friendRequestingRepository: FriendRequestingRepository,
+    @InjectRepository(GameHistoryRepository)
+    private gameHistoryRepository: GameHistoryRepository,
     @Inject(NormalJwt)
     private jwtService: JwtService,
     private cryptoService: CryptoService,
@@ -86,6 +91,23 @@ export class ProfileService {
     return result;
   }
 
+  async getProfileUserGameHistory(
+    user_id: number,
+  ): Promise<GetGameHistoryDto[]> {
+    const histories: GameHistory[] =
+      await this.gameHistoryRepository.getGameHistory(user_id, 10, 0);
+    const result: GetGameHistoryDto[] = histories.map(history => {
+      return {
+        winner_nickname: history.winner.nickname,
+        winner_avata: history.winner.avata_path,
+        loser_nickname: history.loser.nickname,
+        loser_avata: history.loser.avata_path,
+        gameType: history.gameType,
+      };
+    });
+    return result;
+  }
+
   async searchByUserProfile(
     my_id: number,
     nickname: string,
@@ -99,6 +121,13 @@ export class ProfileService {
     });
     result.friend_status = await this.getFriendStatus(my_id, profile.id);
     result.achievements = await this.getProfileUserAchievement(profile.id);
+    result.game_data.game_history = await this.getProfileUserGameHistory(
+      profile.id,
+    );
+    result.game_data.total_win =
+      await this.gameHistoryRepository.getWinnerCount(profile.id);
+    result.game_data.total_lose =
+      await this.gameHistoryRepository.getLoserCount(profile.id);
     return result;
   }
 
