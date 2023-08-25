@@ -15,6 +15,39 @@ export class GameHistoryRepository extends Repository<GameHistory> {
     );
   }
 
+  async getGameHistory(
+    user_id: number,
+    take: number,
+    skip: number,
+  ): Promise<GameHistory[]> {
+    const histories = this.gameHistoryRepository.find({
+      relations: { winner: true, loser: true },
+      where: [{ winner: { id: user_id } }, { loser: { id: user_id } }],
+      order: { createdAt: 'DESC' },
+      take: take,
+      skip: skip,
+    });
+    return histories;
+  }
+
+  async getWinnerCount(user_id: number): Promise<number> {
+    const count = this.gameHistoryRepository.count({
+      where: {
+        winner: { id: user_id },
+      },
+    });
+    return count;
+  }
+
+  async getLoserCount(user_id: number): Promise<number> {
+    const count = this.gameHistoryRepository.count({
+      where: {
+        loser: { id: user_id },
+      },
+    });
+    return count;
+  }
+
   async createGameHistory(
     createGameHistoryDto: CreateGameHisotryDto,
   ): Promise<void> {
