@@ -1,5 +1,6 @@
 export const TARGET_SCORE = 3;
-
+export const LADDER_WIN_DELTA_SCORE = 100;
+export const LADDER_LOSE_DELTA_SCORE = 50;
 export enum GameStatus {
   PRE_GAME,
   IN_READY,
