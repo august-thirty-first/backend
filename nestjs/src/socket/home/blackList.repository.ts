@@ -15,7 +15,30 @@ export class BlackListRepository extends Repository<BlackList> {
   }
 
   getBlackListByFromId(fromUserId: number): Promise<BlackList[]> {
-    return this.find({ where: { from: { id: fromUserId } } });
+    return this.find({
+      select: {
+        from: {
+          id: true,
+          nickname: true,
+          intra_name: false,
+          avata_path: false,
+          otp_key: false,
+          created_at: false,
+          updated_at: false,
+        },
+        to: {
+          id: true,
+          nickname: true,
+          intra_name: false,
+          avata_path: false,
+          otp_key: false,
+          created_at: false,
+          updated_at: false,
+        },
+      },
+      relations: { from: true, to: true },
+      where: { from: { id: fromUserId } },
+    });
   }
 
   async createBlackList(
