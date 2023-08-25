@@ -44,23 +44,31 @@ export class ChatController {
     return this.chatService.updateChat(id, createChatDto, req.user.id);
   }
 
-  @Get('participant/')
+  @Get('participation')
   getChatRoomByUserId(@Req() req): Promise<Chat[]> {
     return this.chatService.getChatRoomByUserId(req.user.id);
   }
 
-  @Get('participant/:chat_room_id')
-  getChatParticipantByChatId(
+  @Get('allParticipant/:chat_room_id')
+  getAllParticipantByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
     @Req() req,
   ): Promise<ChatParticipant[]> {
-    return this.chatService.getChatParticipantByChatId(
+    return this.chatService.getAllParticipantByChatId(
       chat_room_id,
       req.user.id,
     );
   }
 
-  @Post('participant/permission')
+  @Get('myParticipant/:chat_room_id')
+  getMyParticipantByChatId(
+    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Req() req,
+  ): Promise<ChatParticipant> {
+    return this.chatService.getMyParticipantByChatId(chat_room_id, req.user.id);
+  }
+
+  @Post('enter')
   isUserJoinableChatRoom(
     @Body() chatJoinDto: ChatJoinDto,
     @Req() req,
@@ -68,7 +76,7 @@ export class ChatController {
     return this.chatService.isUserJoinableChatRoom(req.user.id, chatJoinDto);
   }
 
-  @Post('participant')
+  @Post('register')
   joinChat(
     @Body() chatJoinDto: ChatJoinDto,
     @Req() req,
