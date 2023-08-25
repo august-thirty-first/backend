@@ -70,7 +70,7 @@ export class HomeGateway
   }
 
   @SubscribeMessage('message')
-  handleMessage(
+  async handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
@@ -78,12 +78,14 @@ export class HomeGateway
     if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
       client.emit('message', 'Muted!!!!');
     } else {
-      this.server.sockets.sockets.forEach(socket => {
+      this.connectionService.getUserConnection().forEach((socketId, userId) => {
         if (
-          socket.rooms.has(messageDto.roomId) &&
-          !this.messageService.isBlackList(socket['user_id'], client['user_id'])
+          socketId !== client &&
+          socketId.rooms.has(messageDto.roomId.toString()) &&
+          client.rooms.has(messageDto.roomId.toString()) &&
+          !this.messageService.isBlackList(userId, client['user_id'])
         ) {
-          socket.emit(
+          socketId.emit(
             'message',
             `${client['nickname']}: ${messageDto.inputMessage}`,
           );
@@ -99,7 +101,7 @@ export class HomeGateway
   ) {
     const directMessageDto: directMessageDto = JSON.parse(payload);
     const targetSocket = this.connectionService.findSocketByUserId(
-      parseInt(directMessageDto.targetUserId),
+      directMessageDto.targetUserId,
     );
     if (targetSocket) {
       if (
@@ -157,16 +159,18 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
-
     if (
       await this.messageService.isBossOrAdmin(
         client['user_id'],
-        parseInt(skillDto.roomId),
+        skillDto.roomId,
       )
     ) {
       client.emit(
         'muteReturnStatus',
-        await this.messageService.muteUser(skillDto),
+        await this.messageService.muteUser(
+          skillDto.roomId,
+          skillDto.targetUserId,
+        ),
       );
     } else {
       client.emit(
@@ -183,18 +187,13 @@ export class HomeGateway
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
     const targetSocket = this.connectionService.findSocketByUserId(
-      parseInt(skillDto.targetUserId),
+      skillDto.targetUserId,
     );
-    if (
-      this.messageService.isBossOrAdmin(
-        client['user_id'],
-        parseInt(skillDto.roomId),
-      )
-    ) {
+    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
       if (targetSocket) {
         const rooms = targetSocket.rooms;
-        if (rooms && rooms.has(skillDto.roomId)) {
-          targetSocket.leave(skillDto.roomId);
+        if (rooms && rooms.has(skillDto.roomId.toString())) {
+          targetSocket.leave(skillDto.roomId.toString());
           targetSocket.emit(
             'ban',
             `You have been left from the room: ${skillDto.roomId}`,
@@ -218,15 +217,9 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
-
-    if (
-      this.messageService.isBossOrAdmin(
-        client['user_id'],
-        parseInt(skillDto.roomId),
-      )
-    ) {
+    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
       const targetSocket = this.connectionService.findSocketByUserId(
-        parseInt(skillDto.targetUserId),
+        skillDto.targetUserId,
       );
       client.emit(
         'kickReturnStatus',
@@ -247,7 +240,7 @@ export class HomeGateway
   ): void {
     const roomIdDto: RoomIdDto = JSON.parse(payload);
     client
-      .to(roomIdDto.roomId)
+      .to(roomIdDto.roomId.toString())
       .emit('deleteRoom', `roomId ${roomIdDto.roomId} deleted`);
     console.log('delete room event');
     console.log(payload);
@@ -272,7 +265,7 @@ export class HomeGateway
     const roomIdDto: RoomIdDto = JSON.parse(payload);
 
     this.handleLeaveAllRoom(client);
-    client.join(roomIdDto.roomId);
+    client.join(roomIdDto.roomId.toString());
     console.log(`join Room: ${roomIdDto.roomId}`);
     client.emit('roomChange', roomIdDto.roomId);
   }

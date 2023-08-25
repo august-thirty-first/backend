@@ -1,3 +1,6 @@
+import { IsNumber } from 'class-validator';
+
 export class UserIdDto {
-  userId: string;
+  @IsNumber()
+  userId: number;
 }
