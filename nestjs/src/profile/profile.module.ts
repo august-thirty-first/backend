@@ -12,10 +12,17 @@ import { FriendRequesting } from 'src/friend/entities/FriendRequesting.entity';
 import { CryptoService } from 'src/auth/utils/crypto.service';
 import { UserAchievementRepository } from 'src/achievement/userAchievement.repository';
 import { UserAchievement } from 'src/achievement/entities/UserAchievement.entity';
+import { GameHistoryRepository } from 'src/socket/game/gameHistory.repository';
+import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, FriendRequesting, UserAchievement]),
+    TypeOrmModule.forFeature([
+      User,
+      FriendRequesting,
+      UserAchievement,
+      GameHistory,
+    ]),
     PassportsModule,
     MulterModules,
     NormalJwtModule,
@@ -27,6 +34,7 @@ import { UserAchievement } from 'src/achievement/entities/UserAchievement.entity
     FriendRequestingRepository,
     CryptoService,
     UserAchievementRepository,
+    GameHistoryRepository,
   ],
 })
 export class ProfileModule {}
