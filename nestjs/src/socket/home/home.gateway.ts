@@ -15,7 +15,10 @@ import { JwtService } from '@nestjs/jwt';
 import { MessageDto } from './dto/message.dto';
 import { RoomIdDto } from './dto/roomId.dto';
 import { ConnectionService } from './connection.service';
-import { parse } from 'cookie';
+import { MessageService } from './message.service';
+import { SkillDto } from './dto/skill.dto';
+import { directMessageDto } from './dto/directMessage.dto';
+import { UserIdDto } from './dto/userId.dto';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -30,6 +33,7 @@ export class HomeGateway
     @Inject(NormalJwt)
     private readonly jwtService: JwtService,
     private readonly connectionService: ConnectionService,
+    private readonly messageService: MessageService,
   ) {}
   @WebSocketServer() server: Server;
 
@@ -37,16 +41,8 @@ export class HomeGateway
     console.log('home gateway init');
   }
 
-  handleConnection(client: Socket) {
-    let jwt = null;
-    if (client.handshake.headers?.cookie) {
-      const token = parse(client.handshake.headers.cookie).access_token;
-      try {
-        jwt = this.jwtService.verify(token);
-      } catch (error: any) {
-        jwt = null;
-      }
-    }
+  async handleConnection(client: Socket) {
+    const jwt = this.messageService.getJwt(client);
     if (jwt) {
       if (this.connectionService.addUserConnection(jwt['id'], client)) {
         client['user_id'] = jwt['id'];
@@ -60,6 +56,7 @@ export class HomeGateway
         }, client['token_expiration'] - Date.now()); // timeOut 설정
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
+        await this.messageService.initBlackList(jwt['id']);
       } else {
         setTimeout(() => {
           client.emit('multipleConnect', '다중 로그인');
@@ -75,15 +72,167 @@ export class HomeGateway
   }
 
   @SubscribeMessage('message')
-  handleMessage(
+  async handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
-  ): string {
+  ) {
     const messageDto: MessageDto = JSON.parse(payload);
-    client
-      .to(messageDto.roomId)
-      .emit('message', `${client['nickname']}: ${messageDto.inputMessage}`);
-    return payload;
+    if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
+      client.emit('message', 'Muted!!!!');
+    } else {
+      this.connectionService.getUserConnection().forEach((socketId, userId) => {
+        if (
+          socketId !== client &&
+          socketId.rooms.has(messageDto.roomId.toString()) &&
+          client.rooms.has(messageDto.roomId.toString()) &&
+          !this.messageService.isBlackList(userId, client['user_id'])
+        ) {
+          socketId.emit(
+            'message',
+            `${client['nickname']}: ${messageDto.inputMessage}`,
+          );
+        }
+      });
+    }
+  }
+
+  @SubscribeMessage('directMessage')
+  handleRequestDM(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const directMessageDto: directMessageDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      directMessageDto.targetUserId,
+    );
+    if (targetSocket) {
+      if (
+        !this.messageService.isBlackList(
+          directMessageDto.targetUserId,
+          client['user_id'],
+        )
+      ) {
+        this.handleLeaveAllRoom(client);
+        targetSocket.emit(
+          'directMessage',
+          `${client['nickname']}: ${directMessageDto.inputMessage}`,
+        );
+      }
+    } else {
+      client.emit('directMessage', `${targetSocket['nickname']} is offline`);
+    }
+  }
+
+  @SubscribeMessage('setBlackList')
+  async handleBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'setBlackList',
+      await this.messageService.setBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
+  }
+
+  @SubscribeMessage('unSetBlackList')
+  async handleUnSetBlackList(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const userIdDto: UserIdDto = JSON.parse(payload);
+
+    client.emit(
+      'unSetBlackList',
+      await this.messageService.unSetBlackList(
+        client['user_id'],
+        userIdDto.userId,
+      ),
+    );
+  }
+
+  @SubscribeMessage('mute')
+  async handleMuteSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    if (
+      await this.messageService.isBossOrAdmin(
+        client['user_id'],
+        skillDto.roomId,
+      )
+    ) {
+      client.emit(
+        'muteReturnStatus',
+        await this.messageService.muteUser(
+          skillDto.roomId,
+          skillDto.targetUserId,
+        ),
+      );
+    } else {
+      client.emit(
+        'muteReturnStatus',
+        'You do not have the right to mute others',
+      );
+    }
+  }
+
+  @SubscribeMessage('ban')
+  handleBanSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      skillDto.targetUserId,
+    );
+    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+      if (targetSocket) {
+        const rooms = targetSocket.rooms;
+        if (rooms && rooms.has(skillDto.roomId.toString())) {
+          targetSocket.leave(skillDto.roomId.toString());
+          targetSocket.emit(
+            'ban',
+            `You have been left from the room: ${skillDto.roomId}`,
+          );
+          client.emit(
+            'banReturnStatus',
+            'Successfully banned the user and left them from the room',
+          );
+        }
+      } else {
+        client.emit('banReturnStatus', 'Target User is not connected');
+      }
+    } else {
+      client.emit('banReturnStatus', 'You do not have the right to ban others');
+    }
+  }
+
+  @SubscribeMessage('kick')
+  async handleKickSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+      const targetSocket = this.connectionService.findSocketByUserId(
+        skillDto.targetUserId,
+      );
+      client.emit(
+        'kickReturnStatus',
+        await this.messageService.kickUser(skillDto, targetSocket),
+      );
+    } else {
+      client.emit(
+        'kickReturnStatus',
+        'You do not have the right to kick others',
+      );
+    }
   }
 
   @SubscribeMessage('deleteRoom')
@@ -93,10 +242,21 @@ export class HomeGateway
   ): void {
     const roomIdDto: RoomIdDto = JSON.parse(payload);
     client
-      .to(roomIdDto.roomId)
+      .to(roomIdDto.roomId.toString())
       .emit('deleteRoom', `roomId ${roomIdDto.roomId} deleted`);
     console.log('delete room event');
     console.log(payload);
+  }
+
+  @SubscribeMessage('leaveAllRoom')
+  handleLeaveAllRoom(@ConnectedSocket() client: Socket) {
+    const currentRooms = client.rooms;
+    for (const room of currentRooms) {
+      if (room !== client.id) {
+        client.leave(room);
+        console.log(`leave Room: ${room}`);
+      }
+    }
   }
 
   @SubscribeMessage('enterRoom')
@@ -104,16 +264,10 @@ export class HomeGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
-    const currentRooms = client.rooms;
     const roomIdDto: RoomIdDto = JSON.parse(payload);
 
-    for (const room of currentRooms) {
-      if (room !== client.id) {
-        client.leave(room);
-        console.log(`leave Room: ${room}`);
-      }
-    }
-    client.join(roomIdDto.roomId);
+    this.handleLeaveAllRoom(client);
+    client.join(roomIdDto.roomId.toString());
     console.log(`join Room: ${roomIdDto.roomId}`);
     client.emit('roomChange', roomIdDto.roomId);
   }

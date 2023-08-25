@@ -5,6 +5,10 @@ import { Socket } from 'socket.io';
 export class ConnectionService {
   private userConnections: Map<number, Socket> = new Map();
 
+  getUserConnection(): Map<number, Socket> {
+    return this.userConnections;
+  }
+
   findUserConnection(userId: number): boolean {
     if (this.userConnections.has(userId)) return true;
     else return false;
@@ -18,5 +22,9 @@ export class ConnectionService {
 
   removeUserConnection(userId: number): void {
     this.userConnections.delete(userId);
+  }
+
+  findSocketByUserId(userId: number): Socket | undefined {
+    return this.userConnections.get(userId);
   }
 }

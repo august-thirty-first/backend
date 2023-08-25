@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantCreateDto } from './dto/chatParticipantCreate.dto';
-import { ChatRepository } from './chat.respository';
+import { NotFoundException } from '@nestjs/common';
 
 export class ChatParticipantRepository extends Repository<ChatParticipant> {
   constructor(
@@ -40,13 +40,24 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     return this.save(participant);
   }
 
-  async getChatParticipant(
+  getAllChatParticipantByUserChatRoom(
     user_id: number,
-    chat_room_id,
+    chat_room_id: number,
   ): Promise<ChatParticipant> {
-    return await this.createQueryBuilder('cp')
+    return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .getOne();
+  }
+
+  getChatParticipantByUserChatRoom(
+    user_id: number,
+    chat_room_id: number,
+  ): Promise<ChatParticipant> {
+    return this.createQueryBuilder('cp')
+      .where('cp.user_id = :user_id', { user_id })
+      .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .andWhere('cp.ban IS NULL')
       .getOne();
   }
 
@@ -60,8 +71,20 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
       },
     });
   }
+
   getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
     return this.find({
+      select: {
+        user: {
+          id: true,
+          nickname: true,
+          intra_name: false,
+          avata_path: false,
+          otp_key: false,
+          created_at: false,
+          updated_at: false,
+        },
+      },
       relations: {
         chat: true,
         user: true,
@@ -70,5 +93,18 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
         chat: { id: chat_room_id },
       },
     });
+  }
+
+  async deleteChatParticipant(chat_room_id: number, user_id: number) {
+    const result = await this.chatParticipantRepository.delete({
+      user: { id: user_id },
+      chat: { id: chat_room_id },
+    });
+
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
+      );
+    }
   }
 }

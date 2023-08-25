@@ -1,8 +1,8 @@
 import { IsNumber, IsString } from 'class-validator';
 
-export class MessageDto {
+export class directMessageDto {
   @IsNumber()
-  roomId: number;
+  targetUserId: number;
   @IsString()
   inputMessage: string;
 }
