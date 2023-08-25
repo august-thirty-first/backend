@@ -4,6 +4,7 @@ export default class User {
   public roomId: string;
   constructor(
     public readonly socketId: string,
+    public readonly userId: number,
     public readonly nickName: string,
     public status: UserStatus,
   ) {}

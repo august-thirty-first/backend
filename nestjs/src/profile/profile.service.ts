@@ -10,9 +10,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
+import GetAchievementDto from 'src/achievement/dto/getAchievement.dto';
+import { UserAchievement } from 'src/achievement/entities/UserAchievement.entity';
+import { UserAchievementRepository } from 'src/achievement/userAchievement.repository';
 import { User } from 'src/auth/entities/User.entity';
 import checkDuplicatedNicknameResponse from 'src/auth/interfaces/checkDuplicatedNicknameResponse.interface';
 import { UserRepository } from 'src/auth/user.repository';
+import { CryptoService } from 'src/auth/utils/crypto.service';
 import {
   FriendRequesting,
   RequestStatus,
@@ -20,6 +24,9 @@ import {
 import { FriendRequestingRepository } from 'src/friend/friendRequesting.repository';
 import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import JwtPayload from 'src/passports/interface/jwtPayload.interface';
+import { GetGameHistoryDto } from 'src/socket/game/dto/getGameHistory.dto';
+import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
+import { GameHistoryRepository } from 'src/socket/game/gameHistory.repository';
 import MyInfoDto from './dto/myInfo.dto';
 import SearchUserDto, { FriendRequestStatus } from './dto/searchUser.dto';
 import { UpdateUserDto } from './dto/userUpdate.dto';
@@ -27,12 +34,17 @@ import { UpdateUserDto } from './dto/userUpdate.dto';
 @Injectable()
 export class ProfileService {
   constructor(
+    @InjectRepository(UserAchievementRepository)
+    private readonly userAchievementRepository: UserAchievementRepository,
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     @InjectRepository(FriendRequestingRepository)
     private friendRequestingRepository: FriendRequestingRepository,
+    @InjectRepository(GameHistoryRepository)
+    private gameHistoryRepository: GameHistoryRepository,
     @Inject(NormalJwt)
     private jwtService: JwtService,
+    private cryptoService: CryptoService,
   ) {}
 
   async myInfo(id: number): Promise<MyInfoDto> {
@@ -41,6 +53,59 @@ export class ProfileService {
       strategy: 'excludeAll',
     });
     return profile;
+  }
+
+  async getFriendStatus(
+    my_id: number,
+    target_id: number,
+  ): Promise<FriendRequestStatus> {
+    let result: FriendRequestStatus = null;
+    const prev_request: FriendRequesting | null =
+      await this.friendRequestingRepository.findPrevRequest(my_id, target_id);
+
+    switch (prev_request?.status) {
+      case RequestStatus.Allow:
+        result = FriendRequestStatus.Allow;
+        break;
+      case RequestStatus.Requesting:
+        if (prev_request.to_user_id.id === my_id)
+          result = FriendRequestStatus.RecvRequest;
+        else result = FriendRequestStatus.SendRequest;
+        break;
+    }
+    return result;
+  }
+
+  async getProfileUserAchievement(
+    user_id: number,
+  ): Promise<GetAchievementDto[]> {
+    const achievements: UserAchievement[] =
+      await this.userAchievementRepository.getUserAchievement(user_id);
+
+    const result: GetAchievementDto[] = achievements.map(row => {
+      return {
+        title: row.achievement_id.title,
+        description: row.achievement_id.description,
+      };
+    });
+    return result;
+  }
+
+  async getProfileUserGameHistory(
+    user_id: number,
+  ): Promise<GetGameHistoryDto[]> {
+    const histories: GameHistory[] =
+      await this.gameHistoryRepository.getGameHistory(user_id, 10, 0);
+    const result: GetGameHistoryDto[] = histories.map(history => {
+      return {
+        winner_nickname: history.winner.nickname,
+        winner_avata: history.winner.avata_path,
+        loser_nickname: history.loser.nickname,
+        loser_avata: history.loser.avata_path,
+        gameType: history.gameType,
+      };
+    });
+    return result;
   }
 
   async searchByUserProfile(
@@ -54,19 +119,15 @@ export class ProfileService {
     const result = plainToClass(SearchUserDto, profile, {
       strategy: 'excludeAll',
     });
-    result.friend_status = null;
-    const prev_request: FriendRequesting | null =
-      await this.friendRequestingRepository.findPrevRequest(my_id, profile.id);
-    switch (prev_request?.status) {
-      case RequestStatus.Allow:
-        result.friend_status = FriendRequestStatus.Allow;
-        break;
-      case RequestStatus.Requesting:
-        if (prev_request.to_user_id.id === my_id)
-          result.friend_status = FriendRequestStatus.RecvRequest;
-        else result.friend_status = FriendRequestStatus.SendRequest;
-        break;
-    }
+    result.friend_status = await this.getFriendStatus(my_id, profile.id);
+    result.achievements = await this.getProfileUserAchievement(profile.id);
+    result.game_data.game_history = await this.getProfileUserGameHistory(
+      profile.id,
+    );
+    result.game_data.total_win =
+      await this.gameHistoryRepository.getWinnerCount(profile.id);
+    result.game_data.total_lose =
+      await this.gameHistoryRepository.getLoserCount(profile.id);
     return result;
   }
 
@@ -117,7 +178,7 @@ export class ProfileService {
     if (user.otp_key)
       throw new BadRequestException('이미 OTP KEY를 설정하셨습니다.');
 
-    user.otp_key = secret;
+    user.otp_key = this.cryptoService.encrypt(secret);
     try {
       await this.userRepository.save(user);
     } catch (error) {

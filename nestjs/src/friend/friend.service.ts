@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/User.entity';
 import { UserRepository } from 'src/auth/user.repository';
 import { FriendRequestStatus } from 'src/profile/dto/searchUser.dto';
+import { GameConnectionService } from 'src/socket/game/gameConnection.service';
 import { ConnectionService } from 'src/socket/home/connection.service';
 import { DataSource } from 'typeorm';
 import FriendCommonDto from './dto/friendCommon.dto';
@@ -33,6 +34,7 @@ export class FriendService {
     private friendRequestingRepository: FriendRequestingRepository,
     private dataSource: DataSource,
     private connectionService: ConnectionService,
+    private gameConnectionService: GameConnectionService,
   ) {}
 
   async approveRequestAndInsertFriends(
@@ -110,10 +112,11 @@ export class FriendService {
     );
     const friends: FriendGetResponseDto[] = search_result.map(row => {
       const friend = row.user_id1.id !== userId ? row.user_id1 : row.user_id2;
-      const check_online = this.connectionService.findUserConnection(friend.id);
-      let status: FriendStatus = null;
-      if (check_online) status = FriendStatus.Online;
-      else status = FriendStatus.Offline;
+      let status: FriendStatus = FriendStatus.Offline;
+      if (this.gameConnectionService.findGameConnection(friend.id))
+        status = FriendStatus.Gaming;
+      else if (this.connectionService.findUserConnection(friend.id))
+        status = FriendStatus.Online;
       return {
         id: friend.id,
         nickname: friend.nickname,
