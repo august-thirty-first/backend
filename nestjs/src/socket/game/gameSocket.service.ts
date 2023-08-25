@@ -85,7 +85,7 @@ export class GameSocketService {
     );
     const rightSidePlayer = new GamePlayer(
       rightSideUser.socketId,
-      leftSidePlayer.userId,
+      rightSideUser.userId,
       rightSideUser.nickName,
       rightSideUser.status,
       0,
@@ -166,8 +166,8 @@ export class GameSocketService {
     }
 
     if (
-      leftSidePlayer.status === UserStatus.ONLINE &&
-      rightSidePlayer.status === UserStatus.ONLINE
+      leftSidePlayer.status === UserStatus.IN_GAME &&
+      rightSidePlayer.status === UserStatus.IN_GAME
     ) {
       // leftSidePlayer 득점
       if (curBall.position.x + curBall.radius >= curRenderInfo.clientWidth) {
@@ -213,7 +213,10 @@ export class GameSocketService {
       }
     }
 
-    if (this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)) {
+    if (
+      curGame.status === GameStatus.IN_GAME &&
+      this.isGameOver(leftSidePlayer.score, rightSidePlayer.score)
+    ) {
       curGame.status = GameStatus.GAME_OVER;
     }
   }
@@ -228,13 +231,15 @@ export class GameSocketService {
     let loserNickname: string;
 
     for (const id in curRenderInfo.gamePlayers) {
-      const gamePlayer = curRenderInfo.gamePlayers[id];
-      if (gamePlayer.score >= TARGET_SCORE) {
-        winnerId = gamePlayer.userId;
-        winnerNickname = gamePlayer.nickName;
-      } else {
-        loserId = gamePlayer.userId;
-        winnerNickname = gamePlayer.nickName;
+      if (curRenderInfo.gamePlayers.hasOwnProperty(id)) {
+        const gamePlayer = curRenderInfo.gamePlayers[id];
+        if (gamePlayer.score >= TARGET_SCORE) {
+          winnerId = gamePlayer.userId;
+          winnerNickname = gamePlayer.nickName;
+        } else {
+          loserId = gamePlayer.userId;
+          loserNickname = gamePlayer.nickName;
+        }
       }
     }
     history.updateResult(winnerNickname, loserNickname);

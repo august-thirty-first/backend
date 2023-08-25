@@ -1,4 +1,5 @@
 export enum UserStatus {
-  ONLINE,
+  PRE_GAME,
+  IN_GAME,
   OFFLINE,
 }
