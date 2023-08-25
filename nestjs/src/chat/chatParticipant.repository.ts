@@ -18,12 +18,12 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
 
   async joinChat(
     chatParticipantCreateDto: ChatParticipantCreateDto,
-    user_id: number,
+    userId: number,
   ): Promise<ChatParticipant> {
-    const { chat_room_id, authority } = chatParticipantCreateDto;
+    const { chatRoomId, authority } = chatParticipantCreateDto;
     const participant = this.create({
-      chat: { id: chat_room_id },
-      user: { id: user_id },
+      chat: { id: chatRoomId },
+      user: { id: userId },
       authority,
     });
     try {
@@ -41,38 +41,38 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
   }
 
   getAllChatParticipantByUserChatRoom(
-    user_id: number,
-    chat_room_id: number,
+    userId: number,
+    chatRoomId: number,
   ): Promise<ChatParticipant> {
     return this.createQueryBuilder('cp')
-      .where('cp.user_id = :user_id', { user_id })
-      .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .where('cp.user_id = :user_id', { userId })
+      .andWhere('cp.chat_room_id = :chat_room_id', { chatRoomId })
       .getOne();
   }
 
   getChatParticipantByUserChatRoom(
-    user_id: number,
-    chat_room_id: number,
+    userId: number,
+    chatRoomId: number,
   ): Promise<ChatParticipant> {
     return this.createQueryBuilder('cp')
-      .where('cp.user_id = :user_id', { user_id })
-      .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
+      .where('cp.user_id = :user_id', { userId })
+      .andWhere('cp.chat_room_id = :chat_room_id', { chatRoomId })
       .andWhere('cp.ban IS NULL')
       .getOne();
   }
 
-  getChatRoomByUserId(user_id: number): Promise<ChatParticipant[]> {
+  getChatRoomByUserId(userId: number): Promise<ChatParticipant[]> {
     return this.find({
       relations: {
         chat: true,
       },
       where: {
-        user: { id: user_id },
+        user: { id: userId },
       },
     });
   }
 
-  getChatRoomByChatId(chat_room_id: number): Promise<ChatParticipant[]> {
+  getChatRoomByChatId(chatRoomId: number): Promise<ChatParticipant[]> {
     return this.find({
       select: {
         user: {
@@ -90,20 +90,20 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
         user: true,
       },
       where: {
-        chat: { id: chat_room_id },
+        chat: { id: chatRoomId },
       },
     });
   }
 
-  async deleteChatParticipant(chat_room_id: number, user_id: number) {
+  async deleteChatParticipant(chatRoomId: number, userId: number) {
     const result = await this.chatParticipantRepository.delete({
-      user: { id: user_id },
-      chat: { id: chat_room_id },
+      user: { id: userId },
+      chat: { id: chatRoomId },
     });
 
     if (result.affected === 0) {
       throw new NotFoundException(
-        `Can't find Chat with user_id ${user_id} chat_room_id ${chat_room_id}`,
+        `Can't find Chat with user_id ${userId} chat_room_id ${chatRoomId}`,
       );
     }
   }

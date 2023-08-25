@@ -31,12 +31,12 @@ export class ChatParticipant extends BaseEntity {
   @Column({ nullable: true })
   ban: Date;
 
-  @Column({ nullable: false })
-  authority_time: Date;
+  @Column({ name: 'authority_time', nullable: false })
+  authorityTime: Date;
 
   @BeforeInsert()
   setInitialAuthorityTime() {
-    this.authority_time = new Date();
+    this.authorityTime = new Date();
   }
   private originalAuthority: ChatParticipantAuthority;
   @BeforeUpdate()
@@ -47,7 +47,7 @@ export class ChatParticipant extends BaseEntity {
   @BeforeUpdate()
   updateStatusTime() {
     if (this.authority !== this.originalAuthority) {
-      this.authority_time = new Date();
+      this.authorityTime = new Date();
     }
   }
 }

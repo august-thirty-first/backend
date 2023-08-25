@@ -49,23 +49,20 @@ export class ChatController {
     return this.chatService.getChatRoomByUserId(req.user.id);
   }
 
-  @Get('allParticipant/:chat_room_id')
+  @Get('allParticipant/:chatRoomId')
   getAllParticipantByChatId(
-    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId,
     @Req() req,
   ): Promise<ChatParticipant[]> {
-    return this.chatService.getAllParticipantByChatId(
-      chat_room_id,
-      req.user.id,
-    );
+    return this.chatService.getAllParticipantByChatId(chatRoomId, req.user.id);
   }
 
-  @Get('myParticipant/:chat_room_id')
+  @Get('myParticipant/:chatRoomId')
   getMyParticipantByChatId(
-    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId,
     @Req() req,
   ): Promise<ChatParticipant> {
-    return this.chatService.getMyParticipantByChatId(chat_room_id, req.user.id);
+    return this.chatService.getMyParticipantByChatId(chatRoomId, req.user.id);
   }
 
   @Post('enter')
@@ -95,49 +92,41 @@ export class ChatController {
     );
   }
 
-  @Patch('participant/ban/:target_user_id/:chat_room_id')
+  @Patch('participant/ban/:targetUserId/:chatRoomId')
   switchBan(
-    @Param('target_user_id', ParseIntPipe) target_user_id: number,
-    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Param('targetUserId', ParseIntPipe) targetUserId: number,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId: number,
     @Req() req,
   ): Promise<ChatParticipant> {
-    return this.chatService.switchBan(
-      target_user_id,
-      chat_room_id,
-      req.user.id,
-    );
+    return this.chatService.switchBan(targetUserId, chatRoomId, req.user.id);
   }
 
-  @Patch('participant/unban/:target_user_id/:chat_room_id')
+  @Patch('participant/unban/:targetUserId/:chatRoomId')
   switchUnBan(
-    @Param('target_user_id', ParseIntPipe) target_user_id: number,
-    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Param('targetUserId', ParseIntPipe) targetUserId: number,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId: number,
     @Req() req,
   ): Promise<ChatParticipant> {
-    return this.chatService.switchUnBan(
-      target_user_id,
-      chat_room_id,
-      req.user.id,
-    );
+    return this.chatService.switchUnBan(targetUserId, chatRoomId, req.user.id);
   }
 
-  @Delete('participant/leave/:chat_room_id')
+  @Delete('participant/leave/:chatRoomId')
   leaveChatParticipant(
-    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId: number,
     @Req() req,
   ): Promise<void> {
-    return this.chatService.leaveChatParticipant(chat_room_id, req.user.id);
+    return this.chatService.leaveChatParticipant(chatRoomId, req.user.id);
   }
 
-  @Delete('participant/kick/:target_user_id/:chat_room_id')
+  @Delete('participant/kick/:targetUserId/:chatRoomId')
   kickChatParticipant(
-    @Param('target_user_id', ParseIntPipe) target_user_id: number,
-    @Param('chat_room_id', ParseIntPipe) chat_room_id: number,
+    @Param('targetUserId', ParseIntPipe) targetUserId: number,
+    @Param('chatRoomId', ParseIntPipe) chatRoomId: number,
     @Req() req,
   ): Promise<void> {
     return this.chatService.kickChatParticipant(
-      target_user_id,
-      chat_room_id,
+      targetUserId,
+      chatRoomId,
       req.user.id,
     );
   }

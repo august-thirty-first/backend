@@ -31,19 +31,19 @@ export class ChatRepository extends Repository<Chat> {
     return this.chatRepository.delete({ id });
   }
 
-  getChatByChatId(chat_room_id: number): Promise<Chat> {
-    return this.findOneBy({ id: chat_room_id });
+  getChatByChatId(chatRoomId: number): Promise<Chat> {
+    return this.findOneBy({ id: chatRoomId });
   }
 
   async createChat(createChatDto: CreateChatDto): Promise<Chat> {
-    const { room_name, status, password } = createChatDto;
+    const { roomName, status, password } = createChatDto;
     let chat;
     if (status === ChatStatus.PROTECTED || status === ChatStatus.PRIVATE) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
-      chat = this.create({ room_name, password: hashedPassword, status });
+      chat = this.create({ roomName, password: hashedPassword, status });
     } else {
-      chat = this.create({ room_name, password: null, status });
+      chat = this.create({ roomName, password: null, status });
     }
     try {
       await this.save(chat);
@@ -53,11 +53,11 @@ export class ChatRepository extends Repository<Chat> {
     return chat;
   }
 
-  getChatRoomWithPassword(chat_room_id: number): Promise<Chat> {
+  getChatRoomWithPassword(chatRoomId: number): Promise<Chat> {
     return this.chatRepository
       .createQueryBuilder('chat')
       .addSelect('chat.password')
-      .where('chat.id = :id', { id: chat_room_id })
+      .where('chat.id = :id', { id: chatRoomId })
       .getOne();
   }
 }

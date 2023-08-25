@@ -20,8 +20,8 @@ export class Chat extends BaseEntity {
   })
   chatParticipants: ChatParticipant[];
 
-  @Column({ nullable: false })
-  room_name: string;
+  @Column({ name: 'room_name', nullable: false })
+  roomName: string;
 
   @Column({ type: 'enum', enum: ChatStatus, nullable: false })
   status: ChatStatus;
@@ -29,9 +29,9 @@ export class Chat extends BaseEntity {
   @Column({ nullable: true, select: false })
   password: string;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

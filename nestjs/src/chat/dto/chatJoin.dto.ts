@@ -3,11 +3,11 @@ import { ChatParticipantDto } from './chatParticipant.dto';
 import { IsNotEmpty } from 'class-validator';
 
 export class ChatJoinDto extends PickType(ChatParticipantDto, [
-  'chat_room_id',
+  'chatRoomId',
   'authority',
 ]) {
   @IsNotEmpty()
-  chat_room_id: number;
+  chatRoomId: number;
 
   password: string;
 }

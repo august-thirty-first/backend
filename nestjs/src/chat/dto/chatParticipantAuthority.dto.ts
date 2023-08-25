@@ -4,15 +4,15 @@ import { IsNotEmpty } from 'class-validator';
 import { ChatParticipantAuthority } from '../enum/chatParticipant.authority.enum';
 
 export class ChatParticipantAuthorityDto extends PickType(ChatParticipantDto, [
-  'chat_room_id',
+  'chatRoomId',
   'authority',
 ]) {
   @IsNotEmpty()
-  chat_room_id: number;
+  chatRoomId: number;
 
   @IsNotEmpty()
   authority: ChatParticipantAuthority;
 
   @IsNotEmpty()
-  target_user_id: number;
+  targetUserId: number;
 }

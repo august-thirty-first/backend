@@ -5,13 +5,13 @@ import { ChatStatus } from '../enum/chat.status.enum';
 import { Transform } from 'class-transformer';
 
 export class CreateChatDto extends PickType(ChatDto, [
-  'room_name',
+  'roomName',
   'status',
   'password',
 ]) {
   @Transform(({ value }) => value.trim())
   @IsNotEmpty()
-  room_name: string;
+  roomName: string;
 
   @IsNotEmpty()
   status: ChatStatus;

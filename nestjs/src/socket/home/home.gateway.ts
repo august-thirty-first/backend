@@ -45,15 +45,15 @@ export class HomeGateway
     const jwt = this.messageService.getJwt(client);
     if (jwt) {
       if (this.connectionService.addUserConnection(jwt['id'], client)) {
-        client['user_id'] = jwt['id'];
+        client['userId'] = jwt['id'];
         client['nickname'] = jwt['nickname'];
-        client['token_expiration'] = jwt['exp'] * 1000; // set milliseconds
+        client['tokenExpiration'] = jwt['exp'] * 1000; // set milliseconds
         setTimeout(() => {
-          if (client.connected && Date.now() > client['token_expiration']) {
+          if (client.connected && Date.now() > client['tokenExpiration']) {
             client.emit('expired', '토큰 만료');
             client.disconnect(true);
           }
-        }, client['token_expiration'] - Date.now()); // timeOut 설정
+        }, client['tokenExpiration'] - Date.now()); // timeOut 설정
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
         await this.messageService.initBlackList(jwt['id']);
@@ -65,7 +65,7 @@ export class HomeGateway
   }
 
   handleDisconnect(client: Socket) {
-    this.connectionService.removeUserConnection(client['user_id']);
+    this.connectionService.removeUserConnection(client['userId']);
     console.log(`home socket: ${client.id} disconnected`);
   }
 
@@ -75,7 +75,7 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const messageDto: MessageDto = JSON.parse(payload);
-    if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
+    if (this.messageService.isImMute(client['userId'], messageDto.roomId)) {
       client.emit('message', 'Muted!!!!');
     } else {
       this.connectionService.getUserConnection().forEach((socketId, userId) => {
@@ -83,7 +83,7 @@ export class HomeGateway
           socketId !== client &&
           socketId.rooms.has(messageDto.roomId.toString()) &&
           client.rooms.has(messageDto.roomId.toString()) &&
-          !this.messageService.isBlackList(userId, client['user_id'])
+          !this.messageService.isBlackList(userId, client['userId'])
         ) {
           socketId.emit(
             'message',
@@ -107,7 +107,7 @@ export class HomeGateway
       if (
         !this.messageService.isBlackList(
           directMessageDto.targetUserId,
-          client['user_id'],
+          client['userId'],
         )
       ) {
         this.handleLeaveAllRoom(client);
@@ -131,7 +131,7 @@ export class HomeGateway
     client.emit(
       'setBlackList',
       await this.messageService.setBlackList(
-        client['user_id'],
+        client['userId'],
         userIdDto.userId,
       ),
     );
@@ -147,7 +147,7 @@ export class HomeGateway
     client.emit(
       'unSetBlackList',
       await this.messageService.unSetBlackList(
-        client['user_id'],
+        client['userId'],
         userIdDto.userId,
       ),
     );
@@ -160,10 +160,7 @@ export class HomeGateway
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
     if (
-      await this.messageService.isBossOrAdmin(
-        client['user_id'],
-        skillDto.roomId,
-      )
+      await this.messageService.isBossOrAdmin(client['userId'], skillDto.roomId)
     ) {
       client.emit(
         'muteReturnStatus',
@@ -189,7 +186,7 @@ export class HomeGateway
     const targetSocket = this.connectionService.findSocketByUserId(
       skillDto.targetUserId,
     );
-    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+    if (this.messageService.isBossOrAdmin(client['userId'], skillDto.roomId)) {
       if (targetSocket) {
         const rooms = targetSocket.rooms;
         if (rooms && rooms.has(skillDto.roomId.toString())) {
@@ -217,7 +214,7 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
-    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+    if (this.messageService.isBossOrAdmin(client['userId'], skillDto.roomId)) {
       const targetSocket = this.connectionService.findSocketByUserId(
         skillDto.targetUserId,
       );

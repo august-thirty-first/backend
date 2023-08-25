@@ -21,6 +21,6 @@ export class BlackList extends BaseEntity {
   @JoinColumn({ name: 'to_user_id' })
   to: User;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 }
