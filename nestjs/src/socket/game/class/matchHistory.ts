@@ -1,9 +1,18 @@
 export default class MatchHistory {
+  winnerId: number;
   winnerNickname: string;
+  loserId: number;
   loserNickname: string;
 
-  updateResult(winner: string, loser: string) {
-    this.winnerNickname = winner;
-    this.loserNickname = loser;
+  updateResult(
+    winnerId: number,
+    winnerNickname: string,
+    loserId: number,
+    loserNickname: string,
+  ) {
+    this.winnerId = winnerId;
+    this.winnerNickname = winnerNickname;
+    this.loserId = loserId;
+    this.loserNickname = loserNickname;
   }
 }

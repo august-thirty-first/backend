@@ -28,6 +28,7 @@ export class GameHistoryRepository extends Repository<GameHistory> {
       await this.save(gameHistory);
     } catch (err) {
       console.log(err);
+      throw err;
     }
   }
 }
