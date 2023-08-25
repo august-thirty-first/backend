@@ -63,6 +63,7 @@ export class GameSocketGateway
       curGame.status === GameStatus.GAME_OVER_IN_PLAYING
     ) {
       this.gameSocketService.createGameHistory(curGame);
+      this.gameSocketService.createOrUpdateLadder(curGame);
       // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
       switch (curGame.status) {
         case GameStatus.GAME_OVER:

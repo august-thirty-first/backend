@@ -13,15 +13,24 @@ import FrameSizeDto from './dto/frameSize.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GameHistoryRepository } from './gameHistory.repository';
-import { GameStatus, TARGET_SCORE } from './enum/gameStatus.enum';
+import {
+  GameStatus,
+  LADDER_LOSE_DELTA_SCORE,
+  LADDER_WIN_DELTA_SCORE,
+  TARGET_SCORE,
+} from './enum/gameStatus.enum';
 import MatchHistory from './class/matchHistory';
 import { UserStatus } from './enum/userStatus.enum';
+import { GameType } from './enum/gameType.enum';
+import LadderRepository from './ladder.repository';
 
 @Injectable()
 export class GameSocketService {
   constructor(
     @InjectRepository(GameHistoryRepository)
     private gameHistoryRepository: GameHistoryRepository,
+    @InjectRepository(LadderRepository)
+    private ladderRepository: LadderRepository,
   ) {}
 
   private isGameOver(leftSideScore: number, rightSideScore: number): boolean {
@@ -221,7 +230,7 @@ export class GameSocketService {
     }
   }
 
-  async createGameHistory(curGame: Game): Promise<void> {
+  createGameHistory(curGame: Game): void {
     const curRenderInfo = curGame.renderInfo;
     const gameType = curGame.gameType;
     const history = new MatchHistory();
@@ -244,10 +253,24 @@ export class GameSocketService {
     }
     history.updateResult(winnerId, winnerNickname, loserId, loserNickname);
     curGame.setGameHistory(history);
-    await this.gameHistoryRepository.createGameHistory({
+    this.gameHistoryRepository.createGameHistory({
       winnerId,
       loserId,
       gameType,
     });
+  }
+
+  createOrUpdateLadder(curGame: Game): void {
+    if (curGame.gameType === GameType.LADDER) {
+      const gameHistory = curGame.history;
+      this.ladderRepository.createOrUpdateLadderRecord({
+        user_id: gameHistory.winnerId,
+        delta_score: LADDER_WIN_DELTA_SCORE,
+      });
+      this.ladderRepository.createOrUpdateLadderRecord({
+        user_id: gameHistory.loserId,
+        delta_score: LADDER_LOSE_DELTA_SCORE,
+      });
+    }
   }
 }

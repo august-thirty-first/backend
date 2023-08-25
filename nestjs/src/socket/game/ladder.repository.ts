@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { Ladder } from './entities/ladder.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateLadderDto } from './dto/createLadder.dto';
+import { LADDER_WIN_DELTA_SCORE } from './enum/gameStatus.enum';
 
 @Injectable()
 export default class LadderRepository extends Repository<Ladder> {
@@ -36,7 +37,17 @@ export default class LadderRepository extends Repository<Ladder> {
         throw err;
       }
     } else {
-      ladderRecord = this.create({ user_id: { id: user_id }, score: 0 });
+      if (delta_score === LADDER_WIN_DELTA_SCORE) {
+        ladderRecord = this.create({
+          user_id: { id: user_id },
+          score: delta_score,
+        });
+      } else {
+        ladderRecord = this.create({
+          user_id: { id: user_id },
+          score: 0,
+        });
+      }
       try {
         await this.save(ladderRecord);
         return ladderRecord;
