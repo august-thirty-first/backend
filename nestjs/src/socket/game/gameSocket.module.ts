@@ -6,13 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameHistoryRepository } from './gameHistory.repository';
 import { GameHistory } from './entities/gameHistory.entity';
 import { GameConnectionService } from './gameConnection.service';
+import { Ladder } from './entities/ladder.entity';
+import LadderRepository from './ladder.repository';
 
 @Module({
-  imports: [NormalJwtModule, TypeOrmModule.forFeature([GameHistory])],
+  imports: [NormalJwtModule, TypeOrmModule.forFeature([GameHistory, Ladder])],
   providers: [
     GameSocketGateway,
     GameSocketService,
     GameHistoryRepository,
+    LadderRepository,
     GameConnectionService,
   ],
   exports: [GameConnectionService],
