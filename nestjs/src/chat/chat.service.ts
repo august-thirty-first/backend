@@ -139,7 +139,7 @@ export class ChatService {
     return chats;
   }
 
-  async getChatParticipantByChatId(
+  async getAllParticipantByChatId(
     chat_room_id: number,
     user_id: number,
   ): Promise<ChatParticipant[]> {
@@ -160,6 +160,27 @@ export class ChatService {
     const chatParticipants =
       await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
     return chatParticipants;
+  }
+
+  async getMyParticipantByChatId(
+    chat_room_id: number,
+    user_id: number,
+  ): Promise<ChatParticipant> {
+    const chatParticipant =
+      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+        user_id,
+        chat_room_id,
+      );
+    if (!chatParticipant) {
+      throw new UnauthorizedException(
+        'You do not have permission for this chat room',
+      );
+    } else if (chatParticipant.ban) {
+      throw new UnauthorizedException(
+        'You have been banned from this chat room',
+      );
+    }
+    return chatParticipant;
   }
 
   async isUserJoinableChatRoom(user_id: number, chatJoinDto: ChatJoinDto) {

@@ -49,15 +49,23 @@ export class ChatController {
     return this.chatService.getChatRoomByUserId(req.user.id);
   }
 
-  @Get('participant/:chat_room_id')
-  getChatParticipantByChatId(
+  @Get('allParticipant/:chat_room_id')
+  getAllParticipantByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
     @Req() req,
   ): Promise<ChatParticipant[]> {
-    return this.chatService.getChatParticipantByChatId(
+    return this.chatService.getAllParticipantByChatId(
       chat_room_id,
       req.user.id,
     );
+  }
+
+  @Get('myParticipant/:chat_room_id')
+  getMyParticipantByChatId(
+    @Param('chat_room_id', ParseIntPipe) chat_room_id,
+    @Req() req,
+  ): Promise<ChatParticipant> {
+    return this.chatService.getMyParticipantByChatId(chat_room_id, req.user.id);
   }
 
   @Post('enter')
