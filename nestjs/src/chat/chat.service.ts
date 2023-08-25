@@ -333,8 +333,9 @@ export class ChatService {
       throw new NotFoundException(
         `Can't find ChatParticipant user_id ${target_user_id} chat_room_id ${chat_room_id}`,
       );
-    }
-    if (chatParticipant.ban) {
+    } else if (chatParticipant.authority === ChatParticipantAuthority.BOSS) {
+      throw new BadRequestException('Can not ban boss');
+    } else if (chatParticipant.ban) {
       throw new NotFoundException(`Already banned`);
     }
     chatParticipant.ban = new Date();
