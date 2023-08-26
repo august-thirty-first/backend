@@ -16,6 +16,15 @@ export default class LadderRepository extends Repository<Ladder> {
       ladderRepository.queryRunner,
     );
   }
+
+  async getLadderScore(user_id: number): Promise<number | null> {
+    const ladderRecord: Ladder | null = await this.ladderRepository.findOneBy({
+      user_id: { id: user_id },
+    });
+    if (ladderRecord) return ladderRecord.score;
+    else return null;
+  }
+
   async createOrUpdateLadderRecord(
     createLadderDto: CreateLadderDto,
   ): Promise<Ladder> {
