@@ -8,7 +8,7 @@ import { AchievementSeederService } from './achievement/achievementSeeder.servic
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:4000'],
+      origin: ['http://localhost:3000', process.env.FRONTEND_URL],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     },
