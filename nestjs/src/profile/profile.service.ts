@@ -27,6 +27,7 @@ import JwtPayload from 'src/passports/interface/jwtPayload.interface';
 import { GetGameHistoryDto } from 'src/socket/game/dto/getGameHistory.dto';
 import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
 import { GameHistoryRepository } from 'src/socket/game/gameHistory.repository';
+import LadderRepository from 'src/socket/game/ladder.repository';
 import MyInfoDto from './dto/myInfo.dto';
 import SearchUserDto, { FriendRequestStatus } from './dto/searchUser.dto';
 import { UpdateUserDto } from './dto/userUpdate.dto';
@@ -42,6 +43,8 @@ export class ProfileService {
     private friendRequestingRepository: FriendRequestingRepository,
     @InjectRepository(GameHistoryRepository)
     private gameHistoryRepository: GameHistoryRepository,
+    @InjectRepository(LadderRepository)
+    private ladderRepository: LadderRepository,
     @Inject(NormalJwt)
     private jwtService: JwtService,
     private cryptoService: CryptoService,
@@ -128,6 +131,9 @@ export class ProfileService {
       await this.gameHistoryRepository.getWinnerCount(profile.id);
     result.game_data.total_lose =
       await this.gameHistoryRepository.getLoserCount(profile.id);
+    result.game_data.ladder = await this.ladderRepository.getLadderScore(
+      profile.id,
+    );
     return result;
   }
 
