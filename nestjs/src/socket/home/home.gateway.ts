@@ -205,14 +205,12 @@ export class HomeGateway
             'ban',
             `You have been left from the room: ${skillDto.roomId}`,
           );
-          client.emit(
-            'banReturnStatus',
-            'Successfully banned the user and left them from the room',
-          );
         }
-      } else {
-        client.emit('banReturnStatus', 'Target User is not connected');
       }
+      client.emit(
+        'banReturnStatus',
+        'Successfully banned the user and left them from the room',
+      );
     } else {
       client.emit('banReturnStatus', 'You do not have the right to ban others');
     }
@@ -224,9 +222,6 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
-    const targetSocket = this.connectionService.findSocketByUserId(
-      skillDto.targetUserId,
-    );
     client.emit(
       'unbanReturnStatus',
       'Successfully unbaned the user and left them from the room',
