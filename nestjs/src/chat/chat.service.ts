@@ -15,6 +15,8 @@ import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatParticipantAuthority } from './enum/chatParticipant.authority.enum';
 import { ChatJoinDto } from './dto/chatJoin.dto';
 import { ChatParticipantAuthorityDto } from './dto/chatParticipantAuthority.dto';
+import { BlackListRepository } from 'src/socket/home/blackList.repository';
+import { ChatParticipantWithBlackList } from './interfaces/ChatParticipantWithBlackList.interface';
 
 @Injectable()
 export class ChatService {
@@ -23,6 +25,8 @@ export class ChatService {
     private chatRepository: ChatRepository,
     @InjectRepository(ChatParticipantRepository)
     private chatParticipantRepository: ChatParticipantRepository,
+    @InjectRepository(BlackListRepository)
+    private blackListRepository: BlackListRepository,
   ) {}
 
   checkChatStatusAndPassword(status: ChatStatus, password: string) {
@@ -135,6 +139,7 @@ export class ChatService {
   async getChatRoomByUserId(user_id: number): Promise<Chat[]> {
     const chatParticipants =
       await this.chatParticipantRepository.getChatRoomByUserId(user_id);
+
     const chats = chatParticipants.map(participant => participant.chat);
     return chats;
   }
@@ -142,7 +147,7 @@ export class ChatService {
   async getAllParticipantByChatId(
     chat_room_id: number,
     user_id: number,
-  ): Promise<ChatParticipant[]> {
+  ): Promise<ChatParticipantWithBlackList[]> {
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
         user_id,
@@ -157,9 +162,21 @@ export class ChatService {
         'You have been banned from this chat room',
       );
     }
+    const blackList = await this.blackListRepository.getBlackListByFromId(
+      user_id,
+    );
+    const blackListArray = blackList.map(element => element.to);
     const chatParticipants =
       await this.chatParticipantRepository.getChatRoomByChatId(chat_room_id);
-    return chatParticipants;
+
+    const participantsWithBlackList = chatParticipants.map(participant => {
+      const isBlacklisted = blackListArray.some(
+        blacklistedUser => blacklistedUser.id === participant.user.id,
+      );
+      return { ...participant, blackList: isBlacklisted };
+    });
+    console.log(participantsWithBlackList);
+    return participantsWithBlackList;
   }
 
   async getMyParticipantByChatId(
