@@ -112,14 +112,13 @@ export class HomeGateway
           client['user_id'],
         )
       ) {
-        this.handleLeaveAllRoom(client);
         targetSocket.emit(
           'directMessage',
           `${client['nickname']}: ${directMessageDto.inputMessage}`,
         );
       }
     } else {
-      client.emit('directMessage', `${targetSocket['nickname']} is offline`);
+      client.emit('message', `offline user`);
     }
   }
 
