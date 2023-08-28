@@ -24,4 +24,13 @@ export class GeneralGameService {
   removeGeneralGame(fromUserId: number): void {
     this.generalGame.delete(fromUserId);
   }
+
+  validateSocketGeneral(userId: number): boolean {
+    for (const [key, value] of this.generalGame.entries()) {
+      if (key === userId || value === userId) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

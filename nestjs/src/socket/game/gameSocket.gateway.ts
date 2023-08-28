@@ -302,6 +302,19 @@ export class GameSocketGateway
     }
   }
 
+  @SubscribeMessage('validateSocketGeneral')
+  handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
+    if (
+      this.generalGameService.validateSocketGeneral(
+        this.users[client.id].userId,
+      )
+    ) {
+      client.emit('validateSuccessGeneral');
+    } else {
+      client.disconnect();
+    }
+  }
+
   @SubscribeMessage('generalGameApprove')
   handleGeneralGameApprove(
     @ConnectedSocket() client: Socket,
