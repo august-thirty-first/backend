@@ -336,7 +336,6 @@ export class GameSocketGateway
     rightUser.updateRoomId(fromUserSocketId);
     this.games[fromUserSocketId].addUser(leftUser);
     this.games[fromUserSocketId].addUser(rightUser);
-    this.generalGameService.removeGeneralGame(fromUserId);
     this.server.to(fromUserSocketId).emit('joinGame');
   }
 }
