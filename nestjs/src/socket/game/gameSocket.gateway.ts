@@ -302,6 +302,7 @@ export class GameSocketGateway
     }
   }
 
+
   @SubscribeMessage('validateSocketGeneral')
   handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
     if (
