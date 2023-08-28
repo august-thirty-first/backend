@@ -218,6 +218,21 @@ export class HomeGateway
     }
   }
 
+  @SubscribeMessage('unban')
+  async handleUnBanSomeone(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      skillDto.targetUserId,
+    );
+    client.emit(
+      'unbanReturnStatus',
+      'Successfully unbaned the user and left them from the room',
+    );
+  }
+
   @SubscribeMessage('kick')
   async handleKickSomeone(
     @ConnectedSocket() client: Socket,
