@@ -220,6 +220,9 @@ export class GameSocketGateway
   handleReady(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const readyDto: ReadyDto = JSON.parse(data);
     const leftSideUser = curGame.users[0];
     const rightSideUser = curGame.users[1];
@@ -245,6 +248,9 @@ export class GameSocketGateway
   ) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const curRenderInfo = curGame.renderInfo;
     const frameSizeDto: FrameSizeDto = JSON.parse(data);
     if (
