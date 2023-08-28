@@ -25,4 +25,10 @@ export class GameConnectionService {
   removeGameConnection(userId: number): void {
     this.gameConnections.delete(userId);
   }
+
+  getUserSocketInfoById(userId: number): Socket {
+    if (this.findGameConnection(userId)) {
+      return this.gameConnections.get(userId);
+    }
+  }
 }
