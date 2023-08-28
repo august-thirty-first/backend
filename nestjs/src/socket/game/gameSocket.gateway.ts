@@ -147,6 +147,7 @@ export class GameSocketGateway
     console.log(`game socket: ${client.id} disconnected`);
     const disconnectedUser: User = this.users[client.id];
     this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    this.generalGameService.removeGeneralGame(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
@@ -301,12 +302,32 @@ export class GameSocketGateway
     }
   }
 
+
+  @SubscribeMessage('validateSocketGeneral')
+  handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
+    if (
+      this.generalGameService.validateSocketGeneral(
+        this.users[client.id].userId,
+      )
+    ) {
+      client.emit('validateSuccessGeneral');
+    } else {
+      client.disconnect();
+    }
+  }
+
   @SubscribeMessage('generalGameApprove')
   handleGeneralGameApprove(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: number,
   ) {
     const fromUserId: number = data;
+    if (!this.generalGameService.findGeneralGame(fromUserId)) {
+      // 일반 게임을 요청한 사람의 소켓 연결이 끊겼을 때
+      // 일반 게임을 수락한 유저에게 게임 매칭이 실패했음을 알린다.
+      client.emit('generalGameFail');
+      return;
+    }
     const fromUserSocketId: string =
       this.gameConnectionService.getUserSocketInfoById(fromUserId).id;
     const leftUser = this.users[fromUserSocketId];
