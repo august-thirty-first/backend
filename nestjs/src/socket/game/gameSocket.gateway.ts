@@ -183,8 +183,8 @@ export class GameSocketGateway
     console.log('join queue');
     console.log(`matching queue pushed : ${this.ladderQueue.length}`);
     if (this.ladderQueue.length >= 2) {
-      const frontSocket = this.ladderQueue[0];
-      const backSocket = this.ladderQueue[1];
+      const frontSocket = this.ladderQueue.shift();
+      const backSocket = this.ladderQueue.shift();
       const leftUser = this.users[frontSocket.id];
       const rightUser = this.users[backSocket.id];
 
@@ -196,7 +196,6 @@ export class GameSocketGateway
       }
       backSocket.leave(backSocket.id);
       backSocket.join(frontSocket.id);
-      this.ladderQueue = [];
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
@@ -301,7 +300,6 @@ export class GameSocketGateway
       client.disconnect();
     }
   }
-
 
   @SubscribeMessage('validateSocketGeneral')
   handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
