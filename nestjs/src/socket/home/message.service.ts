@@ -9,6 +9,7 @@ import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
 import { SkillDto } from './dto/skill.dto';
 import { BlackListRepository } from './blackList.repository';
+import { from } from 'rxjs';
 
 @Injectable()
 export class MessageService {
@@ -38,16 +39,21 @@ export class MessageService {
   }
 
   async setBlackList(fromUserId: number, toUserId: number): Promise<string> {
-    if (this.blackList.has([fromUserId, toUserId].toString())) {
+    if (fromUserId === toUserId) {
+      return 'Can not set black list yourself';
+    } else if (this.blackList.has([fromUserId, toUserId].toString())) {
       return 'already in black list';
+    } else {
+      await this.blackListRepository.createBlackList(fromUserId, toUserId);
+      this.blackList.set([fromUserId, toUserId].toString(), true);
+      return 'set black list success';
     }
-    await this.blackListRepository.createBlackList(fromUserId, toUserId);
-    this.blackList.set([fromUserId, toUserId].toString(), true);
-    return 'set black list success';
   }
 
   async unSetBlackList(fromUserId: number, toUserId: number): Promise<string> {
-    if (!this.blackList.has([fromUserId, toUserId].toString())) {
+    if (fromUserId === toUserId) {
+      return 'Can not set black list yourself';
+    } else if (!this.blackList.has([fromUserId, toUserId].toString())) {
       return 'already not in black list';
     }
 
