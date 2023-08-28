@@ -23,6 +23,7 @@ import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
 import { GameType } from './enum/gameType.enum';
 import { GameConnectionService } from './gameConnection.service';
+import { GeneralGameService } from '../home/generalGame.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -37,6 +38,7 @@ export class GameSocketGateway
     @Inject(NormalJwt) private readonly jwtService: JwtService,
     private readonly gameSocketService: GameSocketService,
     private readonly gameConnectionService: GameConnectionService,
+    private readonly generalGameService: GeneralGameService,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -297,5 +299,36 @@ export class GameSocketGateway
       // client.emit('validateFail');
       client.disconnect();
     }
+  }
+
+  @SubscribeMessage('generalGameApprove')
+  handleGeneralGameApprove(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: number,
+  ) {
+    const fromUserId: number = data;
+    const fromUserSocketId: string =
+      this.gameConnectionService.getUserSocketInfoById(fromUserId).id;
+    const leftUser = this.users[fromUserSocketId];
+    const rightUser = this.users[client.id];
+    client.leave(client.id);
+    client.join(fromUserSocketId);
+    this.games[fromUserSocketId] = new Game(
+      fromUserSocketId,
+      GameStatus.PRE_GAME,
+      GameType.GENERAL,
+    );
+    console.log(
+      `new game id: ${this.games[fromUserSocketId].id} length : ${
+        Object.keys(this.games).length
+      }`,
+    );
+    leftUser.updateStatus(UserStatus.IN_GAME);
+    rightUser.updateStatus(UserStatus.IN_GAME);
+    leftUser.updateRoomId(fromUserSocketId);
+    rightUser.updateRoomId(fromUserSocketId);
+    this.games[fromUserSocketId].addUser(leftUser);
+    this.games[fromUserSocketId].addUser(rightUser);
+    this.server.to(fromUserSocketId).emit('joinGame');
   }
 }
