@@ -8,6 +8,7 @@ import { GameHistory } from './entities/gameHistory.entity';
 import { GameConnectionService } from './gameConnection.service';
 import { Ladder } from './entities/ladder.entity';
 import LadderRepository from './ladder.repository';
+import { GeneralGameService } from '../home/generalGame.service';
 
 @Module({
   imports: [NormalJwtModule, TypeOrmModule.forFeature([GameHistory, Ladder])],
@@ -17,6 +18,7 @@ import LadderRepository from './ladder.repository';
     GameHistoryRepository,
     LadderRepository,
     GameConnectionService,
+    GeneralGameService,
   ],
   exports: [GameConnectionService],
 })
