@@ -105,24 +105,26 @@ export class MessageService {
   }
 
   async muteUser(roomId: number, targetUserId: number): Promise<string> {
-    if (
-      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+    const targetParticipant =
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         targetUserId,
         roomId,
-      )
-    ) {
-      const muteUser = this.mute.get([targetUserId, roomId].toString());
-      if (!muteUser) {
-        this.mute.set([targetUserId, roomId].toString(), true);
-        setTimeout(() => {
-          this.mute.delete([targetUserId, roomId].toString());
-        }, 10000); //10초동안 mute
-        return `user ${targetUserId} is muted`;
-      } else {
-        return `user ${targetUserId} is already muted`;
-      }
+      );
+    if (!targetParticipant || targetParticipant.ban) {
+      return `user ${targetUserId} is banned or not in chat room`;
+    } else if (targetParticipant.authority === ChatParticipantAuthority.BOSS) {
+      return 'Boss를 mute할 수 없습니다.';
     }
-    return `user ${targetUserId} is not in chat room id ${roomId}`;
+    const muteUser = this.mute.get([targetUserId, roomId].toString());
+    if (!muteUser) {
+      this.mute.set([targetUserId, roomId].toString(), true);
+      setTimeout(() => {
+        this.mute.delete([targetUserId, roomId].toString());
+      }, 10000); //10초동안 mute
+      return `user ${targetUserId} is muted`;
+    } else {
+      return `user ${targetUserId} is already muted`;
+    }
   }
 
   async kickUser(skillDto: SkillDto, targetSocket: Socket): Promise<string> {
@@ -133,8 +135,9 @@ export class MessageService {
       );
     if (!targetSocket || !willKickedUser) {
       return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
-    }
-    if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
+    } else if (willKickedUser.ban) {
+      return 'ban이 된 사용자는 내보낼 수 없습니다. ban을 해제하고 다시 시도하세요';
+    } else if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
       return `Can not kick boss ${skillDto.targetUserId}`;
     }
     try {

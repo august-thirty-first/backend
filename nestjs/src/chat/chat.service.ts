@@ -288,14 +288,12 @@ export class ChatService {
       );
     }
     const chatParticipant =
-      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         chatParticipantAuthorityDto.target_user_id,
         chatParticipantAuthorityDto.chat_room_id,
       );
-    if (!chatParticipant) {
-      throw new NotFoundException(
-        `Can't find ChatParticipant user_id ${chatParticipantAuthorityDto.target_user_id} chat_room_id ${chatParticipantAuthorityDto.chat_room_id}`,
-      );
+    if (!chatParticipant || chatParticipant.ban) {
+      throw new NotFoundException(`채팅방을 나갔거나 ban당한 유저입니다.`);
     } else if (
       chatParticipantAuthorityDto.authority === ChatParticipantAuthority.BOSS
     ) {
@@ -412,6 +410,16 @@ export class ChatService {
     if (requestParticipant.ban) {
       throw new UnauthorizedException(
         'You have been banned from this chat room',
+      );
+    }
+    const targetParticipant =
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
+        target_user_id,
+        chat_room_id,
+      );
+    if (!targetParticipant && targetParticipant.ban) {
+      throw new BadRequestException(
+        'ban이 된 사용자는 내보낼 수 없습니다. ban을 해제하고 다시 시도하세요',
       );
     }
     const result = await this.chatParticipantRepository.delete({

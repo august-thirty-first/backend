@@ -183,7 +183,7 @@ export class HomeGateway
   }
 
   @SubscribeMessage('ban')
-  handleBanSomeone(
+  async handleBanSomeone(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: string,
   ) {
@@ -191,7 +191,12 @@ export class HomeGateway
     const targetSocket = this.connectionService.findSocketByUserId(
       skillDto.targetUserId,
     );
-    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+    if (
+      await this.messageService.isBossOrAdmin(
+        client['user_id'],
+        skillDto.roomId,
+      )
+    ) {
       if (targetSocket) {
         const rooms = targetSocket.rooms;
         if (rooms && rooms.has(skillDto.roomId.toString())) {
