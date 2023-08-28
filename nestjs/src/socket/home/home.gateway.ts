@@ -222,6 +222,14 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      skillDto.targetUserId,
+    );
+
+    // if (targetSocket) {
+    //   targetSocket.emit('ban', `${skillDto.roomId} 채팅방에서 ban이 해제되었습니다.`);
+    // }
+    // 여기서 `${채팅방 이름}에서 ban이 해제되었습니다.` 이런 메시지를 보내줄 수 있었으면 좋겠는데 채팅방 이름을 받아올 방법이...ㅜ
     client.emit(
       'unbanReturnStatus',
       'Successfully unbaned the user and left them from the room',
