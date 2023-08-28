@@ -45,15 +45,15 @@ export class AuthService {
     if (!user) {
       const payload: TempJwtPayload = { intraName: intraName };
       result.token = this.tempJwtService.sign(payload);
-      result.redirectUrl = `http://localhost:4000/signup?intraName=${intraName}`;
+      result.redirectUrl = `${process.env.FRONTEND_URL}/signup?intraName=${intraName}`;
     } else if (user.otp_key) {
       const payload: TempJwtPayload = { intraName: intraName };
       result.token = this.tempJwtService.sign(payload);
-      result.redirectUrl = `http://localhost:4000/otp`;
+      result.redirectUrl = `${process.env.FRONTEND_URL}/otp`;
     } else {
       const payload: JwtPayload = { id: user.id, nickname: user.nickname };
       result.token = this.jwtService.sign(payload);
-      result.redirectUrl = `http://localhost:4000/`;
+      result.redirectUrl = `${process.env.FRONTEND_URL}`;
     }
     return result;
   }
