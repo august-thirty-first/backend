@@ -339,20 +339,4 @@ export class GameSocketGateway
     this.generalGameService.removeGeneralGame(fromUserId);
     this.server.to(fromUserSocketId).emit('joinGame');
   }
-
-  @SubscribeMessage('generalGameRefuse')
-  handleGeneralGameRefuse(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: number,
-  ) {
-    const fromUserId: number = data;
-    if (!this.generalGameService.findGeneralGame(fromUserId)) {
-      // 일반 게임 요청 거절 이벤트를 보내기 전 요청한 유저의 게임 소켓이 끊겼을 때 아무 행동도 하지 않는다
-      return;
-    }
-    const fromUserSocketId: string =
-      this.gameConnectionService.getUserSocketInfoById(fromUserId).id;
-    this.generalGameService.removeGeneralGame(fromUserId);
-    client.to(fromUserSocketId).emit('generalGameFail');
-  }
 }
