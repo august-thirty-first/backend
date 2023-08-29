@@ -36,7 +36,7 @@ export class UserAchievementRepository extends Repository<UserAchievement> {
     });
     try {
       await this.save(user_achievement);
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === '23505') return;
       else throw new InternalServerErrorException();
     }

@@ -8,7 +8,7 @@ import { AchievementSeederService } from './achievement/achievementSeeder.servic
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: ['http://localhost:3000', process.env.FRONTEND_URL],
+      origin: ['http://localhost:3000', `${process.env.FRONTEND_URL}`],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     },
@@ -27,6 +27,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
-  await app.listen(process.env.PORT);
+  await app.listen(`${process.env.PORT}`);
 }
 bootstrap();

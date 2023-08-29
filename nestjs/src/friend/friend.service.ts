@@ -128,7 +128,7 @@ export class FriendService {
   }
 
   async friendRequest(friend_dto: FriendCommonDto): Promise<void> {
-    const to_user: User = await this.userRepository.findOneBy({
+    const to_user: User | null = await this.userRepository.findOneBy({
       id: friend_dto.to_user_id,
     });
     if (!to_user) throw new BadRequestException('존재하지 않는 User입니다.');

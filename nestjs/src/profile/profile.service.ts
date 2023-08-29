@@ -51,7 +51,7 @@ export class ProfileService {
   ) {}
 
   async myInfo(id: number): Promise<MyInfoDto> {
-    const user: User = await this.userRepository.findOneBy({ id });
+    const user: User | null = await this.userRepository.findOneBy({ id });
     const profile: MyInfoDto = plainToClass(MyInfoDto, user, {
       strategy: 'excludeAll',
     });
@@ -61,8 +61,8 @@ export class ProfileService {
   async getFriendStatus(
     my_id: number,
     target_id: number,
-  ): Promise<FriendRequestStatus> {
-    let result: FriendRequestStatus = null;
+  ): Promise<FriendRequestStatus | null> {
+    let result: FriendRequestStatus | null = null;
     const prev_request: FriendRequesting | null =
       await this.friendRequestingRepository.findPrevRequest(my_id, target_id);
 
@@ -138,18 +138,19 @@ export class ProfileService {
   }
 
   async searchByUserNickname(nickname: string): Promise<SearchUserDto | null> {
-    const profile: User = await this.userRepository.findOneBy({
+    const profile: User | null = await this.userRepository.findOneBy({
       nickname,
     });
-    let result: SearchUserDto = null;
+    let result: SearchUserDto | null = null;
     if (profile)
       result = plainToClass(SearchUserDto, profile, { strategy: 'excludeAll' });
     return result;
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<string> {
-    const user: User = await this.userRepository.findOneBy({ id });
-    const prev_image: string = user.avata_path
+    const user: User | null = await this.userRepository.findOneBy({ id });
+    if (!user) throw new BadRequestException('해당 유저 없음');
+    const prev_image: string | null = user.avata_path
       ? join(__dirname, '../../', user.avata_path)
       : null;
     if (updateUserDto.nickname) user.nickname = updateUserDto.nickname;
@@ -157,7 +158,7 @@ export class ProfileService {
     try {
       await this.userRepository.save(user);
       if (updateUserDto.avata_path && prev_image) unlinkSync(prev_image);
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === '23505')
         throw new ConflictException('이미 존재하는 nickname 입니다.');
       if (updateUserDto.avata_path) unlinkSync(updateUserDto.avata_path);
@@ -179,8 +180,9 @@ export class ProfileService {
   }
 
   async updateOtp(id: number, secret: string) {
-    const user: User = await this.userRepository.findOneBy({ id });
+    const user: User | null = await this.userRepository.findOneBy({ id });
 
+    if (!user) throw new BadRequestException('해당 유저 없음');
     if (user.otp_key)
       throw new BadRequestException('이미 OTP KEY를 설정하셨습니다.');
 
@@ -193,9 +195,9 @@ export class ProfileService {
   }
 
   async deleteOtp(id: number): Promise<void> {
-    const user: User = await this.userRepository.findOneBy({ id });
+    const user: User | null = await this.userRepository.findOneBy({ id });
     if (!user || !user.otp_key) return;
-    user.otp_key = null;
+    user.otp_key = undefined;
     try {
       await this.userRepository.save(user);
     } catch (error) {

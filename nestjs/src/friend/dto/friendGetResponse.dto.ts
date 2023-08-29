@@ -7,6 +7,6 @@ export enum FriendStatus {
 export default class FriendGetResponseDto {
   nickname: string;
   id: number;
-  avata_path: string;
+  avata_path?: string;
   status: FriendStatus;
 }

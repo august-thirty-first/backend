@@ -31,7 +31,7 @@ export default class SearchUserDto extends PickType(UserDto, [
   @Expose()
   avata_path: string;
 
-  friend_status: FriendRequestStatus;
+  friend_status: FriendRequestStatus | null;
   achievements: GetAchievementDto[];
   game_data: GameDataDto;
 }
