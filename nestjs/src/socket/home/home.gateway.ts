@@ -112,7 +112,6 @@ export class HomeGateway
           client['user_id'],
         )
       ) {
-        this.handleLeaveAllRoom(client);
         targetSocket.emit(
           'directMessage',
           `${client['nickname']}: ${directMessageDto.inputMessage}`,
@@ -123,6 +122,7 @@ export class HomeGateway
         'directMessage',
         `${targetSocket['nickname']}는 오프라인 상태입니다`,
       );
+
     }
   }
 
