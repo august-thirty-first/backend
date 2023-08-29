@@ -17,6 +17,7 @@ import { Chat } from './entities/chat.entity';
 import { ChatParticipant } from './entities/chatParticipant.entity';
 import { ChatJoinDto } from './dto/chatJoin.dto';
 import { ChatParticipantAuthorityDto } from './dto/chatParticipantAuthority.dto';
+import { ChatParticipantWithBlackList } from './interfaces/ChatParticipantWithBlackList.interface';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -53,7 +54,7 @@ export class ChatController {
   getAllParticipantByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,
     @Req() req,
-  ): Promise<ChatParticipant[]> {
+  ): Promise<ChatParticipantWithBlackList[]> {
     return this.chatService.getAllParticipantByChatId(
       chat_room_id,
       req.user.id,

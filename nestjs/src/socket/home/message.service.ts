@@ -9,7 +9,6 @@ import { NormalJwt } from 'src/jwt/interface/jwt.type';
 import { JwtService } from '@nestjs/jwt';
 import { SkillDto } from './dto/skill.dto';
 import { BlackListRepository } from './blackList.repository';
-import { from } from 'rxjs';
 
 @Injectable()
 export class MessageService {
@@ -40,21 +39,21 @@ export class MessageService {
 
   async setBlackList(fromUserId: number, toUserId: number): Promise<string> {
     if (fromUserId === toUserId) {
-      return 'Can not set black list yourself';
+      return '스스로를 차단할 수 없습니다.';
     } else if (this.blackList.has([fromUserId, toUserId].toString())) {
-      return 'already in black list';
+      return '이미 차단하였습니다';
     } else {
       await this.blackListRepository.createBlackList(fromUserId, toUserId);
       this.blackList.set([fromUserId, toUserId].toString(), true);
-      return 'set black list success';
+      return '차단 완료';
     }
   }
 
   async unSetBlackList(fromUserId: number, toUserId: number): Promise<string> {
     if (fromUserId === toUserId) {
-      return 'Can not set black list yourself';
+      return '스스로 차단을 해재할 수 없습니다.';
     } else if (!this.blackList.has([fromUserId, toUserId].toString())) {
-      return 'already not in black list';
+      return '이미 차단이 해재되어있습니다.';
     }
 
     const result = await this.blackListRepository.deleteBlackList(
@@ -66,7 +65,7 @@ export class MessageService {
     } else {
       this.blackList.delete([fromUserId, toUserId].toString());
     }
-    return 'unset black list success';
+    return '차단 해제 완료';
   }
 
   isBlackList(fromUserId: number, toUserId: number): boolean {
@@ -111,9 +110,9 @@ export class MessageService {
         roomId,
       );
     if (!targetParticipant || targetParticipant.ban) {
-      return `user ${targetUserId} is banned or not in chat room`;
+      return `차단되어있거나 접속하지 않은 유저입니다`;
     } else if (targetParticipant.authority === ChatParticipantAuthority.BOSS) {
-      return 'Boss를 mute할 수 없습니다.';
+      return '방장을 음소거할 수 없습니다.';
     }
     const muteUser = this.mute.get([targetUserId, roomId].toString());
     if (!muteUser) {
@@ -121,9 +120,9 @@ export class MessageService {
       setTimeout(() => {
         this.mute.delete([targetUserId, roomId].toString());
       }, 10000); //10초동안 mute
-      return `user ${targetUserId} is muted`;
+      return `10초간 음소거됩니다`;
     } else {
-      return `user ${targetUserId} is already muted`;
+      return '이미 음소거 상태입니다';
     }
   }
 
@@ -133,12 +132,12 @@ export class MessageService {
         skillDto.targetUserId,
         skillDto.roomId,
       );
-    if (!targetSocket || !willKickedUser) {
-      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
+    if (!willKickedUser) {
+      return '유저를 찾을 수 없습니다';
     } else if (willKickedUser.ban) {
-      return 'ban이 된 사용자는 내보낼 수 없습니다. ban을 해제하고 다시 시도하세요';
+      return '추방된 사용자는 내보낼 수 없습니다. 추방을 해제하고 다시 시도하세요';
     } else if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
-      return `Can not kick boss ${skillDto.targetUserId}`;
+      return '방장은 추방할 수 없습니다';
     }
     try {
       await this.chatParticipantRepository.deleteChatParticipant(
@@ -146,11 +145,13 @@ export class MessageService {
         skillDto.targetUserId,
       );
     } catch {
-      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
+      return '유저를 찾을 수 없습니다';
     }
-    targetSocket.leave(skillDto.roomId.toString());
-    targetSocket.emit(`kick`, 'You have been kicked from the room');
-    return `user ${skillDto.targetUserId} is kicked`;
+    if (targetSocket) {
+      targetSocket.leave(skillDto.roomId.toString());
+      targetSocket.emit(`kick`, '관리자에 의해 채팅방에서 내보내졌습니다');
+    }
+    return `내보내기 성공`;
   }
 
   isImMute(userId: number, roomId: number): boolean {
