@@ -302,7 +302,6 @@ export class GameSocketGateway
     }
   }
 
-
   @SubscribeMessage('validateSocketGeneral')
   handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
     if (
@@ -312,6 +311,7 @@ export class GameSocketGateway
     ) {
       client.emit('validateSuccessGeneral');
     } else {
+      client.emit('validateFail');
       client.disconnect();
     }
   }
