@@ -50,6 +50,11 @@ export class ChatController {
     return this.chatService.getChatRoomByUserId(req.user.id);
   }
 
+  @Get('name/:chat_room_id')
+  getChatNameById(@Param('chat_room_id') chat_room_id): Promise<Chat> {
+    return this.chatService.getChatNameById(chat_room_id);
+  }
+
   @Get('allParticipant/:chat_room_id')
   getAllParticipantByChatId(
     @Param('chat_room_id', ParseIntPipe) chat_room_id,

@@ -122,6 +122,7 @@ export class HomeGateway
         'directMessage',
         `${targetSocket['nickname']}는 오프라인 상태입니다`,
       );
+
     }
   }
 

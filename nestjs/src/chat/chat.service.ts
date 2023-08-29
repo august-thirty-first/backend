@@ -138,6 +138,12 @@ export class ChatService {
     return chats;
   }
 
+  async getChatNameById(chat_room_id: number): Promise<Chat> {
+    const chat = await this.chatRepository.getChatByChatId(chat_room_id);
+    if (!chat) throw new BadRequestException('채팅방이 존재하지 않습니다');
+    return chat;
+  }
+
   async getAllParticipantByChatId(
     chat_room_id: number,
     user_id: number,
