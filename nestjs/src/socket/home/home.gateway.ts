@@ -70,6 +70,7 @@ export class HomeGateway
 
   handleDisconnect(client: Socket) {
     this.connectionService.removeUserConnection(client['user_id']);
+    this.generalGameService.removeGeneralGame(client['user_id']);
     console.log(`home socket: ${client.id} disconnected`);
   }
 
@@ -280,17 +281,15 @@ export class HomeGateway
     @MessageBody() payload: number,
   ) {
     const fromUserId: number = client['user_id'];
-    const fromUserSocketId: string = client.id;
     const fromUserNickname: string = client['nickname'];
     const toUserId: number = payload;
-    const toUserSocketId: string =
-      this.connectionService.findSocketByUserId(toUserId).id;
+    const toUserSocket = this.connectionService.findSocketByUserId(toUserId);
 
-    if (this.generalGameService.addGeneralGame(fromUserId, toUserId)) {
-      client.to(fromUserSocketId).emit('waitingPlayer');
-      client
-        .to(toUserSocketId)
-        .emit('selectJoin', fromUserId, fromUserNickname);
-    }
+    if (toUserSocket) {
+      if (this.generalGameService.addGeneralGame(fromUserId, toUserId)) {
+        client.emit('waitingPlayer');
+        toUserSocket.emit('selectJoin', fromUserId, fromUserNickname);
+      }
+    } else client.emit('requestGeneralGameError', 'Offline User');
   }
 }

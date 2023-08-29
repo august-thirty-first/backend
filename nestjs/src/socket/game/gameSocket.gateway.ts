@@ -316,6 +316,7 @@ export class GameSocketGateway
     ) {
       client.emit('validateSuccessGeneral');
     } else {
+      client.emit('validateFail');
       client.disconnect();
     }
   }
