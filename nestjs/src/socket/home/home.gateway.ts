@@ -78,7 +78,7 @@ export class HomeGateway
   ) {
     const messageDto: MessageDto = JSON.parse(payload);
     if (this.messageService.isImMute(client['user_id'], messageDto.roomId)) {
-      client.emit('message', 'Muted!!!!');
+      client.emit('message', '음소거 상태입니다');
     } else {
       this.connectionService.getUserConnection().forEach((socketId, userId) => {
         if (
@@ -119,7 +119,10 @@ export class HomeGateway
         );
       }
     } else {
-      client.emit('directMessage', `${targetSocket['nickname']} is offline`);
+      client.emit(
+        'directMessage',
+        `${targetSocket['nickname']}는 오프라인 상태입니다`,
+      );
     }
   }
 
@@ -175,10 +178,7 @@ export class HomeGateway
         ),
       );
     } else {
-      client.emit(
-        'muteReturnStatus',
-        'You do not have the right to mute others',
-      );
+      client.emit('muteReturnStatus', '음소거시킬 수 있는 권한이 없습니다');
     }
   }
 
@@ -201,18 +201,12 @@ export class HomeGateway
         const rooms = targetSocket.rooms;
         if (rooms && rooms.has(skillDto.roomId.toString())) {
           targetSocket.leave(skillDto.roomId.toString());
-          targetSocket.emit(
-            'ban',
-            `You have been left from the room: ${skillDto.roomId}`,
-          );
+          targetSocket.emit('ban', '채팅방에서 추방당했습니다');
         }
       }
-      client.emit(
-        'banReturnStatus',
-        'Successfully banned the user and left them from the room',
-      );
+      client.emit('banReturnStatus', '추방 완료');
     } else {
-      client.emit('banReturnStatus', 'You do not have the right to ban others');
+      client.emit('banReturnStatus', '추방할 수 있는 권한이 없습니다');
     }
   }
 
@@ -230,10 +224,39 @@ export class HomeGateway
     //   targetSocket.emit('ban', `${skillDto.roomId} 채팅방에서 ban이 해제되었습니다.`);
     // }
     // 여기서 `${채팅방 이름}에서 ban이 해제되었습니다.` 이런 메시지를 보내줄 수 있었으면 좋겠는데 채팅방 이름을 받아올 방법이...ㅜ
-    client.emit(
-      'unbanReturnStatus',
-      'Successfully unbaned the user and left them from the room',
+    client.emit('unbanReturnStatus', '추방 해제 완료');
+  }
+
+  @SubscribeMessage('toAdmin')
+  handleToAdmin(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      skillDto.targetUserId,
     );
+
+    if (targetSocket) {
+      targetSocket.emit('toAdmin', '관리자 자격이 부여되었습니다.');
+    }
+    client.emit('toAdminReturnStatus', '관리자 권한 부여 성공');
+  }
+
+  @SubscribeMessage('toNormal')
+  handleToNormal(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: string,
+  ) {
+    const skillDto: SkillDto = JSON.parse(payload);
+    const targetSocket = this.connectionService.findSocketByUserId(
+      skillDto.targetUserId,
+    );
+
+    if (targetSocket) {
+      targetSocket.emit('toAdmin', '관리자 자격이 해제되었습니다.');
+    }
+    client.emit('toNormalReturnStatus', '관리자 권한 취소 성공');
   }
 
   @SubscribeMessage('kick')
@@ -251,10 +274,7 @@ export class HomeGateway
         await this.messageService.kickUser(skillDto, targetSocket),
       );
     } else {
-      client.emit(
-        'kickReturnStatus',
-        'You do not have the right to kick others',
-      );
+      client.emit('kickReturnStatus', '내보낼 수 있는 권한이 없습니다');
     }
   }
 
@@ -266,7 +286,7 @@ export class HomeGateway
     const roomIdDto: RoomIdDto = JSON.parse(payload);
     client
       .to(roomIdDto.roomId.toString())
-      .emit('deleteRoom', `roomId ${roomIdDto.roomId} deleted`);
+      .emit('deleteRoom', '채팅방이 삭제되었습니다');
     console.log('delete room event');
     console.log(payload);
   }
