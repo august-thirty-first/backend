@@ -112,7 +112,6 @@ export class HomeGateway
           client['user_id'],
         )
       ) {
-        this.handleLeaveAllRoom(client);
         targetSocket.emit(
           'directMessage',
           `${client['nickname']}: ${directMessageDto.inputMessage}`,
