@@ -154,7 +154,8 @@ export class GameSocketService {
         dx <= gamePlayerBar.width / 2 + curBall.radius &&
         dy <= gamePlayerBar.width / 2 + curBall.radius
       ) {
-        curBall.velocity.x *= -1;
+        curBall.velocity.x *= -1.2;
+        curBall.velocity.y *= 1.2;
       }
     }
   }
