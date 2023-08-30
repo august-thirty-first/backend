@@ -8,9 +8,14 @@ import { GameHistory } from './entities/gameHistory.entity';
 import { GameConnectionService } from './gameConnection.service';
 import { Ladder } from './entities/ladder.entity';
 import LadderRepository from './ladder.repository';
+import { HomeModule } from '../home/home.module';
 
 @Module({
-  imports: [NormalJwtModule, TypeOrmModule.forFeature([GameHistory, Ladder])],
+  imports: [
+    NormalJwtModule,
+    TypeOrmModule.forFeature([GameHistory, Ladder]),
+    HomeModule,
+  ],
   providers: [
     GameSocketGateway,
     GameSocketService,

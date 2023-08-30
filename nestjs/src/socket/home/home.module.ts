@@ -10,6 +10,7 @@ import { Chat } from 'src/chat/entities/chat.entity';
 import { ChatParticipant } from 'src/chat/entities/chatParticipant.entity';
 import { BlackList } from './entities/blackList.entity';
 import { BlackListRepository } from './blackList.repository';
+import { GeneralGameService } from './generalGame.service';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { BlackListRepository } from './blackList.repository';
     ChatParticipantRepository,
     ChatRepository,
     BlackListRepository,
+    GeneralGameService,
   ],
-  exports: [ConnectionService, MessageService],
+  exports: [ConnectionService, MessageService, GeneralGameService],
 })
 export class HomeModule {}

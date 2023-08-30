@@ -19,6 +19,7 @@ import { MessageService } from './message.service';
 import { SkillDto } from './dto/skill.dto';
 import { directMessageDto } from './dto/directMessage.dto';
 import { UserIdDto } from './dto/userId.dto';
+import { GeneralGameService } from './generalGame.service';
 
 @WebSocketGateway({
   namespace: 'home',
@@ -34,10 +35,11 @@ export class HomeGateway
     private readonly jwtService: JwtService,
     private readonly connectionService: ConnectionService,
     private readonly messageService: MessageService,
+    private readonly generalGameService: GeneralGameService,
   ) {}
   @WebSocketServer() server: Server;
 
-  afterInit(@ConnectedSocket() client: Socket) {
+  afterInit() {
     console.log('home gateway init');
   }
 
@@ -68,6 +70,7 @@ export class HomeGateway
 
   handleDisconnect(client: Socket) {
     this.connectionService.removeUserConnection(client['user_id']);
+    this.generalGameService.removeGeneralGame(client['user_id']);
     console.log(`home socket: ${client.id} disconnected`);
   }
 
@@ -270,5 +273,23 @@ export class HomeGateway
     client.join(roomIdDto.roomId.toString());
     console.log(`join Room: ${roomIdDto.roomId}`);
     client.emit('roomChange', roomIdDto.roomId);
+  }
+
+  @SubscribeMessage('requestGeneralGame')
+  handleRequestGeneralGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: number,
+  ) {
+    const fromUserId: number = client['user_id'];
+    const fromUserNickname: string = client['nickname'];
+    const toUserId: number = payload;
+    const toUserSocket = this.connectionService.findSocketByUserId(toUserId);
+
+    if (toUserSocket) {
+      if (this.generalGameService.addGeneralGame(fromUserId, toUserId)) {
+        client.emit('waitingPlayer');
+        toUserSocket.emit('selectJoin', fromUserId, fromUserNickname);
+      }
+    } else client.emit('requestGeneralGameError', 'Offline User');
   }
 }

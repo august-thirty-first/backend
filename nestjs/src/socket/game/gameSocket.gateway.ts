@@ -23,6 +23,7 @@ import GameMap from './class/gameMap';
 import FrameSizeDto from './dto/frameSize.dto';
 import { GameType } from './enum/gameType.enum';
 import { GameConnectionService } from './gameConnection.service';
+import { GeneralGameService } from '../home/generalGame.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -37,6 +38,7 @@ export class GameSocketGateway
     @Inject(NormalJwt) private readonly jwtService: JwtService,
     private readonly gameSocketService: GameSocketService,
     private readonly gameConnectionService: GameConnectionService,
+    private readonly generalGameService: GeneralGameService,
   ) {}
 
   @WebSocketServer() server: Server;
@@ -145,6 +147,7 @@ export class GameSocketGateway
     console.log(`game socket: ${client.id} disconnected`);
     const disconnectedUser: User = this.users[client.id];
     this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
+    this.generalGameService.removeGeneralGame(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
     console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
@@ -180,8 +183,8 @@ export class GameSocketGateway
     console.log('join queue');
     console.log(`matching queue pushed : ${this.ladderQueue.length}`);
     if (this.ladderQueue.length >= 2) {
-      const frontSocket = this.ladderQueue[0];
-      const backSocket = this.ladderQueue[1];
+      const frontSocket = this.ladderQueue.shift();
+      const backSocket = this.ladderQueue.shift();
       const leftUser = this.users[frontSocket.id];
       const rightUser = this.users[backSocket.id];
 
@@ -193,7 +196,6 @@ export class GameSocketGateway
       }
       backSocket.leave(backSocket.id);
       backSocket.join(frontSocket.id);
-      this.ladderQueue = [];
       this.games[frontSocket.id] = new Game(
         frontSocket.id,
         GameStatus.PRE_GAME,
@@ -218,6 +220,9 @@ export class GameSocketGateway
   handleReady(@ConnectedSocket() client: Socket, @MessageBody() data: string) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const readyDto: ReadyDto = JSON.parse(data);
     const leftSideUser = curGame.users[0];
     const rightSideUser = curGame.users[1];
@@ -243,6 +248,9 @@ export class GameSocketGateway
   ) {
     const roomId = this.gameSocketService.getRoomId(client);
     const curGame = this.games[roomId];
+    if (curGame === undefined) {
+      return;
+    }
     const curRenderInfo = curGame.renderInfo;
     const frameSizeDto: FrameSizeDto = JSON.parse(data);
     if (
@@ -297,5 +305,56 @@ export class GameSocketGateway
       // client.emit('validateFail');
       client.disconnect();
     }
+  }
+
+  @SubscribeMessage('validateSocketGeneral')
+  handleValidateGeneralGameSocket(@ConnectedSocket() client: Socket) {
+    if (
+      this.generalGameService.validateSocketGeneral(
+        this.users[client.id].userId,
+      )
+    ) {
+      client.emit('validateSuccessGeneral');
+    } else {
+      client.emit('validateFail');
+      client.disconnect();
+    }
+  }
+
+  @SubscribeMessage('generalGameApprove')
+  handleGeneralGameApprove(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: number,
+  ) {
+    const fromUserId: number = data;
+    if (!this.generalGameService.findGeneralGame(fromUserId)) {
+      // 일반 게임을 요청한 사람의 소켓 연결이 끊겼을 때
+      // 일반 게임을 수락한 유저에게 게임 매칭이 실패했음을 알린다.
+      client.emit('generalGameFail');
+      return;
+    }
+    const fromUserSocketId: string =
+      this.gameConnectionService.getUserSocketInfoById(fromUserId).id;
+    const leftUser = this.users[fromUserSocketId];
+    const rightUser = this.users[client.id];
+    client.leave(client.id);
+    client.join(fromUserSocketId);
+    this.games[fromUserSocketId] = new Game(
+      fromUserSocketId,
+      GameStatus.PRE_GAME,
+      GameType.GENERAL,
+    );
+    console.log(
+      `new game id: ${this.games[fromUserSocketId].id} length : ${
+        Object.keys(this.games).length
+      }`,
+    );
+    leftUser.updateStatus(UserStatus.IN_GAME);
+    rightUser.updateStatus(UserStatus.IN_GAME);
+    leftUser.updateRoomId(fromUserSocketId);
+    rightUser.updateRoomId(fromUserSocketId);
+    this.games[fromUserSocketId].addUser(leftUser);
+    this.games[fromUserSocketId].addUser(rightUser);
+    this.server.to(fromUserSocketId).emit('joinGame');
   }
 }
