@@ -38,6 +38,7 @@ export class BlackListRepository extends Repository<BlackList> {
       },
       relations: { from: true, to: true },
       where: { from: { id: fromUserId } },
+      order: { id: 'ASC' },
     });
   }
 
