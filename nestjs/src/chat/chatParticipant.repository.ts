@@ -43,7 +43,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
   getAllChatParticipantByUserChatRoom(
     user_id: number,
     chat_room_id: number,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | null> {
     return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })
@@ -53,7 +53,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
   getChatParticipantByUserChatRoom(
     user_id: number,
     chat_room_id: number,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | null> {
     return this.createQueryBuilder('cp')
       .where('cp.user_id = :user_id', { user_id })
       .andWhere('cp.chat_room_id = :chat_room_id', { chat_room_id })

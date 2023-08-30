@@ -8,6 +8,6 @@ export interface ChatParticipantWithBlackList {
   chat: Chat;
   user: User;
   authority: ChatParticipantAuthority;
-  ban: Date;
+  ban: Date | null;
   authority_time: Date;
 }

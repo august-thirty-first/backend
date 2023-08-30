@@ -27,7 +27,7 @@ export class Chat extends BaseEntity {
   status: ChatStatus;
 
   @Column({ nullable: true, select: false })
-  password: string;
+  password: string | null;
 
   @CreateDateColumn()
   created_at: Date;

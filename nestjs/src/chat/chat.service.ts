@@ -90,7 +90,7 @@ export class ChatService {
     return this.chatRepository.getOpenChat();
   }
 
-  getChatById(id: number): Promise<Chat> {
+  getChatById(id: number): Promise<Chat | null> {
     return this.chatRepository.getChatById(id);
   }
 
@@ -191,7 +191,10 @@ export class ChatService {
     return chatParticipant;
   }
 
-  async isUserJoinableChatRoom(user_id: number, chatJoinDto: ChatJoinDto) {
+  async isUserJoinableChatRoom(
+    user_id: number,
+    chatJoinDto: ChatJoinDto,
+  ): Promise<ChatParticipant> {
     const chatParticipant =
       await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
         user_id,
@@ -205,7 +208,7 @@ export class ChatService {
     } else if (chatParticipant.ban !== null) {
       throw new UnauthorizedException('이 채팅방에서 추방당했습니다.');
     } else if (
-      chatRoom.status === ChatStatus.PROTECTED &&
+      chatRoom?.status === ChatStatus.PROTECTED &&
       (!chatJoinDto.password ||
         !(await bcrypt.compare(chatJoinDto.password, chatRoom.password)))
     ) {
@@ -218,7 +221,7 @@ export class ChatService {
     chatJoinDto: ChatJoinDto,
     user_id: number,
     chatRoom: Chat,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | undefined> {
     if (chatRoom.status === ChatStatus.PUBLIC) {
       const chatParticipantCreateDto = {
         chat_room_id: chatJoinDto.chat_room_id,
@@ -247,7 +250,7 @@ export class ChatService {
   async joinChat(
     chatJoinDto: ChatJoinDto,
     user_id: number,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | undefined> {
     const chat = await this.chatRepository.getChatRoomWithPassword(
       chatJoinDto.chat_room_id,
     );
@@ -275,7 +278,7 @@ export class ChatService {
   async updateAuthority(
     chatParticipantAuthorityDto: ChatParticipantAuthorityDto,
     request_user_id: number,
-  ) {
+  ): Promise<ChatParticipant> {
     const requestParticipant = await this.checkAdminOrBoss(
       request_user_id,
       chatParticipantAuthorityDto.chat_room_id,
@@ -305,7 +308,7 @@ export class ChatService {
     target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
-  ) {
+  ): Promise<ChatParticipant> {
     const requestParticipant = await this.checkAdminOrBoss(
       request_user_id,
       chat_room_id,
@@ -336,7 +339,7 @@ export class ChatService {
     target_user_id: number,
     chat_room_id: number,
     request_user_id: number,
-  ) {
+  ): Promise<ChatParticipant> {
     const requestParticipant = await this.checkAdminOrBoss(
       request_user_id,
       chat_room_id,
@@ -401,7 +404,11 @@ export class ChatService {
         target_user_id,
         chat_room_id,
       );
-    if (!targetParticipant && targetParticipant.ban) {
+    if (!targetParticipant) {
+      throw new NotFoundException('유저를 찾을 수 없습니다.');
+    }
+
+    if (targetParticipant.ban) {
       throw new BadRequestException(
         '추방된 사용자는 내보낼 수 없습니다. 추방을 해제하고 다시 시도하세요',
       );

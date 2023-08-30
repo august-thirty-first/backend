@@ -86,7 +86,7 @@ export class ChatController {
   joinChat(
     @Body() chatJoinDto: ChatJoinDto,
     @Req() req,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | undefined> {
     return this.chatService.joinChat(chatJoinDto, req.user.id);
   }
 
