@@ -372,7 +372,7 @@ export class ChatService {
         chat_room_id,
       );
     if (!chatParticipant) {
-      throw new NotFoundException('유저를 찾을 수 없습니다.');
+      throw new NotFoundException('존재하지 않는 채팅방입니다.');
     }
     if (chatParticipant.authority === ChatParticipantAuthority.BOSS) {
       await this.deleteChat(chat_room_id);
