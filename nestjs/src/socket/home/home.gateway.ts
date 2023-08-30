@@ -122,7 +122,6 @@ export class HomeGateway
         'directMessage',
         `${targetSocket['nickname']}는 오프라인 상태입니다`,
       );
-
     }
   }
 
@@ -238,7 +237,10 @@ export class HomeGateway
     );
 
     if (targetSocket) {
-      targetSocket.emit('toAdmin', '관리자 자격이 부여되었습니다.');
+      targetSocket.emit(
+        'toAdmin',
+        `${targetSocket['nickname']}님에게 관리자 자격이 부여되었습니다.`,
+      );
     }
     client.emit('toAdminReturnStatus', '관리자 권한 부여 성공');
   }
@@ -254,7 +256,10 @@ export class HomeGateway
     );
 
     if (targetSocket) {
-      targetSocket.emit('toAdmin', '관리자 자격이 해제되었습니다.');
+      targetSocket.emit(
+        'toAdmin',
+        `${targetSocket['nickname']}님에게 관리자 자격이 해제되었습니다.`,
+      );
     }
     client.emit('toNormalReturnStatus', '관리자 권한 취소 성공');
   }
@@ -313,5 +318,8 @@ export class HomeGateway
     client.join(roomIdDto.roomId.toString());
     console.log(`join Room: ${roomIdDto.roomId}`);
     client.emit('roomChange', roomIdDto.roomId);
+    client
+      .to(roomIdDto.roomId.toString())
+      .emit('enterRoom', `${client['nickname']}이 참가했습니다`);
   }
 }
