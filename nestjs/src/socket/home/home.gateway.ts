@@ -246,6 +246,7 @@ export class HomeGateway
       );
     }
     client.emit('toAdminReturnStatus', '관리자 권한 부여 성공');
+    client.to(skillDto.roomId.toString()).emit('toAdmin');
   }
 
   @SubscribeMessage('toNormal')
@@ -260,11 +261,12 @@ export class HomeGateway
 
     if (targetSocket) {
       targetSocket.emit(
-        'toAdmin',
+        'toNormal',
         `${targetSocket['nickname']}님에게 관리자 자격이 해제되었습니다.`,
       );
     }
     client.emit('toNormalReturnStatus', '관리자 권한 취소 성공');
+    client.to(skillDto.roomId.toString()).emit('toNormal');
   }
 
   @SubscribeMessage('kick')
