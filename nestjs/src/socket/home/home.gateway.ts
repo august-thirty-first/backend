@@ -20,6 +20,7 @@ import { SkillDto } from './dto/skill.dto';
 import { directMessageDto } from './dto/directMessage.dto';
 import { UserIdDto } from './dto/userId.dto';
 import { GeneralGameService } from './generalGame.service';
+import { GameConnectionService } from '../game/gameConnection.service';
 
 @WebSocketGateway({
   namespace: 'home',
