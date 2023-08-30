@@ -36,6 +36,7 @@ export class HomeGateway
     private readonly connectionService: ConnectionService,
     private readonly messageService: MessageService,
     private readonly generalGameService: GeneralGameService,
+    private readonly gameConnectionService: GameConnectionService,
   ) {}
   @WebSocketServer() server: Server;
 
@@ -336,11 +337,17 @@ export class HomeGateway
     const toUserId: number = payload;
     const toUserSocket = this.connectionService.findSocketByUserId(toUserId);
 
-    if (toUserSocket) {
-      if (this.generalGameService.addGeneralGame(fromUserId, toUserId)) {
+    if (fromUserId === toUserId)
+      client.emit('requestGeneralGameError', '자신한테 게임 요청?!');
+    else if (toUserSocket) {
+      const isGaming: boolean =
+        this.gameConnectionService.findGameConnection(toUserId);
+      if (isGaming)
+        client.emit('requestGeneralGameError', '게임중인 유저입니다.');
+      else if (this.generalGameService.addGeneralGame(fromUserId, toUserId)) {
         client.emit('waitingPlayer');
         toUserSocket.emit('selectJoin', fromUserId, fromUserNickname);
       }
-    } else client.emit('requestGeneralGameError', 'Offline User');
+    } else client.emit('requestGeneralGameError', '오프라인 유저입니다.');
   }
 }
