@@ -218,7 +218,7 @@ export class ChatService {
     chatJoinDto: ChatJoinDto,
     user_id: number,
     chatRoom: Chat,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | undefined> {
     if (chatRoom.status === ChatStatus.PUBLIC) {
       const chatParticipantCreateDto = {
         chat_room_id: chatJoinDto.chat_room_id,
@@ -247,7 +247,7 @@ export class ChatService {
   async joinChat(
     chatJoinDto: ChatJoinDto,
     user_id: number,
-  ): Promise<ChatParticipant> {
+  ): Promise<ChatParticipant | undefined> {
     const chat = await this.chatRepository.getChatRoomWithPassword(
       chatJoinDto.chat_room_id,
     );
@@ -401,7 +401,11 @@ export class ChatService {
         target_user_id,
         chat_room_id,
       );
-    if (!targetParticipant && targetParticipant.ban) {
+    if (!targetParticipant) {
+      throw new NotFoundException('유저를 찾을 수 없습니다.');
+    }
+
+    if (targetParticipant.ban) {
       throw new BadRequestException(
         '추방된 사용자는 내보낼 수 없습니다. 추방을 해제하고 다시 시도하세요',
       );

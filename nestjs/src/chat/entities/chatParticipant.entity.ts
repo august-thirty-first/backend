@@ -29,7 +29,7 @@ export class ChatParticipant extends BaseEntity {
   authority: ChatParticipantAuthority;
 
   @Column({ nullable: true })
-  ban: Date;
+  ban: Date | null;
 
   @Column({ nullable: false })
   authority_time: Date;
