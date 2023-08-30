@@ -20,6 +20,7 @@ export class ChatRepository extends Repository<Chat> {
   getOpenChat(): Promise<Chat[]> {
     return this.find({
       where: { status: In([ChatStatus.PROTECTED, ChatStatus.PUBLIC]) },
+      order: { id: 'ASC' },
     });
   }
 

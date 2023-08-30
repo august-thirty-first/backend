@@ -69,6 +69,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
       where: {
         user: { id: user_id },
       },
+      order: { id: 'ASC' },
     });
   }
 
@@ -92,6 +93,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
       where: {
         chat: { id: chat_room_id },
       },
+      order: { id: 'ASC' },
     });
   }
 
