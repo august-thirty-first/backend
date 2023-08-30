@@ -275,7 +275,12 @@ export class HomeGateway
     @MessageBody() payload: string,
   ) {
     const skillDto: SkillDto = JSON.parse(payload);
-    if (this.messageService.isBossOrAdmin(client['user_id'], skillDto.roomId)) {
+    if (
+      await this.messageService.isBossOrAdmin(
+        client['user_id'],
+        skillDto.roomId,
+      )
+    ) {
       const targetSocket = this.connectionService.findSocketByUserId(
         skillDto.targetUserId,
       );
