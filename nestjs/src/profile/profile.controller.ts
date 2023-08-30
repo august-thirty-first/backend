@@ -52,10 +52,11 @@ export class ProfileController {
     @Query() searchUserDto: SearchUserDto,
   ): Promise<SearchUserDto | null> {
     const user: any = req.user;
-    const result: SearchUserDto = await this.profileService.searchByUserProfile(
-      user.id,
-      searchUserDto.nickname,
-    );
+    const result: SearchUserDto | null =
+      await this.profileService.searchByUserProfile(
+        user.id,
+        searchUserDto.nickname,
+      );
     return result;
   }
 

@@ -27,7 +27,7 @@ export class UserRepository extends Repository<User> {
     try {
       await this.save(user);
       console.log('save 성공');
-    } catch (error) {
+    } catch (error: any) {
       if (createUserDto.avata_path) unlinkSync(createUserDto.avata_path);
       if (error.code === '23505') {
         throw new ConflictException('이미 존재하는 nickname 입니다.');

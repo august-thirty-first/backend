@@ -18,7 +18,7 @@ export class OauthExceptionFilter implements ExceptionFilter {
     response
       .status(HttpStatus.FOUND)
       .send(
-        `<script type="text/javascript">alert('${message}'); window.location.href='http://localhost:4000/login' </script>`,
+        `<script type="text/javascript">alert('${message}'); window.location.href='${process.env.FRONTEND_URL}/login' </script>`,
       );
   }
 }

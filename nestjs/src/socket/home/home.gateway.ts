@@ -24,7 +24,7 @@ import { GeneralGameService } from './generalGame.service';
 @WebSocketGateway({
   namespace: 'home',
   cors: {
-    origin: ['http://localhost:4000'],
+    origin: [`${process.env.FRONTEND_URL}`],
   },
 })
 export class HomeGateway

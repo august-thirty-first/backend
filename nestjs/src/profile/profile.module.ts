@@ -14,6 +14,8 @@ import { UserAchievementRepository } from 'src/achievement/userAchievement.repos
 import { UserAchievement } from 'src/achievement/entities/UserAchievement.entity';
 import { GameHistoryRepository } from 'src/socket/game/gameHistory.repository';
 import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
+import { Ladder } from 'src/socket/game/entities/ladder.entity';
+import LadderRepository from 'src/socket/game/ladder.repository';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
       FriendRequesting,
       UserAchievement,
       GameHistory,
+      Ladder,
     ]),
     PassportsModule,
     MulterModules,
@@ -35,6 +38,7 @@ import { GameHistory } from 'src/socket/game/entities/gameHistory.entity';
     CryptoService,
     UserAchievementRepository,
     GameHistoryRepository,
+    LadderRepository,
   ],
 })
 export class ProfileModule {}
