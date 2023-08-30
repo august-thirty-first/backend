@@ -20,10 +20,11 @@ export class ChatRepository extends Repository<Chat> {
   getOpenChat(): Promise<Chat[]> {
     return this.find({
       where: { status: In([ChatStatus.PROTECTED, ChatStatus.PUBLIC]) },
+      order: { id: 'ASC' },
     });
   }
 
-  getChatById(id: number): Promise<Chat> {
+  getChatById(id: number): Promise<Chat | null> {
     return this.findOneBy({ id });
   }
 
@@ -31,7 +32,7 @@ export class ChatRepository extends Repository<Chat> {
     return this.chatRepository.delete({ id });
   }
 
-  getChatByChatId(chat_room_id: number): Promise<Chat> {
+  getChatByChatId(chat_room_id: number): Promise<Chat | null> {
     return this.findOneBy({ id: chat_room_id });
   }
 
@@ -53,7 +54,7 @@ export class ChatRepository extends Repository<Chat> {
     return chat;
   }
 
-  getChatRoomWithPassword(chat_room_id: number): Promise<Chat> {
+  getChatRoomWithPassword(chat_room_id: number): Promise<Chat | null> {
     return this.chatRepository
       .createQueryBuilder('chat')
       .addSelect('chat.password')

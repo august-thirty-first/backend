@@ -38,17 +38,22 @@ export class MessageService {
   }
 
   async setBlackList(fromUserId: number, toUserId: number): Promise<string> {
-    if (this.blackList.has([fromUserId, toUserId].toString())) {
-      return 'already in black list';
+    if (fromUserId === toUserId) {
+      return '스스로를 차단할 수 없습니다.';
+    } else if (this.blackList.has([fromUserId, toUserId].toString())) {
+      return '이미 차단하였습니다';
+    } else {
+      await this.blackListRepository.createBlackList(fromUserId, toUserId);
+      this.blackList.set([fromUserId, toUserId].toString(), true);
+      return '차단 완료';
     }
-    await this.blackListRepository.createBlackList(fromUserId, toUserId);
-    this.blackList.set([fromUserId, toUserId].toString(), true);
-    return 'set black list success';
   }
 
   async unSetBlackList(fromUserId: number, toUserId: number): Promise<string> {
-    if (!this.blackList.has([fromUserId, toUserId].toString())) {
-      return 'already not in black list';
+    if (fromUserId === toUserId) {
+      return '스스로 차단을 해재할 수 없습니다.';
+    } else if (!this.blackList.has([fromUserId, toUserId].toString())) {
+      return '이미 차단이 해재되어있습니다.';
     }
 
     const result = await this.blackListRepository.deleteBlackList(
@@ -60,7 +65,7 @@ export class MessageService {
     } else {
       this.blackList.delete([fromUserId, toUserId].toString());
     }
-    return 'unset black list success';
+    return '차단 해제 완료';
   }
 
   isBlackList(fromUserId: number, toUserId: number): boolean {
@@ -99,24 +104,26 @@ export class MessageService {
   }
 
   async muteUser(roomId: number, targetUserId: number): Promise<string> {
-    if (
-      await this.chatParticipantRepository.getChatParticipantByUserChatRoom(
+    const targetParticipant =
+      await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         targetUserId,
         roomId,
-      )
-    ) {
-      const muteUser = this.mute.get([targetUserId, roomId].toString());
-      if (!muteUser) {
-        this.mute.set([targetUserId, roomId].toString(), true);
-        setTimeout(() => {
-          this.mute.delete([targetUserId, roomId].toString());
-        }, 10000); //10초동안 mute
-        return `user ${targetUserId} is muted`;
-      } else {
-        return `user ${targetUserId} is already muted`;
-      }
+      );
+    if (!targetParticipant || targetParticipant.ban) {
+      return `차단되어있거나 접속하지 않은 유저입니다`;
+    } else if (targetParticipant.authority === ChatParticipantAuthority.BOSS) {
+      return '방장을 음소거할 수 없습니다.';
     }
-    return `user ${targetUserId} is not in chat room id ${roomId}`;
+    const muteUser = this.mute.get([targetUserId, roomId].toString());
+    if (!muteUser) {
+      this.mute.set([targetUserId, roomId].toString(), true);
+      setTimeout(() => {
+        this.mute.delete([targetUserId, roomId].toString());
+      }, 10000); //10초동안 mute
+      return `10초간 음소거됩니다`;
+    } else {
+      return '이미 음소거 상태입니다';
+    }
   }
 
   async kickUser(skillDto: SkillDto, targetSocket: Socket): Promise<string> {
@@ -125,11 +132,12 @@ export class MessageService {
         skillDto.targetUserId,
         skillDto.roomId,
       );
-    if (!targetSocket || !willKickedUser) {
-      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
-    }
-    if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
-      return `Can not kick boss ${skillDto.targetUserId}`;
+    if (!willKickedUser) {
+      return '유저를 찾을 수 없습니다';
+    } else if (willKickedUser.ban) {
+      return '추방된 사용자는 내보낼 수 없습니다. 추방을 해제하고 다시 시도하세요';
+    } else if (willKickedUser.authority === ChatParticipantAuthority.BOSS) {
+      return '방장은 추방할 수 없습니다';
     }
     try {
       await this.chatParticipantRepository.deleteChatParticipant(
@@ -137,11 +145,13 @@ export class MessageService {
         skillDto.targetUserId,
       );
     } catch {
-      return `user ${skillDto.targetUserId} is not in chat room id ${skillDto.roomId}`;
+      return '유저를 찾을 수 없습니다';
     }
-    targetSocket.leave(skillDto.roomId.toString());
-    targetSocket.emit(`kick`, 'You have been kicked from the room');
-    return `user ${skillDto.targetUserId} is kicked`;
+    if (targetSocket) {
+      targetSocket.leave(skillDto.roomId.toString());
+      targetSocket.emit(`kick`, '관리자에 의해 채팅방에서 내보내졌습니다');
+    }
+    return `내보내기 성공`;
   }
 
   isImMute(userId: number, roomId: number): boolean {
