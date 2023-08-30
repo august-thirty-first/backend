@@ -36,7 +36,7 @@ export class AuthController {
     const oauthUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${
       process.env.FORTYTWO_APP_ID
     }&redirect_uri=${encodeURIComponent(
-      process.env.FORTYTWO_REDIRECT_URI,
+      `${process.env.FORTYTWO_REDIRECT_URI}`,
     )}&response_type=code&`;
     res.status(HttpStatus.FOUND).redirect(oauthUrl);
   }
