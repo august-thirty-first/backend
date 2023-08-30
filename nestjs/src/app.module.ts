@@ -14,12 +14,14 @@ import { FriendModule } from './friend/friend.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
 import { AchievementModule } from './achievement/achievement.module';
+import { ConnectionModule } from './socket/connection.module';
 
 @Module({
   imports: [
     AuthModule,
     PassportsModule,
     TypeOrmModule.forRoot(typeORMConfig),
+    ConnectionModule,
     HomeModule,
     GameModule,
     GameSocketModule,

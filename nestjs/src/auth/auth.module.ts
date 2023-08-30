@@ -8,8 +8,8 @@ import { User } from './entities/User.entity';
 import { UserRepository } from './user.repository';
 import { MulterModules } from 'src/multer/multer.module';
 import { NormalJwtModule } from 'src/jwt/jwt.module';
-import { HomeModule } from 'src/socket/home/home.module';
 import { CryptoService } from './utils/crypto.service';
+import { ConnectionModule } from 'src/socket/connection.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { CryptoService } from './utils/crypto.service';
     TempJwtModule,
     TypeOrmModule.forFeature([User]),
     MulterModules,
-    HomeModule,
+    ConnectionModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, UserRepository, CryptoService],
