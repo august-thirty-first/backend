@@ -49,13 +49,13 @@ export class HomeGateway
       if (this.connectionService.addUserConnection(jwt['id'], client)) {
         client['user_id'] = jwt['id'];
         client['nickname'] = jwt['nickname'];
-        client['token_expiration'] = jwt['exp'] * 1000; // set milliseconds
+        client['token_expiration'] = jwt['exp'] * 1000;
         setTimeout(() => {
           if (client.connected && Date.now() > client['token_expiration']) {
             client.emit('expired', '토큰 만료');
             client.disconnect(true);
           }
-        }, client['token_expiration'] - Date.now()); // timeOut 설정
+        }, client['token_expiration'] - Date.now());
         console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
         await this.messageService.initBlackList(jwt['id']);
@@ -213,19 +213,7 @@ export class HomeGateway
   }
 
   @SubscribeMessage('unban')
-  async handleUnBanSomeone(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() payload: string,
-  ) {
-    const skillDto: SkillDto = JSON.parse(payload);
-    const targetSocket = this.connectionService.findSocketByUserId(
-      skillDto.targetUserId,
-    );
-
-    // if (targetSocket) {
-    //   targetSocket.emit('ban', `${skillDto.roomId} 채팅방에서 ban이 해제되었습니다.`);
-    // }
-    // 여기서 `${채팅방 이름}에서 ban이 해제되었습니다.` 이런 메시지를 보내줄 수 있었으면 좋겠는데 채팅방 이름을 받아올 방법이...ㅜ
+  async handleUnBanSomeone(@ConnectedSocket() client: Socket) {
     client.emit('unbanReturnStatus', '추방 해제 완료');
   }
 
