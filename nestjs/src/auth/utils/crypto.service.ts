@@ -33,7 +33,7 @@ export class CryptoService {
 
   decrypt(text: string): string {
     const textParts = text.split(':');
-    const iv = Buffer.from(textParts.shift(), 'hex');
+    const iv = Buffer.from(textParts.shift() || textParts[0], 'hex');
     const encryptedText = Buffer.from(textParts.join(':'), 'hex');
     const decipher = crypto.createDecipheriv(
       'aes-256-cbc',

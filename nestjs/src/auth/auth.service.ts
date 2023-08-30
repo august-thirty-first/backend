@@ -37,7 +37,7 @@ export class AuthService {
       token: '',
       redirectUrl: '',
     };
-    const user: User = await this.userRepository.findOneBy({
+    const user: User | null = await this.userRepository.findOneBy({
       intra_name: intraName,
     });
     if (user && this.connectionService.findUserConnection(user.id))
@@ -78,9 +78,10 @@ export class AuthService {
   }
 
   async verifyOTP(intraName: string, token: string): Promise<string> {
-    const user: User = await this.userRepository.findOneBy({
+    const user: User | null = await this.userRepository.findOneBy({
       intra_name: intraName,
     });
+    if (!user) throw new BadRequestException('존재 하지 않는 user입니다.');
     if (!user.otp_key)
       throw new BadRequestException('OTP 설정을 하지 않았습니다.');
     const decrypt_otp_key = this.cryptoService.decrypt(user.otp_key);

@@ -18,10 +18,10 @@ export class User extends BaseEntity {
   intra_name: string;
 
   @Column({ nullable: true })
-  avata_path: string;
+  avata_path?: string;
 
   @Column({ nullable: true })
-  otp_key: string;
+  otp_key?: string;
 
   @Column({ unique: true })
   nickname: string;
