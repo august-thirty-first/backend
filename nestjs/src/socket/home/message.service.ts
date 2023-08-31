@@ -73,7 +73,7 @@ export class MessageService {
   }
 
   getJwt(client: Socket) {
-    let jwt = null;
+    let jwt;
     if (client.handshake.headers?.cookie) {
       const token = parse(client.handshake.headers.cookie).access_token;
       try {
@@ -81,6 +81,8 @@ export class MessageService {
       } catch (error: any) {
         jwt = null;
       }
+    } else {
+      jwt = null;
     }
     return jwt;
   }
@@ -126,7 +128,10 @@ export class MessageService {
     }
   }
 
-  async kickUser(skillDto: SkillDto, targetSocket: Socket): Promise<string> {
+  async kickUser(
+    skillDto: SkillDto,
+    targetSocket: Socket | undefined,
+  ): Promise<string> {
     const willKickedUser =
       await this.chatParticipantRepository.getAllChatParticipantByUserChatRoom(
         skillDto.targetUserId,

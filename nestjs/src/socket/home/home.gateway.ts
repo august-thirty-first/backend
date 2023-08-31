@@ -123,10 +123,7 @@ export class HomeGateway
         );
       }
     } else {
-      client.emit(
-        'directMessage',
-        `${targetSocket['nickname']}는 오프라인 상태입니다`,
-      );
+      client.emit('directMessage', `오프라인 상태입니다`);
     }
   }
 
