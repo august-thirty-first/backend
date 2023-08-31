@@ -123,7 +123,7 @@ export class HomeGateway
         );
       }
     } else {
-      client.emit('directMessage', `오프라인 상태입니다`);
+      client.emit('message', `오프라인 상태입니다`);
     }
   }
 
