@@ -208,7 +208,8 @@ export class ChatService {
     } else if (chatParticipant.ban !== null) {
       throw new UnauthorizedException('이 채팅방에서 추방당했습니다.');
     } else if (
-      chatRoom?.status === ChatStatus.PROTECTED &&
+      (chatRoom?.status === ChatStatus.PROTECTED ||
+        chatRoom?.status === ChatStatus.PRIVATE) &&
       (!chatJoinDto.password ||
         !(await bcrypt.compare(chatJoinDto.password, chatRoom.password)))
     ) {
