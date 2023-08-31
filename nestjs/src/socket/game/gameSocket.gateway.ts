@@ -66,7 +66,6 @@ export class GameSocketGateway
     ) {
       this.gameSocketService.createGameHistory(curGame);
       this.gameSocketService.createOrUpdateLadder(curGame);
-      // TODO: Ladder 점수 업데이트 하기 (game type에 따라)
       switch (curGame.status) {
         case GameStatus.GAME_OVER:
           this.server
@@ -115,7 +114,7 @@ export class GameSocketGateway
 
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`game socket: ${client.id} connected`);
-    let jwtPayload = null;
+    let jwtPayload: any = null;
     if (client.handshake.headers?.cookie) {
       const token = parse(client.handshake.headers.cookie).access_token;
       try {
@@ -185,6 +184,9 @@ export class GameSocketGateway
     if (this.ladderQueue.length >= 2) {
       const frontSocket = this.ladderQueue.shift();
       const backSocket = this.ladderQueue.shift();
+      if (frontSocket === undefined || backSocket === undefined) {
+        return;
+      }
       const leftUser = this.users[frontSocket.id];
       const rightUser = this.users[backSocket.id];
 
@@ -254,8 +256,8 @@ export class GameSocketGateway
     const curRenderInfo = curGame.renderInfo;
     const frameSizeDto: FrameSizeDto = JSON.parse(data);
     if (
-      curRenderInfo.clientWidth === undefined &&
-      curRenderInfo.clientHeight === undefined
+      curRenderInfo?.clientWidth === undefined &&
+      curRenderInfo?.clientHeight === undefined
     ) {
       this.gameSocketService.initRenderInfoPositon(curRenderInfo, frameSizeDto);
     }

@@ -42,7 +42,7 @@ export class GameSocketService {
 
   getRoomId(socket: Socket): string {
     const rooms: Set<string> = socket.rooms;
-    let roomId: string;
+    let roomId = '';
     for (const item of rooms) {
       roomId = item;
       break;
@@ -127,7 +127,7 @@ export class GameSocketService {
   updateBallPosition(curRenderInfo: RenderInfo): void {
     const curBall = curRenderInfo.ball;
 
-    curBall.updatePosition(curBall.velocity.x, curBall.velocity.y);
+    curBall?.updatePosition(curBall.velocity.x, curBall.velocity.y);
   }
 
   checkWallCollision(curRenderInfo: RenderInfo): void {
@@ -199,7 +199,7 @@ export class GameSocketService {
       }
     } else {
       curGame.updateStatus(GameStatus.GAME_OVER_IN_PLAYING);
-      if (leftSidePlayer.status === UserStatus.OFFLINE) {
+      if (leftSidePlayer?.status === UserStatus.OFFLINE) {
         leftSidePlayer.score = 0;
         rightSidePlayer.score = TARGET_SCORE;
       } else {
