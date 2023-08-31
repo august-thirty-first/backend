@@ -26,7 +26,7 @@ export class GameConnectionService {
     this.gameConnections.delete(userId);
   }
 
-  getUserSocketInfoById(userId: number): Socket {
+  getUserSocketInfoById(userId: number): Socket | undefined {
     if (this.findGameConnection(userId)) {
       return this.gameConnections.get(userId);
     }

@@ -6,7 +6,7 @@ import { GameType } from '../enum/gameType.enum';
 import MatchHistory from './matchHistory';
 
 export default class Game {
-  renderInfo: RenderInfo | null = null;
+  renderInfo: RenderInfo;
   history: MatchHistory;
   users: User[] = [];
   voteMapType: MapType[] = [];
