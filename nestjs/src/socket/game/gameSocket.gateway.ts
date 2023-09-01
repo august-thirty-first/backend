@@ -77,7 +77,7 @@ export class GameSocketGateway
           break;
       }
       delete this.games[curGameRoomId];
-      console.log('game deleted after finish');
+      // console.log('game deleted after finish');
     }
   }
 
@@ -95,25 +95,25 @@ export class GameSocketGateway
       } else {
         clearInterval(this.setIntervalId);
         this.isCalledOnce = false;
-        console.log('updateGame finished');
+        // console.log('updateGame finished');
       }
     }, 15);
   }
 
-  afterInit(server: Server) {
-    console.log(`game socket server: ${server} init`);
+  afterInit() {
+    // console.log(`game socket server: ${server} init`);
     setInterval(() => {
-      console.log('check games length function called');
+      // console.log('check games length function called');
       if (!this.isCalledOnce && Object.keys(this.games).length > 0) {
         this.isCalledOnce = true;
-        console.log('innerCalled');
+        // console.log('innerCalled');
         this.updateRenderInfoInterval();
       }
     }, 5000);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`game socket: ${client.id} connected`);
+    // console.log(`game socket: ${client.id} connected`);
     let jwtPayload: any = null;
     if (client.handshake.headers?.cookie) {
       const token = parse(client.handshake.headers.cookie).access_token;
@@ -133,8 +133,8 @@ export class GameSocketGateway
           jwtPayload['nickname'],
           UserStatus.PRE_GAME,
         );
-        console.log('User join : ', Object.keys(this.users).length);
-        console.log('User id : ', this.users[client.id].userId);
+        // console.log('User join : ', Object.keys(this.users).length);
+        // console.log('User id : ', this.users[client.id].userId);
       } else {
         client.emit('multipleLadderConnect');
         client.disconnect();
@@ -143,12 +143,12 @@ export class GameSocketGateway
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log(`game socket: ${client.id} disconnected`);
+    // console.log(`game socket: ${client.id} disconnected`);
     const disconnectedUser: User = this.users[client.id];
     this.gameConnectionService.removeGameConnection(disconnectedUser.userId);
     this.generalGameService.removeGeneralGame(disconnectedUser.userId);
     const roomId: string = this.users[client.id].roomId;
-    console.log(`disconnected socket's room: ${roomId}`);
+    // console.log(`disconnected socket's room: ${roomId}`);
     const curGame: Game = this.games[roomId];
     // 게임에 룸에 참가한 유저가 끊겼을 경우 (게임 옵션 창까지 들어간 유저)
     if (curGame) {
@@ -156,7 +156,7 @@ export class GameSocketGateway
         // 룸에 남아있는 상대방에게 게임 종료 이벤트 전송 후 게임 삭제
         this.server.to(roomId).emit('gameOverInOptionPage');
         delete this.games[roomId];
-        console.log('game deleted in option selection page');
+        // console.log('game deleted in option selection page');
       } else if (this.games[roomId].status === GameStatus.IN_GAME) {
         // 연결이 끊긴 플레이어의 상태를 offline으로 변경
         curGame.renderInfo.gamePlayers[client.id].updateStatus(
@@ -170,17 +170,17 @@ export class GameSocketGateway
       this.ladderQueue = this.ladderQueue.filter(
         element => element.id !== client.id,
       );
-      console.log(`matching queue length : ${this.ladderQueue.length}`);
+      // console.log(`matching queue length : ${this.ladderQueue.length}`);
     }
     delete this.users[client.id];
-    console.log('User left : ', Object.keys(this.users).length);
+    // console.log('User left : ', Object.keys(this.users).length);
   }
 
   @SubscribeMessage('joinQueue')
   handleJoinQueue(@ConnectedSocket() client: Socket): void {
     this.ladderQueue.push(client);
-    console.log('join queue');
-    console.log(`matching queue pushed : ${this.ladderQueue.length}`);
+    // console.log('join queue');
+    // console.log(`matching queue pushed : ${this.ladderQueue.length}`);
     if (this.ladderQueue.length >= 2) {
       const frontSocket = this.ladderQueue.shift();
       const backSocket = this.ladderQueue.shift();
@@ -191,9 +191,9 @@ export class GameSocketGateway
       const rightUser = this.users[backSocket.id];
 
       if (frontSocket.id === backSocket.id) {
-        console.log(`same socket! pop() queue`);
+        // console.log(`same socket! pop() queue`);
         this.ladderQueue.pop();
-        console.log(`queue length : ${this.ladderQueue.length}`);
+        // console.log(`queue length : ${this.ladderQueue.length}`);
         return;
       }
       backSocket.leave(backSocket.id);
@@ -203,11 +203,11 @@ export class GameSocketGateway
         GameStatus.PRE_GAME,
         GameType.LADDER,
       );
-      console.log(
-        `new game id: ${this.games[frontSocket.id].id} length : ${
-          Object.keys(this.games).length
-        }`,
-      );
+      // console.log(
+      //   `new game id: ${this.games[frontSocket.id].id} length : ${
+      //     Object.keys(this.games).length
+      //   }`,
+      // );
       leftUser.updateStatus(UserStatus.IN_GAME);
       rightUser.updateStatus(UserStatus.IN_GAME);
       leftUser.updateRoomId(frontSocket.id);
@@ -228,7 +228,7 @@ export class GameSocketGateway
     const readyDto: ReadyDto = JSON.parse(data);
     const leftSideUser = curGame.users[0];
     const rightSideUser = curGame.users[1];
-    console.log(readyDto);
+    // console.log(readyDto);
     let curMap: GameMap;
     if (this.gameSocketService.voteMap(curGame, readyDto) === true) {
       curMap = this.gameSocketService.setMap(curGame);
@@ -346,11 +346,11 @@ export class GameSocketGateway
       GameStatus.PRE_GAME,
       GameType.GENERAL,
     );
-    console.log(
-      `new game id: ${this.games[fromUserSocketId].id} length : ${
-        Object.keys(this.games).length
-      }`,
-    );
+    // console.log(
+    //   `new game id: ${this.games[fromUserSocketId].id} length : ${
+    //     Object.keys(this.games).length
+    //   }`,
+    // );
     leftUser.updateStatus(UserStatus.IN_GAME);
     rightUser.updateStatus(UserStatus.IN_GAME);
     leftUser.updateRoomId(fromUserSocketId);

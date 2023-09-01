@@ -42,7 +42,7 @@ export class HomeGateway
   @WebSocketServer() server: Server;
 
   afterInit() {
-    console.log('home gateway init');
+    // console.log('home gateway init');
   }
 
   async handleConnection(client: Socket) {
@@ -58,7 +58,7 @@ export class HomeGateway
             client.disconnect(true);
           }
         }, client['token_expiration'] - Date.now());
-        console.log(`home socket: ${client.id} connected`);
+        // console.log(`home socket: ${client.id} connected`);
         client.emit('connection', '서버에 접속하였습니다');
         await this.messageService.initBlackList(jwt['id']);
       } else {
@@ -73,7 +73,7 @@ export class HomeGateway
   handleDisconnect(client: Socket) {
     this.connectionService.removeUserConnection(client['user_id']);
     this.generalGameService.removeGeneralGame(client['user_id']);
-    console.log(`home socket: ${client.id} disconnected`);
+    // console.log(`home socket: ${client.id} disconnected`);
   }
 
   @SubscribeMessage('message')
@@ -289,8 +289,8 @@ export class HomeGateway
     client
       .to(roomIdDto.roomId.toString())
       .emit('deleteRoom', '채팅방이 삭제되었습니다');
-    console.log('delete room event');
-    console.log(payload);
+    // console.log('delete room event');
+    // console.log(payload);
   }
 
   @SubscribeMessage('leaveAllRoom')
@@ -299,7 +299,7 @@ export class HomeGateway
     for (const room of currentRooms) {
       if (room !== client.id) {
         client.leave(room);
-        console.log(`leave Room: ${room}`);
+        // console.log(`leave Room: ${room}`);
       }
     }
   }
@@ -313,7 +313,7 @@ export class HomeGateway
 
     this.handleLeaveAllRoom(client);
     client.join(roomIdDto.roomId.toString());
-    console.log(`join Room: ${roomIdDto.roomId}`);
+    // console.log(`join Room: ${roomIdDto.roomId}`);
     client.emit('roomChange', roomIdDto.roomId);
     client
       .to(roomIdDto.roomId.toString())

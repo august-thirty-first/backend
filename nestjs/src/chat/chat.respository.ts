@@ -49,7 +49,7 @@ export class ChatRepository extends Repository<Chat> {
     try {
       await this.save(chat);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
     return chat;
   }
