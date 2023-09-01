@@ -26,7 +26,7 @@ export class UserRepository extends Repository<User> {
     const user = this.create(createUserDto);
     try {
       await this.save(user);
-      console.log('save 성공');
+      // console.log('save 성공');
     } catch (error: any) {
       if (createUserDto.avata_path) unlinkSync(createUserDto.avata_path);
       if (error.code === '23505') {

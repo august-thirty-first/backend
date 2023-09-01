@@ -29,7 +29,7 @@ export class ChatParticipantRepository extends Repository<ChatParticipant> {
     try {
       await this.save(participant);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
     return participant;
   }

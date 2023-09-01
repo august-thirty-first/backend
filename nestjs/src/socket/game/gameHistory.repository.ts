@@ -60,7 +60,7 @@ export class GameHistoryRepository extends Repository<GameHistory> {
     try {
       await this.save(gameHistory);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       throw err;
     }
   }

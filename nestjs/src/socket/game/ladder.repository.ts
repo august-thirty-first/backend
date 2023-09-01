@@ -42,7 +42,7 @@ export default class LadderRepository extends Repository<Ladder> {
         await this.save(ladderRecord);
         return ladderRecord;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw err;
       }
     } else {
@@ -61,7 +61,7 @@ export default class LadderRepository extends Repository<Ladder> {
         await this.save(ladderRecord);
         return ladderRecord;
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         throw err;
       }
     }
