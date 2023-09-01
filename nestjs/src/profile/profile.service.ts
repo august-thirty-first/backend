@@ -197,7 +197,7 @@ export class ProfileService {
   async deleteOtp(id: number): Promise<void> {
     const user: User | null = await this.userRepository.findOneBy({ id });
     if (!user || !user.otp_key) return;
-    user.otp_key = undefined;
+    user.otp_key = null;
     try {
       await this.userRepository.save(user);
     } catch (error) {
