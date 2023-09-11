@@ -1,3 +1,5 @@
+**/db-data/*
+**/images/*
 # compiled output
 **/dist
 **/node_modules
