@@ -20,3 +20,6 @@
 
 ### technology stack
 ![트샌기술스택](https://github.com/august-thirty-first/backend/assets/90519259/a9df7756-41ea-4e95-a142-1b6a4e2ffc53)
+### preview
+<img width="1251" alt="Screen Shot 2023-10-24 at 9 16 24 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/598557ce-39a8-47a6-a958-c0083e4f7799">
+<img width="1251" alt="Screen Shot 2023-10-24 at 9 16 33 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/942b9a84-86ca-474b-a5bf-b08bef7bedb9">
