@@ -23,3 +23,10 @@
 ### preview
 <img width="1251" alt="Screen Shot 2023-10-24 at 9 16 24 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/598557ce-39a8-47a6-a958-c0083e4f7799">
 <img width="1251" alt="Screen Shot 2023-10-24 at 9 16 33 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/942b9a84-86ca-474b-a5bf-b08bef7bedb9">
+<img width="1685" alt="Screen Shot 2023-10-25 at 8 23 37 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/67946011-2947-4796-bb2c-12fda8077b23">
+<img width="1683" alt="Screen Shot 2023-10-25 at 8 24 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/aec492d6-1a8e-4c7f-aaef-602574a349fc">
+<img width="1680" alt="Screen Shot 2023-10-25 at 8 24 57 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/53a704e3-4bc1-48a6-85da-27366d5509d8">
+<img width="1678" alt="Screen Shot 2023-10-25 at 8 25 13 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/347a0716-c354-456b-a71d-b05723554b77">
+<img width="1677" alt="Screen Shot 2023-10-25 at 8 25 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/11dcff51-b202-4236-ae90-f7b29a845c92">
+<img width="1682" alt="Screen Shot 2023-10-25 at 8 26 32 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/00acffcf-65a9-4d2e-8e88-38d192579b1a">
+<img width="1678" alt="Screen Shot 2023-10-25 at 8 26 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/7c4ec613-7fac-444a-89a6-828eff0265eb">
