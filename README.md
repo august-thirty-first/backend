@@ -1,73 +1,32 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# PingPong Game with Chat!
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### TEAM NAME : auguest-thirty-first
+### Member
+* kiyoon(윤기웅) rldnd4429@gmail.com
+* chulee
+* hanbin
+* jiyunpar
+* yehan
+###
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### About Service
+* 익명의 유저들과 함께 PingPong게임을 할 수 있음
+* 닉네임과 유저 프로필 사진 커스텀 가능
+* 일반게임과 레더게임을 즐길 수 있고 레더 점수가 게임 결과에 따라 증감
+* 친구추가 및 친구추가 수락을 통한 친구관계 설정 가능
+* 레더게임 점수 및 친구추가에 따른 다양한 숨겨진 업적 달성 가능
+* 공개, 비밀 채팅방에서 원하는 유저들과 채팅을 할 수 있고 1:1DM기능 사용 가능
+###
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+### technology stack
+![트샌기술스택](https://github.com/august-thirty-first/backend/assets/90519259/a9df7756-41ea-4e95-a142-1b6a4e2ffc53)
+### preview
+<img width="1251" alt="Screen Shot 2023-10-24 at 9 16 24 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/598557ce-39a8-47a6-a958-c0083e4f7799">
+<img width="1251" alt="Screen Shot 2023-10-24 at 9 16 33 PM" src="https://github.com/yoonkiung/ft_transcendence_backend/assets/90519259/942b9a84-86ca-474b-a5bf-b08bef7bedb9">
+<img width="1685" alt="Screen Shot 2023-10-25 at 8 23 37 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/67946011-2947-4796-bb2c-12fda8077b23">
+<img width="1683" alt="Screen Shot 2023-10-25 at 8 24 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/aec492d6-1a8e-4c7f-aaef-602574a349fc">
+<img width="1680" alt="Screen Shot 2023-10-25 at 8 24 57 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/53a704e3-4bc1-48a6-85da-27366d5509d8">
+<img width="1678" alt="Screen Shot 2023-10-25 at 8 25 13 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/347a0716-c354-456b-a71d-b05723554b77">
+<img width="1677" alt="Screen Shot 2023-10-25 at 8 25 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/11dcff51-b202-4236-ae90-f7b29a845c92">
+<img width="1682" alt="Screen Shot 2023-10-25 at 8 26 32 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/00acffcf-65a9-4d2e-8e88-38d192579b1a">
+<img width="1678" alt="Screen Shot 2023-10-25 at 8 26 42 PM" src="https://github.com/yoonkiung/ft_transcendence_frontend/assets/90519259/7c4ec613-7fac-444a-89a6-828eff0265eb">
